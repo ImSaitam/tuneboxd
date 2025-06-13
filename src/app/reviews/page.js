@@ -38,6 +38,26 @@ export default function ReviewsPage() {
     window.location.href = `/album/${album.spotify_id}`;
   };
 
+  const handleArtistClick = async (artistName) => {
+    try {
+      // Buscar el artista en Spotify para obtener su ID
+      const response = await fetch(`/api/spotify/search?q=${encodeURIComponent(artistName)}&type=artist&limit=1`);
+      const data = await response.json();
+      
+      if (data.success && data.data.items && data.data.items.length > 0) {
+        const artist = data.data.items[0];
+        window.location.href = `/artist/${artist.id}`;
+      } else {
+        // Si no se encuentra, hacer una búsqueda general
+        window.location.href = `/?search=${encodeURIComponent(artistName)}&type=artist`;
+      }
+    } catch (error) {
+      console.error('Error buscando artista:', error);
+      // Fallback a búsqueda general
+      window.location.href = `/?search=${encodeURIComponent(artistName)}&type=artist`;
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -125,6 +145,7 @@ export default function ReviewsPage() {
                 key={review.id} 
                 review={review} 
                 onAlbumClick={handleAlbumClick}
+                onArtistClick={handleArtistClick}
               />
             ))}
           </div>
@@ -156,7 +177,7 @@ export default function ReviewsPage() {
 }
 
 // Componente para cada reseña
-function ReviewCard({ review, onAlbumClick }) {
+function ReviewCard({ review, onAlbumClick, onArtistClick }) {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('es-ES', {
@@ -200,12 +221,19 @@ function ReviewCard({ review, onAlbumClick }) {
                 <span className="text-gray-300 text-sm">{formatDate(review.created_at)}</span>
               </div>
               
-              <div 
-                className="cursor-pointer hover:text-blue-300 transition-colors"
-                onClick={() => onAlbumClick(review)}
-              >
-                <h3 className="text-lg font-bold text-white truncate">{review.album_name}</h3>
-                <p className="text-gray-300 text-sm">{review.artist}</p>
+              <div>
+                <h3 
+                  className="text-lg font-bold text-white truncate cursor-pointer hover:text-blue-300 transition-colors"
+                  onClick={() => onAlbumClick(review)}
+                >
+                  {review.album_name}
+                </h3>
+                <p 
+                  className="text-gray-300 text-sm hover:text-teal-300 transition-colors cursor-pointer"
+                  onClick={() => onArtistClick(review.artist)}
+                >
+                  {review.artist}
+                </p>
               </div>
             </div>
 

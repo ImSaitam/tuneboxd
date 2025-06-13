@@ -21,7 +21,8 @@ async function verifyAuth(request) {
 export async function PUT(request, { params }) {
   try {
     const decoded = await verifyAuth(request);
-    const reviewId = parseInt(params.reviewId);
+    const resolvedParams = await params;
+    const reviewId = parseInt(resolvedParams.reviewId);
     
     if (!reviewId || isNaN(reviewId)) {
       return Response.json(
@@ -78,7 +79,8 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const decoded = await verifyAuth(request);
-    const reviewId = parseInt(params.reviewId);
+    const resolvedParams = await params;
+    const reviewId = parseInt(resolvedParams.reviewId);
     
     if (!reviewId || isNaN(reviewId)) {
       return Response.json(

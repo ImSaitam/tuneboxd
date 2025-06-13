@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Star, ArrowLeft, User, Calendar, ExternalLink, Heart, HeartOff } from 'lucide-react';
+import { Star, ArrowLeft, User, Calendar, ExternalLink, Heart, HeartOff, Clock } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import Link from 'next/link';
 
@@ -19,6 +19,7 @@ export default function AlbumPage() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [isInListenList, setIsInListenList] = useState(false);
   const [listenListLoading, setListenListLoading] = useState(false);
+  const [markingAsListened, setMarkingAsListened] = useState(false);
 
   // Obtener el ID del álbum de los parámetros de URL
   const albumId = params.albumId;
@@ -272,6 +273,52 @@ export default function AlbumPage() {
     }
   };
 
+  const handleMarkAsListened = async () => {
+    if (!isAuthenticated) {
+      alert('Debes iniciar sesión para marcar álbumes como escuchados');
+      return;
+    }
+
+    if (!albumData) {
+      alert('Error: álbum no encontrado');
+      return;
+    }
+
+    setMarkingAsListened(true);
+    
+    try {
+      const response = await fetch('/api/listening-history', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          album: {
+            spotify_id: albumData.id,
+            name: albumData.name,
+            artist: albumData.artists[0]?.name,
+            release_date: albumData.release_date,
+            image_url: albumData.images[0]?.url,
+            spotify_url: albumData.external_urls?.spotify
+          }
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('¡Álbum marcado como escuchado!');
+      } else {
+        alert(result.message || 'Error al marcar como escuchado');
+      }
+    } catch (error) {
+      console.error('Error marcando como escuchado:', error);
+      alert('Error al marcar álbum como escuchado');
+    } finally {
+      setMarkingAsListened(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -341,7 +388,12 @@ export default function AlbumPage() {
           {/* Album Details */}
           <div className="md:col-span-2 text-white">
             <h2 className="text-4xl font-bold mb-2">{albumData.name}</h2>
-            <h3 className="text-2xl text-gray-300 mb-4">{albumData.artists[0]?.name}</h3>
+            <Link 
+              href={`/artist/${albumData.artists[0]?.id}`}
+              className="text-2xl text-gray-300 hover:text-white transition-colors mb-4 inline-block"
+            >
+              {albumData.artists[0]?.name}
+            </Link>
             
             <div className="flex items-center gap-6 mb-6">
               <div className="flex items-center gap-2">
@@ -441,6 +493,20 @@ export default function AlbumPage() {
                         ? 'Remover de Lista de Escucha' 
                         : 'Añadir a Lista de Escucha'
                     }
+                  </button>
+                  
+                  {/* Mark as Listened Button */}
+                  <button
+                    onClick={handleMarkAsListened}
+                    disabled={markingAsListened}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white disabled:opacity-50 disabled:transform-none disabled:cursor-not-allowed"
+                  >
+                    {markingAsListened ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Clock size={20} />
+                    )}
+                    {markingAsListened ? 'Marcando...' : 'Marcar como Escuchado'}
                   </button>
                 </div>
               ) : (

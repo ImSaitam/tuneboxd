@@ -101,8 +101,9 @@ const MusicboxdApp = () => {
   const getNavLinks = () => {
     const baseLinks = [
       { href: "#home", label: "Inicio" },
-      { href: "#features", label: "Características" },
+      { href: "/social", label: "Social", isLink: true },
       { href: "/reviews", label: "Reseñas", isLink: true },
+      { href: "/artists", label: "Artistas", isLink: true },
       { href: "#community", label: "Comunidad" }
     ];
 
@@ -191,11 +192,13 @@ const MusicboxdApp = () => {
     setSearchQuery(item.name);
     setShowResults(false);
     
-    // Si es un álbum, navegar a la página de detalles del álbum
+    // Navegar según el tipo de búsqueda
     if (searchType === 'album') {
       window.location.href = `/album/${item.id}`;
+    } else if (searchType === 'artist') {
+      window.location.href = `/artist/${item.id}`;
     } else {
-      // Para otros tipos (artistas, canciones), solo mostrar en consola por ahora
+      // Para otros tipos (canciones), solo mostrar en consola por ahora
       console.log('Item seleccionado:', item);
     }
   };

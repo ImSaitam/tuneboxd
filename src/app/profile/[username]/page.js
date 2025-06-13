@@ -1,31 +1,70 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { User, Star, Calendar, TrendingUp, BarChart3, BookOpen, ArrowLeft, Loader2, UserCheck, UserPlus } from 'lucide-react';
+import { User, Star, Calendar, TrendingUp, BarChart3, BookOpen, ArrowLeft, Loader2, UserCheck, UserPlus, Music, Edit, Trash2, X, Save, Clock, Users } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
+import { useNotifications } from '../../../hooks/useNotifications';
 
 const UserProfilePage = () => {
   const params = useParams();
   const { user: currentUser, isAuthenticated } = useAuth();
+  const { success: showSuccess, error: showError } = useNotifications();
   const [activeTab, setActiveTab] = useState('reviews');
   const [profileUser, setProfileUser] = useState(null);
   const [userStats, setUserStats] = useState(null);
   const [userReviews, setUserReviews] = useState([]);
+  const [followedArtists, setFollowedArtists] = useState([]);
+  const [listeningHistory, setListeningHistory] = useState([]);
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
+  
+  // Control de peticiones duplicadas
+  const isLoadingRef = useRef(false);
+  const loadedUsernameRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  
+  // Estados para edición de reseñas
+  const [editingReview, setEditingReview] = useState(null);
+  const [editForm, setEditForm] = useState({
+    rating: 5,
+    title: '',
+    content: ''
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const username = params.username;
+  const isOwnProfile = currentUser?.username === username;
   
   const fetchUserProfile = useCallback(async () => {
+    // Evitar peticiones duplicadas
+    if (isLoadingRef.current || loadedUsernameRef.current === username) {
+      return;
+    }
+
+    // Cancelar petición anterior si existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Crear nuevo controlador de cancelación
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
+    isLoadingRef.current = true;
+    loadedUsernameRef.current = username;
+
     try {
       setLoading(true);
       setError(null);
       
       // Obtener datos del usuario por username
-      const userResponse = await fetch(`/api/user/profile/${username}`);
+      const userResponse = await fetch(`/api/user/profile/${username}`, { signal });
       if (!userResponse.ok) {
         if (userResponse.status === 404) {
           setError('Usuario no encontrado');
@@ -37,61 +76,338 @@ const UserProfilePage = () => {
       const userData = await userResponse.json();
       setProfileUser(userData.user);
 
-      // Obtener estadísticas del usuario
-      const statsResponse = await fetch(`/api/user/stats?userId=${userData.user.id}`);
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json();
-        setUserStats(statsData.stats);
+      // Realizar todas las peticiones en paralelo para mejorar rendimiento
+      const requests = [];
+
+      // Estadísticas del usuario
+      requests.push(
+        fetch(`/api/user/stats?userId=${userData.user.id}`, { signal })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => data && setUserStats(data.stats))
+          .catch(() => null)
+      );
+
+      // Reseñas del usuario
+      requests.push(
+        fetch(`/api/user/${userData.user.id}/reviews`, { signal })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => data && setUserReviews(data.reviews || []))
+          .catch(() => null)
+      );
+
+      // Seguidores y seguidos
+      requests.push(
+        fetch(`/api/users/followers/${userData.user.id}`, {
+          signal,
+          headers: isAuthenticated ? {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          } : {}
+        })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => data && setFollowers(data.followers || []))
+          .catch(() => null)
+      );
+
+      requests.push(
+        fetch(`/api/users/following/${userData.user.id}`, {
+          signal,
+          headers: isAuthenticated ? {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          } : {}
+        })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => data && setFollowing(data.following || []))
+          .catch(() => null)
+      );
+
+      // Si es el perfil del usuario actual autenticado
+      if (isAuthenticated && currentUser?.username === username) {
+        // Artistas seguidos
+        requests.push(
+          fetch('/api/artists/following', {
+            signal,
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+          })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => data && setFollowedArtists(data.artists || []))
+            .catch(() => null)
+        );
+
+        // Historial de escucha
+        requests.push(
+          fetch('/api/listening-history?grouped=true&limit=20', {
+            signal,
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+          })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => data && setListeningHistory(data.listeningHistory || []))
+            .catch(() => null)
+        );
       }
 
-      // Obtener reseñas del usuario
-      const reviewsResponse = await fetch(`/api/user/${userData.user.id}/reviews`);
-      if (reviewsResponse.ok) {
-        const reviewsData = await reviewsResponse.json();
-        setUserReviews(reviewsData.reviews || []);
+      // Si no es su propio perfil, verificar si lo sigue
+      if (isAuthenticated && currentUser?.username !== username) {
+        requests.push(
+          fetch(`/api/users/follow?user_id=${userData.user.id}`, {
+            signal,
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+          })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => data && setIsFollowing(data.isFollowing))
+            .catch(() => null)
+        );
       }
 
-      // Si el usuario actual está autenticado y no es su propio perfil, verificar si lo sigue
-      const isOwnProfile = currentUser?.username === username;
-      if (isAuthenticated && !isOwnProfile) {
-        // TODO: Implementar lógica de seguimiento
-        setIsFollowing(false);
-      }
+      // Ejecutar todas las peticiones en paralelo
+      await Promise.allSettled(requests);
 
     } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('Petición cancelada');
+        return;
+      }
       console.error('Error cargando perfil del usuario:', error);
       setError('Error cargando los datos del perfil');
     } finally {
       setLoading(false);
+      isLoadingRef.current = false;
     }
   }, [username, isAuthenticated, currentUser?.username]);
 
-  const isOwnProfile = currentUser?.username === username;
+  // Resetear estado cuando cambie el username
+  useEffect(() => {
+    // Cancelar petición anterior si existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Resetear refs de control
+    isLoadingRef.current = false;
+    loadedUsernameRef.current = null;
+    
+    // Resetear estados
+    setProfileUser(null);
+    setUserStats(null);
+    setUserReviews([]);
+    setFollowedArtists([]);
+    setListeningHistory([]);
+    setFollowers([]);
+    setFollowing([]);
+    setIsFollowing(false);
+    setError(null);
+  }, [username]);
 
   useEffect(() => {
-    if (username) {
+    if (username && loadedUsernameRef.current !== username) {
       fetchUserProfile();
     }
   }, [username, fetchUserProfile]);
 
-  const handleFollowToggle = async () => {
-    if (!isAuthenticated) return;
+  // Cleanup al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Función optimizada para recargar datos de seguidores/seguidos
+  const refreshFollowData = useCallback(async () => {
+    if (!profileUser) return;
     
     try {
-      // TODO: Implementar lógica de seguimiento/dejar de seguir
-      const action = isFollowing ? 'unfollow' : 'follow';
-      const response = await fetch(`/api/user/${profileUser.id}/${action}`, {
-        method: 'POST',
+      // Realizar todas las peticiones en paralelo para mejor rendimiento
+      const requests = [
+        fetch(`/api/users/followers/${profileUser.id}`, {
+          headers: isAuthenticated ? {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          } : {}
+        })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => data && setFollowers(data.followers || []))
+          .catch(() => null),
+
+        fetch(`/api/users/following/${profileUser.id}`, {
+          headers: isAuthenticated ? {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          } : {}
+        })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => data && setFollowing(data.following || []))
+          .catch(() => null),
+
+        fetch(`/api/user/stats?userId=${profileUser.id}`)
+          .then(res => res.ok ? res.json() : null)
+          .then(data => data && setUserStats(data.stats))
+          .catch(() => null)
+      ];
+
+      await Promise.allSettled(requests);
+    } catch (error) {
+      console.error('Error refrescando datos de seguimiento:', error);
+    }
+  }, [profileUser, isAuthenticated]);
+
+  const handleFollowToggle = async () => {
+    if (!isAuthenticated || !profileUser) return;
+    
+    try {
+      if (isFollowing) {
+        // Dejar de seguir
+        const response = await fetch(`/api/users/follow?user_id=${profileUser.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          }
+        });
+
+        if (response.ok) {
+          setIsFollowing(false);
+          showSuccess('Dejaste de seguir a este usuario');
+          // Usar la nueva función optimizada
+          await refreshFollowData();
+        } else {
+          const errorData = await response.json();
+          showError(errorData.message || 'Error al dejar de seguir');
+        }
+      } else {
+        // Seguir
+        const response = await fetch('/api/users/follow', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify({
+            user_id: profileUser.id
+          })
+        });
+
+        if (response.ok) {
+          setIsFollowing(true);
+          showSuccess('Ahora sigues a este usuario');
+          // Usar la nueva función optimizada
+          await refreshFollowData();
+        } else {
+          const errorData = await response.json();
+          showError(errorData.message || 'Error al seguir');
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+      showError('Error al procesar la solicitud');
+    }
+  };
+
+  // Función para abrir el modal de edición
+  const handleEditReview = (review) => {
+    setEditingReview(review);
+    setEditForm({
+      rating: review.rating,
+      title: review.title || '',
+      content: review.content || ''
+    });
+  };
+
+  // Función para cerrar el modal de edición
+  const handleCancelEdit = () => {
+    setEditingReview(null);
+    setEditForm({
+      rating: 5,
+      title: '',
+      content: ''
+    });
+  };
+
+  // Función para guardar la reseña editada
+  const handleSaveEdit = async () => {
+    if (!editingReview) return;
+    
+    setIsEditing(true);
+    try {
+      const response = await fetch(`/api/reviews/${editingReview.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          rating: editForm.rating,
+          title: editForm.title.trim(),
+          content: editForm.content.trim()
+        })
+      });
+
+      if (response.ok) {
+        // Actualizar la reseña en la lista local
+        setUserReviews(prevReviews => 
+          prevReviews.map(review => 
+            review.id === editingReview.id 
+              ? { ...review, ...editForm }
+              : review
+          )
+        );
+        
+        handleCancelEdit();
+        showSuccess('Reseña actualizada correctamente');
+      } else {
+        const errorData = await response.json();
+        showError(errorData.message || 'Error al actualizar la reseña');
+      }
+    } catch (error) {
+      console.error('Error updating review:', error);
+      showError('Error al actualizar la reseña');
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  // Función para eliminar reseña
+  const handleDeleteReview = async (reviewId) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta reseña? Esta acción no se puede deshacer.')) {
+      return;
+    }
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/reviews/${reviewId}`, {
+        method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
       });
 
       if (response.ok) {
-        setIsFollowing(!isFollowing);
+        // Remover la reseña de la lista local
+        setUserReviews(prevReviews => 
+          prevReviews.filter(review => review.id !== reviewId)
+        );
+        
+        showSuccess('Reseña eliminada correctamente');
+        
+        // Refrescar estadísticas del usuario
+        if (userStats) {
+          setUserStats(prev => ({
+            ...prev,
+            totalReviews: prev.totalReviews - 1
+          }));
+        }
+      } else {
+        const errorData = await response.json();
+        showError(errorData.message || 'Error al eliminar la reseña');
       }
     } catch (error) {
-      console.error('Error toggling follow:', error);
+      console.error('Error deleting review:', error);
+      showError('Error al eliminar la reseña');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -209,6 +525,14 @@ const UserProfilePage = () => {
                   <div className="text-2xl font-bold text-white">{userStats?.averageRating || '0.0'}</div>
                   <div className="text-sm text-gray-300">Promedio</div>
                 </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-white">{userStats?.followers || 0}</div>
+                  <div className="text-sm text-gray-300">Seguidores</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-white">{userStats?.following || 0}</div>
+                  <div className="text-sm text-gray-300">Siguiendo</div>
+                </div>
               </div>
 
               {/* Follow Button (only if not own profile and user is authenticated) */}
@@ -264,6 +588,32 @@ const UserProfilePage = () => {
             <BookOpen className="w-5 h-5 inline mr-2" />
             Reseñas
           </button>
+          {isOwnProfile && (
+            <button
+              onClick={() => setActiveTab('registro')}
+              className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                activeTab === 'registro'
+                  ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Clock className="w-5 h-5 inline mr-2" />
+              Registro
+            </button>
+          )}
+          {isOwnProfile && (
+            <button
+              onClick={() => setActiveTab('artists')}
+              className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                activeTab === 'artists'
+                  ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Music className="w-5 h-5 inline mr-2" />
+              Mis Artistas
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('stats')}
             className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
@@ -274,6 +624,28 @@ const UserProfilePage = () => {
           >
             <BarChart3 className="w-5 h-5 inline mr-2" />
             Estadísticas
+          </button>
+          <button
+            onClick={() => setActiveTab('followers')}
+            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+              activeTab === 'followers'
+                ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
+                : 'text-gray-300 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Users className="w-5 h-5 inline mr-2" />
+            Seguidores ({userStats?.followers || 0})
+          </button>
+          <button
+            onClick={() => setActiveTab('following')}
+            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+              activeTab === 'following'
+                ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
+                : 'text-gray-300 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <UserCheck className="w-5 h-5 inline mr-2" />
+            Siguiendo ({userStats?.following || 0})
           </button>
         </div>
       </div>
@@ -317,9 +689,23 @@ const UserProfilePage = () => {
                           {new Date(review.created_at).toLocaleDateString('es')}
                         </span>
                         {isOwnProfile && (
-                          <button className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">
-                            Editar reseña
-                          </button>
+                          <div className="flex items-center space-x-2">
+                            <button 
+                              onClick={() => handleEditReview(review)}
+                              className="flex items-center space-x-1 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+                            >
+                              <Edit className="w-4 h-4" />
+                              <span>Editar</span>
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteReview(review.id)}
+                              disabled={isDeleting}
+                              className="flex items-center space-x-1 text-red-400 hover:text-red-300 text-sm font-medium transition-colors disabled:opacity-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              <span>Eliminar</span>
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -410,9 +796,508 @@ const UserProfilePage = () => {
             </div>
           </div>
         )}
+
+        {activeTab === 'artists' && isOwnProfile && (
+          <div className="space-y-6">
+            {followedArtists.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {followedArtists.map((artist) => (
+                  <div 
+                    key={artist.artist_id} 
+                    className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 group"
+                  >
+                    {/* Artist Image */}
+                    <div className="relative mb-4">
+                      <div className="w-24 h-24 mx-auto rounded-full overflow-hidden bg-gradient-to-br from-red-400 to-teal-400">
+                        {artist.artist_image ? (
+                          <img
+                            src={artist.artist_image}
+                            alt={artist.artist_name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white">
+                            <User className="w-8 h-8" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Artist Info */}
+                    <div className="text-center">
+                      <h3 className="font-bold text-white text-lg mb-2 group-hover:text-teal-300 transition-colors">
+                        {artist.artist_name}
+                      </h3>
+                      
+                      <div className="flex items-center justify-center gap-1 text-gray-400 text-sm mb-4">
+                        <Calendar className="w-4 h-4" />
+                        <span>Desde {new Date(artist.followed_at).toLocaleDateString('es')}</span>
+                      </div>
+
+                      <Link
+                        href={`/artist/${artist.artist_id}`}
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                      >
+                        <Music className="w-4 h-4" />
+                        Ver Perfil
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Music className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">No sigues a ningún artista</h3>
+                <p className="text-gray-300 mb-6">
+                  Busca artistas en la página principal y empieza a seguir a tus favoritos
+                </p>
+                <Link 
+                  href="/"
+                  className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                >
+                  Explorar Artistas
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'registro' && isOwnProfile && (
+          <div className="space-y-6">
+            {listeningHistory.length > 0 ? (
+              <div className="space-y-8">
+                {listeningHistory.map((day, index) => (
+                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                    {/* Fecha */}
+                    <div className="flex items-center space-x-3 mb-6">
+                      <Calendar className="w-5 h-5 text-blue-400" />
+                      <h3 className="text-lg font-bold text-white">
+                        {new Date(day.date).toLocaleDateString('es-ES', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </h3>
+                      <span className="text-sm text-gray-400">
+                        ({day.albumCount} álbum{day.albumCount !== 1 ? 'es' : ''} escuchado{day.albumCount !== 1 ? 's' : ''})
+                      </span>
+                    </div>
+
+                    {/* Lista de álbumes */}
+                    <div className="space-y-4">
+                      {day.albums.map((album, albumIndex) => (
+                        <div key={albumIndex} className="flex items-center space-x-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-200 group">
+                          {/* Album Cover */}
+                          <div className="flex-shrink-0">
+                            <img
+                              src={album.image_url || '/placeholder-album.png'}
+                              alt={album.album_name}
+                              className="w-16 h-16 rounded-lg object-cover group-hover:scale-105 transition-transform duration-200 cursor-pointer"
+                              onClick={() => window.location.href = `/album/${album.spotify_id}`}
+                            />
+                          </div>
+
+                          {/* Album Info */}
+                          <div className="flex-1 min-w-0">
+                            <h4 
+                              className="text-white font-semibold text-lg cursor-pointer hover:text-blue-300 transition-colors truncate"
+                              onClick={() => window.location.href = `/album/${album.spotify_id}`}
+                            >
+                              {album.album_name}
+                            </h4>
+                            <p className="text-gray-300">{album.artist}</p>
+                            <div className="flex items-center space-x-1 text-gray-400 text-sm mt-1">
+                              <Clock className="w-4 h-4" />
+                              <span>
+                                {new Date(album.listened_at).toLocaleTimeString('es-ES', { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Action Button */}
+                          <div className="flex-shrink-0">
+                            <button
+                              onClick={() => window.location.href = `/album/${album.spotify_id}`}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors opacity-0 group-hover:opacity-100"
+                            >
+                              Ver Álbum
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">Tu registro está vacío</h3>
+                <p className="text-gray-300 mb-6">
+                  Empieza a escuchar álbumes para ver tu historial de escucha aquí
+                </p>
+                <Link 
+                  href="/"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                >
+                  Explorar Música
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'followers' && (
+          <div className="space-y-6">
+            {followers.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {followers.map((follower) => (
+                  <div
+                    key={follower.id}
+                    className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
+                  >
+                    <div className="flex items-center space-x-4 mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center">
+                        <User className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-white">@{follower.username}</h3>
+                        <p className="text-gray-300 text-sm">{follower.email}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-center gap-1 text-gray-400 text-sm mb-4">
+                      <Calendar className="w-4 h-4" />
+                      <span>Siguiendo desde {new Date(follower.followed_at).toLocaleDateString('es')}</span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Link
+                        href={`/profile/${follower.username}`}
+                        className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                      >
+                        <User className="w-4 h-4" />
+                        Ver Perfil
+                      </Link>
+                      
+                      {/* Follow/Unfollow button - only if authenticated and not own profile */}
+                      {isAuthenticated && currentUser?.id !== follower.id && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              const method = follower.isFollowing ? 'DELETE' : 'POST';
+                              const url = follower.isFollowing 
+                                ? `/api/users/follow?user_id=${follower.id}`
+                                : '/api/users/follow';
+                              
+                              const response = await fetch(url, {
+                                method,
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                                },
+                                ...(method === 'POST' && {
+                                  body: JSON.stringify({ user_id: follower.id })
+                                })
+                              });
+
+                              if (response.ok) {
+                                // Update local state
+                                setFollowers(prev => prev.map(f => 
+                                  f.id === follower.id 
+                                    ? { ...f, isFollowing: !f.isFollowing }
+                                    : f
+                                ));
+                                showSuccess(follower.isFollowing ? 'Dejaste de seguir a este usuario' : 'Ahora sigues a este usuario');
+                              }
+                            } catch (error) {
+                              showError('Error al procesar la solicitud');
+                            }
+                          }}
+                          className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                            follower.isFollowing
+                              ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                              : 'bg-green-600 hover:bg-green-700 text-white'
+                          }`}
+                        >
+                          {follower.isFollowing ? (
+                            <UserCheck className="w-4 h-4" />
+                          ) : (
+                            <UserPlus className="w-4 h-4" />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  {isOwnProfile ? 'Aún no tienes seguidores' : 'Este usuario no tiene seguidores'}
+                </h3>
+                <p className="text-gray-300 mb-6">
+                  {isOwnProfile 
+                    ? 'Comparte tu perfil para empezar a ganar seguidores'
+                    : 'Sé el primero en seguir a este usuario'
+                  }
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'following' && (
+          <div className="space-y-6">
+            {following.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {following.map((followedUser) => (
+                  <div
+                    key={followedUser.id}
+                    className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
+                  >
+                    <div className="flex items-center space-x-4 mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-600 rounded-full flex items-center justify-center">
+                        <User className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-white">@{followedUser.username}</h3>
+                        <p className="text-gray-300 text-sm">{followedUser.email}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-center gap-1 text-gray-400 text-sm mb-4">
+                      <Calendar className="w-4 h-4" />
+                      <span>Siguiendo desde {new Date(followedUser.followed_at).toLocaleDateString('es')}</span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Link
+                        href={`/profile/${followedUser.username}`}
+                        className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                      >
+                        <User className="w-4 h-4" />
+                        Ver Perfil
+                      </Link>
+                      
+                      {/* Follow/Unfollow button */}
+                      {isAuthenticated && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              // Si es mi propio perfil viendo mi lista de seguidos, siempre es "dejar de seguir"
+                              // Si es otro perfil, depende del estado isFollowing del usuario
+                              const shouldUnfollow = isOwnProfile || followedUser.isFollowing;
+                              const method = shouldUnfollow ? 'DELETE' : 'POST';
+                              const url = shouldUnfollow
+                                ? `/api/users/follow?user_id=${followedUser.id}`
+                                : '/api/users/follow';
+                              
+                              const response = await fetch(url, {
+                                method,
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                                },
+                                ...(method === 'POST' && {
+                                  body: JSON.stringify({ user_id: followedUser.id })
+                                })
+                              });
+
+                              if (response.ok) {
+                                if (isOwnProfile) {
+                                  // Si es mi perfil, remover de la lista (ya no lo sigo)
+                                  setFollowing(prev => prev.filter(f => f.id !== followedUser.id));
+                                  showSuccess('Dejaste de seguir a este usuario');
+                                } else {
+                                  // Si no es mi perfil, actualizar el estado
+                                  setFollowing(prev => prev.map(f => 
+                                    f.id === followedUser.id 
+                                      ? { ...f, isFollowing: !f.isFollowing }
+                                      : f
+                                  ));
+                                  showSuccess(followedUser.isFollowing ? 'Dejaste de seguir a este usuario' : 'Ahora sigues a este usuario');
+                                }
+                              }
+                            } catch (error) {
+                              showError('Error al procesar la solicitud');
+                            }
+                          }}
+                          className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                            (isOwnProfile || followedUser.isFollowing)
+                              ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                              : 'bg-green-600 hover:bg-green-700 text-white'
+                          }`}
+                        >
+                          {(isOwnProfile || followedUser.isFollowing) ? (
+                            <UserCheck className="w-4 h-4" />
+                          ) : (
+                            <UserPlus className="w-4 h-4" />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <UserCheck className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  {isOwnProfile ? 'Aún no sigues a nadie' : 'Este usuario no sigue a nadie'}
+                </h3>
+                <p className="text-gray-300 mb-6">
+                  {isOwnProfile 
+                    ? 'Explora perfiles de otros usuarios para empezar a seguir a gente interesante'
+                    : 'Este usuario aún no ha comenzado a seguir a otros usuarios'
+                  }
+                </p>
+                {isOwnProfile && (
+                  <Link 
+                    href="/"
+                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                  >
+                    Explorar Usuarios
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Modal de Edición de Reseña */}
+      {editingReview && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl p-6 w-full max-w-lg border border-white/20 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Editar Reseña</h3>
+              <button
+                onClick={handleCancelEdit}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Album Info */}
+              <div className="flex items-center space-x-3 p-3 bg-white/10 rounded-lg">
+                <img
+                  src={editingReview.image_url}
+                  alt={editingReview.album_name}
+                  className="w-12 h-12 rounded-lg object-cover"
+                />
+                <div>
+                  <h4 className="font-semibold text-white">{editingReview.album_name}</h4>
+                  <p className="text-gray-300 text-sm">{editingReview.artist}</p>
+                </div>
+              </div>
+
+              {/* Rating */}
+              <div>
+                <label className="block text-white font-medium mb-2">Puntuación</label>
+                <div className="flex space-x-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setEditForm(prev => ({ ...prev, rating: star }))}
+                      className="transition-colors"
+                    >
+                      <Star
+                        className={`w-8 h-8 ${
+                          star <= editForm.rating
+                            ? 'text-yellow-400 fill-yellow-400'
+                            : 'text-gray-400 hover:text-yellow-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="block text-white font-medium mb-2">Título (opcional)</label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Título de tu reseña..."
+                  maxLength={100}
+                />
+              </div>
+
+              {/* Content */}
+              <div>
+                <label className="block text-white font-medium mb-2">Reseña (opcional)</label>
+                <textarea
+                  value={editForm.content}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, content: e.target.value }))}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  placeholder="Escribe tu reseña aquí..."
+                  rows={4}
+                  maxLength={1000}
+                />
+                <div className="text-right text-gray-400 text-xs mt-1">
+                  {editForm.content.length}/1000
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex space-x-3 pt-4">
+                <button
+                  onClick={handleCancelEdit}
+                  className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={isEditing}
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                >
+                  {isEditing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Guardando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Guardar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+// Componente para las estadísticas
+const StatCard = ({ icon: Icon, title, value, description, gradient }) => (
+  <div className={`bg-gradient-to-r ${gradient} p-6 rounded-2xl text-white`}>
+    <div className="flex items-center space-x-4">
+      <Icon className="w-8 h-8" />
+      <div>
+        <h3 className="text-2xl font-bold">{value}</h3>
+        <p className="text-white/80 font-medium">{title}</p>
+        <p className="text-white/60 text-sm">{description}</p>
+      </div>
+    </div>
+  </div>
+);
 
 export default UserProfilePage;

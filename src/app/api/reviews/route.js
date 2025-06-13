@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { albumService, reviewService } from '../../../lib/database.js';
+import { albumService, reviewService, listeningHistoryService } from '../../../lib/database.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
 
@@ -77,6 +77,15 @@ export async function POST(request) {
       title: title || null,
       content: content || null
     });
+
+    // Automáticamente marcar como escuchado cuando se reseña un álbum
+    try {
+      await listeningHistoryService.addToHistory(decoded.userId, albumRecord.id);
+      console.log(`Album ${albumRecord.name} automatically added to listening history for user ${decoded.userId}`);
+    } catch (historyError) {
+      console.log('Note: Could not add to listening history (might already exist):', historyError.message);
+      // No fallar si ya existe o hay algún problema menor
+    }
 
     return Response.json({
       success: true,

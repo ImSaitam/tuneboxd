@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { reviewService, userService } from '../../../../lib/database.js';
+import { reviewService, userService, userFollowService } from '../../../../lib/database.js';
 import db from '../../../../lib/database.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
@@ -53,13 +53,15 @@ export async function GET(request) {
       averageRating,
       recentActivity,
       topGenres,
-      monthlyStats
+      monthlyStats,
+      followStats
     ] = await Promise.all([
       getTotalReviews(userId),
       getAverageRating(userId),
       getRecentActivity(userId),
       getTopGenres(userId),
-      getMonthlyStats(userId)
+      getMonthlyStats(userId),
+      userFollowService.getFollowStats(userId)
     ]);
 
     const stats = {
@@ -68,7 +70,9 @@ export async function GET(request) {
       recentActivity,
       topGenres,
       monthlyStats,
-      memberSince: await getMemberSinceDate(userId)
+      memberSince: await getMemberSinceDate(userId),
+      followers: followStats.followers,
+      following: followStats.following
     };
 
     return Response.json({
@@ -129,7 +133,12 @@ async function getTopGenres(userId) {
   try {
     // Esta es una implementación básica - en un proyecto real tendrías géneros en tu base de datos
     const reviews = await db.allAsync(
-      'SELECT album_name, artist FROM reviews WHERE user_id = ? ORDER BY created_at DESC LIMIT 20',
+      `SELECT a.name as album_name, a.artist 
+       FROM reviews r 
+       JOIN albums a ON r.album_id = a.id 
+       WHERE r.user_id = ? 
+       ORDER BY r.created_at DESC 
+       LIMIT 20`,
       [userId]
     );
     
