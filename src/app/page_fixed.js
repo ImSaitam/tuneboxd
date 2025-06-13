@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, Music, Edit3, Users, Target, BarChart3, Eye, Loader2, Menu, X, User, LogOut, Heart } from 'lucide-react';
+import { Search, Music, Edit3, Users, Target, BarChart3, Eye, Loader2, Menu, X, User, LogOut } from 'lucide-react';
 import { useSpotify } from '@/hooks/useSpotify';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -308,20 +308,12 @@ const MusicboxdApp = () => {
                   {userMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-black/95 backdrop-blur-md rounded-xl border border-white/20 shadow-lg py-2">
                       <Link
-                        href={`/profile/${user?.username}`}
+                        href="/profile"
                         className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <User className="w-4 h-4 inline mr-2" />
                         Mi Perfil
-                      </Link>
-                      <Link
-                        href="/listen-list"
-                        className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Heart className="w-4 h-4 inline mr-2" />
-                        Mi Lista de Escucha
                       </Link>
                       <button
                         onClick={() => {
@@ -381,20 +373,12 @@ const MusicboxdApp = () => {
                     Hola, <span className="font-semibold text-white">{user?.username}</span>
                   </div>
                   <Link
-                    href={`/profile/${user?.username}`}
+                    href="/profile"
                     className="block text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300 mb-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <User className="w-4 h-4 inline mr-2" />
                     Mi Perfil
-                  </Link>
-                  <Link
-                    href="/listen-list"
-                    className="block text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300 mb-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Heart className="w-4 h-4 inline mr-2" />
-                    Mi Lista de Escucha
                   </Link>
                   <button
                     onClick={() => {

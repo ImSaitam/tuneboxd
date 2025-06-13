@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, Music, Edit3, Users, Target, BarChart3, Eye, Loader2, Menu, X, User, LogOut, Heart } from 'lucide-react';
+import { Search, Music, Edit3, Users, Target, BarChart3, Eye, Loader2, Menu, X, User, LogOut } from 'lucide-react';
 import { useSpotify } from '@/hooks/useSpotify';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -107,7 +107,10 @@ const MusicboxdApp = () => {
     ];
 
     if (isAuthenticated) {
-      return baseLinks;
+      return [
+        ...baseLinks,
+        { href: "/profile", label: "Mi Perfil", isLink: true }
+      ];
     } else {
       return [
         ...baseLinks,
@@ -308,20 +311,12 @@ const MusicboxdApp = () => {
                   {userMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-black/95 backdrop-blur-md rounded-xl border border-white/20 shadow-lg py-2">
                       <Link
-                        href={`/profile/${user?.username}`}
+                        href="/profile"
                         className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <User className="w-4 h-4 inline mr-2" />
                         Mi Perfil
-                      </Link>
-                      <Link
-                        href="/listen-list"
-                        className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Heart className="w-4 h-4 inline mr-2" />
-                        Mi Lista de Escucha
                       </Link>
                       <button
                         onClick={() => {
@@ -380,22 +375,6 @@ const MusicboxdApp = () => {
                   <div className="text-white/80 px-4 py-2 mb-2">
                     Hola, <span className="font-semibold text-white">{user?.username}</span>
                   </div>
-                  <Link
-                    href={`/profile/${user?.username}`}
-                    className="block text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300 mb-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <User className="w-4 h-4 inline mr-2" />
-                    Mi Perfil
-                  </Link>
-                  <Link
-                    href="/listen-list"
-                    className="block text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300 mb-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Heart className="w-4 h-4 inline mr-2" />
-                    Mi Lista de Escucha
-                  </Link>
                   <button
                     onClick={() => {
                       handleLogout();
@@ -408,6 +387,35 @@ const MusicboxdApp = () => {
                   </button>
                 </div>
               )}
+            </div>
+          )}
+        </div>
+      </nav>
+                      className="block w-full text-left text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300 mb-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Ver Reseñas
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="block text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Iniciar Sesión
+                  </Link>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -492,9 +500,10 @@ const MusicboxdApp = () => {
                   >
                     <div className="w-12 h-12 rounded-lg overflow-hidden mr-4 bg-gradient-to-br from-red-400 to-teal-400">
                       {item.images?.[0]?.url ? (
-                        <div 
-                          className="w-full h-full bg-cover bg-center"
-                          style={{ backgroundImage: `url(${item.images[0].url})` }}
+                        <img
+                          src={item.images[0].url}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-white">
@@ -522,7 +531,7 @@ const MusicboxdApp = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {isAuthenticated ? (
+            {user ? (
               <>
                 <button
                   onClick={() => scrollToSection('#features')}
