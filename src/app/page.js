@@ -103,8 +103,7 @@ const MusicboxdApp = () => {
       { href: "#home", label: "Inicio" },
       { href: "/social", label: "Social", isLink: true },
       { href: "/reviews", label: "Reseñas", isLink: true },
-      { href: "/artists", label: "Artistas", isLink: true },
-      { href: "#community", label: "Comunidad" }
+      { href: "/community", label: "Comunidad", isLink: true }
     ];
 
     if (isAuthenticated) {

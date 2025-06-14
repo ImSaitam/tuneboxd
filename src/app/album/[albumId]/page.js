@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Star, ArrowLeft, User, Calendar, ExternalLink, Heart, HeartOff, Clock } from 'lucide-react';
+import { Star, ArrowLeft, User, Calendar, ExternalLink, Heart, HeartOff, Clock, Info, X, Music } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import Link from 'next/link';
 
@@ -20,6 +20,11 @@ export default function AlbumPage() {
   const [isInListenList, setIsInListenList] = useState(false);
   const [listenListLoading, setListenListLoading] = useState(false);
   const [markingAsListened, setMarkingAsListened] = useState(false);
+  const [showTracksModal, setShowTracksModal] = useState(false);
+  const [albumTracks, setAlbumTracks] = useState([]);
+  const [loadingTracks, setLoadingTracks] = useState(false);
+  const [isTracksModalAnimating, setIsTracksModalAnimating] = useState(false);
+  const [isReviewModalAnimating, setIsReviewModalAnimating] = useState(false);
 
   // Obtener el ID del álbum de los parámetros de URL
   const albumId = params.albumId;
@@ -195,7 +200,7 @@ export default function AlbumPage() {
       const result = await response.json();
       if (result.success) {
         setUserReview(result.review);
-        setShowReviewForm(false);
+        closeReviewModal();
         // Recargar estadísticas y reseñas
         if (album) {
           await loadAlbumStats(album.id, true);
@@ -319,6 +324,64 @@ export default function AlbumPage() {
     }
   };
 
+  // Funciones para el modal de canciones
+  const handleShowTracks = async () => {
+    setShowTracksModal(true);
+    setIsTracksModalAnimating(true);
+    setLoadingTracks(true);
+    
+    try {
+      // Los datos del álbum ya incluyen las canciones
+      if (albumData?.tracks?.items) {
+        setAlbumTracks(albumData.tracks.items);
+      } else {
+        console.error('No se encontraron canciones en los datos del álbum');
+        setAlbumTracks([]);
+      }
+    } catch (error) {
+      console.error('Error cargando canciones del álbum:', error);
+      setAlbumTracks([]);
+    } finally {
+      setLoadingTracks(false);
+    }
+  };
+
+  const closeTracksModal = () => {
+    setIsTracksModalAnimating(false);
+    setTimeout(() => {
+      setShowTracksModal(false);
+      setAlbumTracks([]);
+    }, 300); // Esperar a que termine la animación
+  };
+
+  const formatDuration = (durationMs) => {
+    const minutes = Math.floor(durationMs / 60000);
+    const seconds = Math.floor((durationMs % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // useEffect para animaciones de entrada de modales
+  useEffect(() => {
+    if (showTracksModal) {
+      // Pequeño delay para que se vea la animación
+      setTimeout(() => setIsTracksModalAnimating(true), 10);
+    }
+  }, [showTracksModal]);
+
+  useEffect(() => {
+    if (showReviewForm) {
+      // Pequeño delay para que se vea la animación
+      setTimeout(() => setIsReviewModalAnimating(true), 10);
+    }
+  }, [showReviewForm]);
+
+  const closeReviewModal = () => {
+    setIsReviewModalAnimating(false);
+    setTimeout(() => {
+      setShowReviewForm(false);
+    }, 300); // Esperar a que termine la animación
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -374,15 +437,24 @@ export default function AlbumPage() {
         {/* Album Info */}
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {/* Album Cover */}
-          <div className="flex justify-center">
-            <div className="relative group">
+          <div className="flex flex-col items-center">
+            <div className="relative group mb-4">
               <img
                 src={albumData.images[0]?.url || '/placeholder-album.jpg'}
                 alt={albumData.name}
                 className="w-80 h-80 object-cover rounded-lg shadow-2xl group-hover:scale-105 transition-transform duration-300"
               />
-              <div className="absolute inset-0 bg-black/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-black/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 group-hover:scale-105 transition-transform duration-300"></div>
             </div>
+            
+            {/* Ver Canciones Button */}
+            <button
+              onClick={handleShowTracks}
+              className="w-full max-w-80 flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg"
+            >
+              <Info size={20} />
+              Ver Canciones
+            </button>
           </div>
 
           {/* Album Details */}
@@ -455,7 +527,10 @@ export default function AlbumPage() {
                         )}
                       </div>
                       <button
-                        onClick={() => setShowReviewForm(true)}
+                        onClick={() => {
+                          setShowReviewForm(true);
+                          setIsReviewModalAnimating(true);
+                        }}
                         className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
                       >
                         Editar Reseña
@@ -463,7 +538,10 @@ export default function AlbumPage() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => setShowReviewForm(true)}
+                      onClick={() => {
+                        setShowReviewForm(true);
+                        setIsReviewModalAnimating(true);
+                      }}
                       className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
                     >
                       Escribir Reseña
@@ -522,14 +600,28 @@ export default function AlbumPage() {
           </div>
         </div>
 
-        {/* Review Form */}
+        {/* Review Form Modal */}
         {showReviewForm && (
-          <ReviewForm
-            onSubmit={handleReviewSubmit}
-            onCancel={() => setShowReviewForm(false)}
-            albumName={albumData.name}
-            artistName={albumData.artists[0]?.name}
-          />
+          <div 
+            className={`fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center z-50 p-4 ${
+              isReviewModalAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+            }`}
+            onClick={closeReviewModal}
+          >
+            <div 
+              className={`${
+                isReviewModalAnimating ? 'modal-content-enter' : 'modal-content-exit'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ReviewForm
+                onSubmit={handleReviewSubmit}
+                onCancel={closeReviewModal}
+                albumName={albumData.name}
+                artistName={albumData.artists[0]?.name}
+              />
+            </div>
+          </div>
         )}
 
         {/* Reviews Section */}
@@ -548,6 +640,106 @@ export default function AlbumPage() {
             </p>
           )}
         </div>
+
+        {/* Tracks Modal */}
+        {showTracksModal && (
+          <div 
+            className={`fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center z-50 p-4 ${
+              isTracksModalAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+            }`}
+            onClick={closeTracksModal}
+          >
+            <div 
+              className={`bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-white/20 shadow-2xl ${
+                isTracksModalAnimating ? 'modal-scale-enter' : 'modal-scale-exit'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header del modal */}
+              <div className="flex items-center justify-between p-6 border-b border-white/20">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={albumData.images[0]?.url || '/placeholder-album.jpg'}
+                    alt={albumData.name}
+                    className="w-16 h-16 object-cover rounded-lg"
+                  />
+                  <div>
+                    <h3 className="text-xl font-bold text-white">{albumData.name}</h3>
+                    <p className="text-gray-300">
+                      {albumData.artists[0]?.name} • {albumData.release_date?.split('-')[0]} • {albumData.total_tracks} canciones
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={closeTracksModal}
+                  className="text-gray-400 hover:text-white transition-colors p-2"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Contenido del modal */}
+              <div className="p-6 overflow-y-auto max-h-[60vh]">
+                {loadingTracks ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin mb-4"></div>
+                    <p className="text-gray-300">Cargando canciones...</p>
+                  </div>
+                ) : albumTracks.length > 0 ? (
+                  <div className="space-y-2">
+                    {albumTracks.map((track, index) => (
+                      <div key={track.id} className="grid grid-cols-12 items-center gap-4 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                        <div className="col-span-1 text-center">
+                          <span className="text-gray-400 text-sm font-medium">{index + 1}</span>
+                        </div>
+                        <div className="col-span-8 flex items-center gap-3">
+                          <div>
+                            <h4 className="text-white font-medium hover:text-blue-300 transition-colors">
+                              {track.name}
+                            </h4>
+                            {track.explicit && (
+                              <span className="inline-block bg-gray-600 text-gray-300 text-xs px-1.5 py-0.5 rounded mt-1">
+                                Explícito
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="col-span-3 flex items-center justify-end">
+                          <span className="text-gray-400 text-sm">
+                            {formatDuration(track.duration_ms)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Music className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-white mb-2">
+                      No se pudieron cargar las canciones
+                    </h3>
+                    <p className="text-gray-400">
+                      No hay información disponible sobre las canciones de este álbum.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer del modal */}
+              <div className="flex items-center justify-between p-6 border-t border-white/20">
+                <div className="text-sm text-gray-400">
+                  {albumTracks.length > 0 && `${albumTracks.length} canciones`}
+                </div>
+                <button
+                  onClick={closeTracksModal}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -584,75 +776,107 @@ function ReviewForm({ onSubmit, onCancel, albumName, artistName }) {
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 mb-8">
-      <h3 className="text-2xl font-bold text-white mb-4">
-        Reseñar &quot;{albumName}&quot; - {artistName}
-      </h3>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Rating */}
+    <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl w-full max-w-lg border border-white/20 shadow-2xl">
+      {/* Header del modal */}
+      <div className="flex items-center justify-between p-6 border-b border-white/20">
         <div>
-          <label className="block text-white font-semibold mb-2">Calificación *</label>
-          <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => setRating(star)}
-                className="transition-colors"
-              >
-                <Star
-                  size={32}
-                  className={star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-400 hover:text-yellow-300'}
-                />
-              </button>
-            ))}
+          <h3 className="text-xl font-bold text-white">Escribir Reseña</h3>
+          <p className="text-gray-300 text-sm">
+            &quot;{albumName}&quot; - {artistName}
+          </p>
+        </div>
+        <button
+          onClick={onCancel}
+          className="text-gray-400 hover:text-white transition-colors p-2"
+        >
+          <X size={24} />
+        </button>
+      </div>
+
+      {/* Contenido del modal */}
+      <div className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Rating */}
+          <div>
+            <label className="block text-white font-semibold mb-3">Calificación *</label>
+            <div className="flex gap-2 justify-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  className="transition-all duration-200 hover:scale-110"
+                >
+                  <Star
+                    size={40}
+                    className={star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-400 hover:text-yellow-300'}
+                  />
+                </button>
+              ))}
+            </div>
+            <p className="text-center text-gray-400 text-sm mt-2">
+              {rating === 0 ? 'Selecciona una calificación' : `${rating} de 5 estrellas`}
+            </p>
           </div>
-        </div>
 
-        {/* Title */}
-        <div>
-          <label className="block text-white font-semibold mb-2">Título (opcional)</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
-            placeholder="Título de tu reseña..."
-            maxLength={100}
-          />
-        </div>
+          {/* Title */}
+          <div>
+            <label className="block text-white font-semibold mb-2">Título (opcional)</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="Un título para tu reseña..."
+              maxLength={100}
+            />
+            <div className="text-right text-gray-400 text-xs mt-1">
+              {title.length}/100
+            </div>
+          </div>
 
-        {/* Content */}
-        <div>
-          <label className="block text-white font-semibold mb-2">Reseña (opcional)</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 h-32 resize-none"
-            placeholder="Escribe tu reseña..."
-            maxLength={1000}
-          />
-        </div>
+          {/* Content */}
+          <div>
+            <label className="block text-white font-semibold mb-2">Reseña (opcional)</label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"
+              placeholder="Comparte tus pensamientos sobre este álbum..."
+              rows={4}
+              maxLength={1000}
+            />
+            <div className="text-right text-gray-400 text-xs mt-1">
+              {content.length}/1000
+            </div>
+          </div>
 
-        {/* Buttons */}
-        <div className="flex gap-4">
-          <button
-            type="submit"
-            disabled={rating === 0 || submitting}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 disabled:cursor-not-allowed"
-          >
-            {submitting ? 'Enviando...' : 'Enviar Reseña'}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
+          {/* Buttons */}
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={rating === 0 || submitting}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 disabled:cursor-not-allowed transform hover:scale-105 disabled:hover:scale-100"
+            >
+              {submitting ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Enviando...
+                </div>
+              ) : (
+                'Publicar Reseña'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

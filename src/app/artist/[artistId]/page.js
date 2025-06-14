@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, User, ExternalLink, Heart, HeartOff, Music, Tag } from 'lucide-react';
+import { ArrowLeft, User, ExternalLink, Heart, HeartOff, Music, Tag, Info, X, Clock } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNotifications } from '../../../hooks/useNotifications';
 import Link from 'next/link';
@@ -14,22 +13,19 @@ export default function ArtistPage() {
   const { success, error: showError } = useNotifications();
   const [artist, setArtist] = useState(null);
   const [albums, setAlbums] = useState([]);
-  const [topTracks, setTopTracks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [appFollowersCount, setAppFollowersCount] = useState(0);
+  const [selectedAlbum, setSelectedAlbum] = useState(null);
+  const [albumTracks, setAlbumTracks] = useState([]);
+  const [loadingTracks, setLoadingTracks] = useState(false);
+  const [isAlbumModalAnimating, setIsAlbumModalAnimating] = useState(false);
 
   // Obtener el ID del artista de los parámetros de URL
   const artistId = params.artistId;
-
-  // Tags predefinidos para géneros musicales
-  const availableTags = [
-    'Rock', 'Pop', 'Hip Hop', 'Jazz', 'Blues', 'Electronic', 'Classical',
-    'Country', 'R&B', 'Reggae', 'Folk', 'Punk', 'Metal', 'Indie',
-    'Alternative', 'Funk', 'Soul', 'Disco', 'House', 'Techno'
-  ];
 
   useEffect(() => {
     let mounted = true;
@@ -65,7 +61,6 @@ export default function ArtistPage() {
         
         setArtist(data.artist);
         setAlbums(data.albums || []);
-        setTopTracks(data.topTracks || []);
         
         // Verificar si el usuario sigue al artista y obtener tags
         if (isAuthenticated) {
@@ -112,6 +107,17 @@ export default function ArtistPage() {
           ) || [];
           setSelectedTags(artistTags);
         }
+
+        // Obtener seguidores de la aplicación (para todos los usuarios)
+        try {
+          const statsResponse = await fetch(`/api/artists/stats?artist_id=${artistId}`);
+          const statsData = await statsResponse.json();
+          if (statsData.success) {
+            setAppFollowersCount(statsData.followers);
+          }
+        } catch (error) {
+          console.error('Error obteniendo estadísticas del artista:', error);
+        }
         
         if (mounted) {
           setLoading(false);
@@ -153,6 +159,7 @@ export default function ArtistPage() {
         const data = await response.json();
         if (data.success) {
           setIsFollowing(false);
+          setAppFollowersCount(prev => Math.max(0, prev - 1)); // Decrementar contador
           success(`Dejaste de seguir a ${artist?.name || 'este artista'}`);
         } else {
           showError(data.message || 'Error al dejar de seguir el artista');
@@ -175,6 +182,7 @@ export default function ArtistPage() {
         const data = await response.json();
         if (data.success) {
           setIsFollowing(true);
+          setAppFollowersCount(prev => prev + 1); // Incrementar contador
           success(`Ahora sigues a ${artist?.name || 'este artista'}`);
         } else {
           showError(data.message || 'Error al seguir el artista');
@@ -230,6 +238,51 @@ export default function ArtistPage() {
       setSelectedTags(selectedTags);
     }
   };
+
+  const handleAlbumInfo = async (album) => {
+    setSelectedAlbum(album);
+    setIsAlbumModalAnimating(true);
+    setLoadingTracks(true);
+    
+    try {
+      const response = await fetch(`/api/spotify/album/${album.id}`);
+      const data = await response.json();
+      
+      if (data.success && data.album?.tracks?.items) {
+        setAlbumTracks(data.album.tracks.items);
+      } else {
+        console.error('Error obteniendo canciones del álbum:', data);
+        setAlbumTracks([]);
+      }
+    } catch (error) {
+      console.error('Error cargando canciones del álbum:', error);
+      setAlbumTracks([]);
+    } finally {
+      setLoadingTracks(false);
+    }
+  };
+
+  const closeAlbumModal = () => {
+    setIsAlbumModalAnimating(false);
+    setTimeout(() => {
+      setSelectedAlbum(null);
+      setAlbumTracks([]);
+    }, 300); // Esperar a que termine la animación
+  };
+
+  const formatDuration = (durationMs) => {
+    const minutes = Math.floor(durationMs / 60000);
+    const seconds = Math.floor((durationMs % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // useEffect para animación de entrada del modal del álbum
+  useEffect(() => {
+    if (selectedAlbum) {
+      // Pequeño delay para que se vea la animación
+      setTimeout(() => setIsAlbumModalAnimating(true), 10);
+    }
+  }, [selectedAlbum]);
 
   if (loading) {
     return (
@@ -311,12 +364,8 @@ export default function ArtistPage() {
               <div className="flex items-center gap-2">
                 <User size={20} className="text-gray-400" />
                 <span className="text-gray-300">
-                  {artist.followers?.total?.toLocaleString()} seguidores
+                  {appFollowersCount.toLocaleString()} seguidores en Musicboxd
                 </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Music size={20} className="text-gray-400" />
-                <span className="text-gray-300">Popularidad: {artist.popularity}/100</span>
               </div>
               <a
                 href={artist.external_urls?.spotify}
@@ -366,40 +415,10 @@ export default function ArtistPage() {
               )}
             </div>
 
-            {/* Genres/Tags */}
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Tag size={20} />
-                Géneros y Tags
-              </h3>
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  {availableTags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => handleTagToggle(tag)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                        selectedTags.includes(tag)
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-                {selectedTags.length > 0 && (
-                  <div className="text-sm text-gray-400">
-                    Tags seleccionados: {selectedTags.join(', ')}
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Official Genres from Spotify */}
             {artist.genres && artist.genres.length > 0 && (
               <div>
-                <h4 className="text-lg font-semibold mb-2">Géneros oficiales</h4>
+                <h4 className="text-lg font-semibold mb-2">Géneros</h4>
                 <div className="flex flex-wrap gap-2">
                   {artist.genres.map((genre, index) => (
                     <span
@@ -422,12 +441,11 @@ export default function ArtistPage() {
           {albums && albums.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {albums.map((album) => (
-                <Link
-                  key={album.id}
-                  href={`/album/${album.id}`}
-                  className="group cursor-pointer"
-                >
-                  <div className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors">
+                <div key={album.id} className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors">
+                  <Link
+                    href={`/album/${album.id}`}
+                    className="block group"
+                  >
                     <img
                       src={album.images[0]?.url || '/placeholder-album.jpg'}
                       alt={album.name}
@@ -436,11 +454,21 @@ export default function ArtistPage() {
                     <h4 className="text-white font-semibold text-sm mb-1 truncate">
                       {album.name}
                     </h4>
-                    <p className="text-gray-400 text-xs truncate">
+                    <p className="text-gray-400 text-xs truncate mb-3">
                       {album.release_date?.split('-')[0]} • {album.total_tracks} tracks
                     </p>
-                  </div>
-                </Link>
+                  </Link>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAlbumInfo(album);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition-colors"
+                  >
+                    <Info size={14} />
+                    Más info
+                  </button>
+                </div>
               ))}
             </div>
           ) : (
@@ -450,32 +478,121 @@ export default function ArtistPage() {
           )}
         </div>
 
-        {/* Top Tracks Section */}
-        {topTracks && topTracks.length > 0 && (
-          <div className="bg-white/10 backdrop-blur-md rounded-lg p-6">
-            <h3 className="text-2xl font-bold text-white mb-6">Canciones Populares</h3>
-            
-            <div className="space-y-3">
-              {topTracks.slice(0, 10).map((track, index) => (
-                <div
-                  key={track.id}
-                  className="flex items-center gap-4 p-3 hover:bg-white/5 rounded-lg transition-colors"
-                >
-                  <span className="text-gray-400 text-sm w-6">{index + 1}</span>
+        {/* Modal para información del álbum */}
+        {selectedAlbum && (
+          <div 
+            className={`fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center z-50 p-4 ${
+              isAlbumModalAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+            }`}
+            onClick={closeAlbumModal}
+          >
+            <div 
+              className={`bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-white/20 shadow-2xl ${
+                isAlbumModalAnimating ? 'modal-scale-enter' : 'modal-scale-exit'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header del modal */}
+              <div className="flex items-center justify-between p-6 border-b border-white/20">
+                <div className="flex items-center gap-4">
                   <img
-                    src={track.album.images[0]?.url || '/placeholder-album.jpg'}
-                    alt={track.name}
-                    className="w-12 h-12 object-cover rounded"
+                    src={selectedAlbum.images[0]?.url || '/placeholder-album.jpg'}
+                    alt={selectedAlbum.name}
+                    className="w-16 h-16 object-cover rounded-lg"
                   />
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-white font-medium truncate">{track.name}</h4>
-                    <p className="text-gray-400 text-sm truncate">{track.album.name}</p>
-                  </div>
-                  <div className="text-gray-400 text-sm">
-                    {Math.floor(track.duration_ms / 60000)}:{String(Math.floor((track.duration_ms % 60000) / 1000)).padStart(2, '0')}
+                  <div>
+                    <h3 className="text-xl font-bold text-white">{selectedAlbum.name}</h3>
+                    <p className="text-gray-300">
+                      {artist?.name} • {selectedAlbum.release_date?.split('-')[0]} • {selectedAlbum.total_tracks} canciones
+                    </p>
                   </div>
                 </div>
-              ))}
+                <button
+                  onClick={closeAlbumModal}
+                  className="text-gray-400 hover:text-white transition-colors p-2"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Contenido del modal */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                {loadingTracks ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <p className="text-white">Cargando canciones...</p>
+                    </div>
+                  </div>
+                ) : albumTracks.length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-white/10">
+                      <div className="col-span-1">#</div>
+                      <div className="col-span-8">Título</div>
+                      <div className="col-span-3 text-right">
+                        <Clock size={14} className="inline mr-1" />
+                        Duración
+                      </div>
+                    </div>
+                    {albumTracks.map((track, index) => (
+                      <div
+                        key={track.id}
+                        className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-white/5 rounded-lg transition-colors group"
+                      >
+                        <div className="col-span-1 flex items-center">
+                          <span className="text-gray-400 text-sm font-medium">
+                            {index + 1}
+                          </span>
+                        </div>
+                        <div className="col-span-8 flex items-center min-w-0">
+                          <div className="min-w-0">
+                            <h4 className="text-white font-medium truncate group-hover:text-blue-300 transition-colors">
+                              {track.name}
+                            </h4>
+                            {track.explicit && (
+                              <span className="inline-block bg-gray-600 text-gray-300 text-xs px-1.5 py-0.5 rounded mt-1">
+                                Explícito
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="col-span-3 flex items-center justify-end">
+                          <span className="text-gray-400 text-sm">
+                            {formatDuration(track.duration_ms)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Music className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-white mb-2">
+                      No se pudieron cargar las canciones
+                    </h3>
+                    <p className="text-gray-400">
+                      No hay información disponible sobre las canciones de este álbum.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer del modal */}
+              <div className="flex items-center justify-between p-6 border-t border-white/20">
+                <Link
+                  href={`/album/${selectedAlbum.id}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  <ExternalLink size={16} />
+                  Ver página del álbum
+                </Link>
+                <button
+                  onClick={closeAlbumModal}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
             </div>
           </div>
         )}
