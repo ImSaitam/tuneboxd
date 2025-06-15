@@ -3,25 +3,32 @@ import { albumService, listeningHistoryService } from '../../../lib/database.js'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
 
-// Función para verificar autenticación
-async function verifyAuth(request) {
+// Función para verificar autenticación (opcional)
+async function verifyAuth(request, required = true) {
   const authHeader = request.headers.get('authorization');
+  
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('Token de autorización requerido');
+    if (required) {
+      throw new Error('Token de autorización requerido');
+    }
+    return null;
   }
 
   const token = authHeader.substring(7);
   try {
     return jwt.verify(token, JWT_SECRET);
   } catch (error) {
-    throw new Error('Token inválido');
+    if (required) {
+      throw new Error('Token inválido');
+    }
+    return null;
   }
 }
 
 // POST: Agregar álbum al historial de escucha
 export async function POST(request) {
   try {
-    const decoded = await verifyAuth(request);
+    const decoded = await verifyAuth(request, true);
     const { album } = await request.json();
 
     // Validar datos del álbum
@@ -82,8 +89,21 @@ export async function POST(request) {
 // GET: Obtener historial de escucha del usuario
 export async function GET(request) {
   try {
-    const decoded = await verifyAuth(request);
     const url = new URL(request.url);
+    const requestedUserId = url.searchParams.get('userId');
+    let userId;
+    
+    if (requestedUserId) {
+      // Si se especifica un userId, usar ese (para ver el historial de otros usuarios)
+      userId = parseInt(requestedUserId);
+      // Autenticación opcional para ver perfiles públicos
+      await verifyAuth(request, false);
+    } else {
+      // Si no se especifica userId, usar el del token (para ver tu propio historial)
+      const decoded = await verifyAuth(request, true);
+      userId = decoded.userId;
+    }
+
     const limit = parseInt(url.searchParams.get('limit') || '30');
     const offset = parseInt(url.searchParams.get('offset') || '0');
     const grouped = url.searchParams.get('grouped') === 'true';
@@ -92,13 +112,13 @@ export async function GET(request) {
     
     if (grouped) {
       // Obtener historial agrupado por fecha
-      listeningHistory = await listeningHistoryService.getUserListeningHistoryGrouped(decoded.userId, limit);
+      listeningHistory = await listeningHistoryService.getUserListeningHistoryGrouped(userId, limit);
     } else {
       // Obtener historial completo sin agrupar
-      listeningHistory = await listeningHistoryService.getUserListeningHistory(decoded.userId, limit, offset);
+      listeningHistory = await listeningHistoryService.getUserListeningHistory(userId, limit, offset);
     }
     
-    const totalCount = await listeningHistoryService.getHistoryCount(decoded.userId);
+    const totalCount = await listeningHistoryService.getHistoryCount(userId);
 
     return Response.json({
       success: true,

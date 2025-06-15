@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Star, ArrowLeft, User, Calendar, ExternalLink, Heart, HeartOff, Clock, Info, X, Music } from 'lucide-react';
+import { Star, ArrowLeft, User, Calendar, ExternalLink, Heart, HeartOff, Clock, Info, X, Music, List } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import Link from 'next/link';
+import AddToListModal from '../../../components/AddToListModal';
 
 export default function AlbumPage() {
   const params = useParams();
@@ -25,6 +26,7 @@ export default function AlbumPage() {
   const [loadingTracks, setLoadingTracks] = useState(false);
   const [isTracksModalAnimating, setIsTracksModalAnimating] = useState(false);
   const [isReviewModalAnimating, setIsReviewModalAnimating] = useState(false);
+  const [showAddToListModal, setShowAddToListModal] = useState(false);
 
   // Obtener el ID del álbum de los parámetros de URL
   const albumId = params.albumId;
@@ -586,6 +588,15 @@ export default function AlbumPage() {
                     )}
                     {markingAsListened ? 'Marcando...' : 'Marcar como Escuchado'}
                   </button>
+                  
+                  {/* Add to Custom List Button */}
+                  <button
+                    onClick={() => setShowAddToListModal(true)}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white"
+                  >
+                    <List size={20} />
+                    Agregar a Lista
+                  </button>
                 </div>
               ) : (
                 <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
@@ -739,6 +750,22 @@ export default function AlbumPage() {
               </div>
             </div>
           </div>
+        )}
+        
+        {/* Add to List Modal */}
+        {showAddToListModal && albumData && (
+          <AddToListModal
+            album={{
+              spotify_id: albumData.id,
+              name: albumData.name,
+              artist: albumData.artists[0]?.name,
+              release_date: albumData.release_date,
+              image_url: albumData.images[0]?.url,
+              spotify_url: albumData.external_urls?.spotify
+            }}
+            isOpen={showAddToListModal}
+            onClose={() => setShowAddToListModal(false)}
+          />
         )}
       </div>
     </div>

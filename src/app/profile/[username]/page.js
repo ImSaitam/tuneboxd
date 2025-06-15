@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { User, Star, Calendar, TrendingUp, BarChart3, BookOpen, ArrowLeft, Loader2, UserCheck, UserPlus, Music, Edit, Trash2, X, Save, Clock, Users } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
@@ -37,6 +38,12 @@ const UserProfilePage = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Función para detectar si es un GIF
+  const isGif = (url) => {
+    if (!url) return false;
+    return url.toLowerCase().includes('.gif') || url.toLowerCase().includes('giphy') || url.toLowerCase().includes('tenor');
+  };
 
   const username = params.username;
   const isOwnProfile = currentUser?.username === username;
@@ -134,20 +141,20 @@ const UserProfilePage = () => {
             .then(data => data && setFollowedArtists(data.artists || []))
             .catch(() => null)
         );
-
-        // Historial de escucha
-        requests.push(
-          fetch('/api/listening-history?grouped=true&limit=20', {
-            signal,
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-            }
-          })
-            .then(res => res.ok ? res.json() : null)
-            .then(data => data && setListeningHistory(data.listeningHistory || []))
-            .catch(() => null)
-        );
       }
+
+      // Historial de escucha - disponible para todos los usuarios
+      requests.push(
+        fetch(`/api/listening-history?userId=${userData.user.id}&grouped=true&limit=20`, {
+          signal,
+          headers: isAuthenticated ? {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          } : {}
+        })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => data && setListeningHistory(data.listeningHistory || []))
+          .catch(() => null)
+      );
 
       // Si no es su propio perfil, verificar si lo sigue
       if (isAuthenticated && currentUser?.username !== username) {
@@ -477,14 +484,14 @@ const UserProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-theme-primary">
       {/* Header */}
-      <div className="bg-black/20 backdrop-blur-sm border-b border-white/10">
+      <div className="bg-theme-card border-b border-theme-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-4">
             <Link 
               href="/"
-              className="flex items-center space-x-2 text-white hover:text-blue-300 transition-colors"
+              className="flex items-center space-x-2 text-theme-primary hover:text-theme-accent transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Volver al inicio</span>
@@ -495,19 +502,38 @@ const UserProfilePage = () => {
 
       {/* Profile Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-2xl">
+        <div className="bg-theme-card rounded-3xl p-8 border border-theme-border shadow-2xl">
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
             {/* Avatar */}
             <div className="flex-shrink-0">
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center">
-                <User className="w-12 h-12 text-white" />
-              </div>
+              {profileUser.profile_picture ? (
+                <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white/20">
+                  {isGif(profileUser.profile_picture) ? (
+                    <img
+                      src={profileUser.profile_picture}
+                      alt={`Foto de perfil de ${profileUser.username}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={profileUser.profile_picture}
+                      alt={`Foto de perfil de ${profileUser.username}`}
+                      fill
+                      className="object-cover"
+                      sizes="96px"
+                    />
+                  )}
+                </div>
+              ) : (
+                <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center">
+                  <User className="w-12 h-12 text-white" />
+                </div>
+              )}
             </div>
 
             {/* User Info */}
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-white mb-2">@{profileUser.username}</h1>
-              <p className="text-blue-200 mb-2">{profileUser.email}</p>
               <div className="flex items-center space-x-2 text-gray-300">
                 <Calendar className="w-4 h-4" />
                 <span>Miembro desde {userStats?.memberSince ? new Date(userStats.memberSince).toLocaleDateString('es') : 'N/A'}</span>
@@ -571,6 +597,15 @@ const UserProfilePage = () => {
               )}
             </div>
           </div>
+          
+          {/* Biografía - Al final del contenedor Profile Header abarcando todo el ancho */}
+          {profileUser.bio && (
+            <div className="mt-6 pt-6 border-t border-white/20">
+              <p className="text-gray-300 text-base leading-relaxed text-center">
+                {profileUser.bio}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -588,19 +623,17 @@ const UserProfilePage = () => {
             <BookOpen className="w-5 h-5 inline mr-2" />
             Reseñas
           </button>
-          {isOwnProfile && (
-            <button
-              onClick={() => setActiveTab('registro')}
-              className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                activeTab === 'registro'
-                  ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
-                  : 'text-gray-300 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <Clock className="w-5 h-5 inline mr-2" />
-              Registro
-            </button>
-          )}
+          <button
+            onClick={() => setActiveTab('registro')}
+            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+              activeTab === 'registro'
+                ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
+                : 'text-gray-300 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Clock className="w-5 h-5 inline mr-2" />
+            Registro
+          </button>
           {isOwnProfile && (
             <button
               onClick={() => setActiveTab('artists')}
@@ -661,9 +694,11 @@ const UserProfilePage = () => {
                   className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
                 >
                   <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-6">
-                    <img
+                    <Image
                       src={review.image_url}
                       alt={review.album_name}
+                      width={96}
+                      height={96}
                       className="w-24 h-24 rounded-xl object-cover flex-shrink-0"
                     />
                     <div className="flex-1">
@@ -810,9 +845,11 @@ const UserProfilePage = () => {
                     <div className="relative mb-4">
                       <div className="w-24 h-24 mx-auto rounded-full overflow-hidden bg-gradient-to-br from-red-400 to-teal-400">
                         {artist.artist_image ? (
-                          <img
+                          <Image
                             src={artist.artist_image}
                             alt={artist.artist_name}
+                            width={96}
+                            height={96}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -863,7 +900,7 @@ const UserProfilePage = () => {
           </div>
         )}
 
-        {activeTab === 'registro' && isOwnProfile && (
+        {activeTab === 'registro' && (
           <div className="space-y-6">
             {listeningHistory.length > 0 ? (
               <div className="space-y-8">
@@ -891,9 +928,11 @@ const UserProfilePage = () => {
                         <div key={albumIndex} className="flex items-center space-x-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-200 group">
                           {/* Album Cover */}
                           <div className="flex-shrink-0">
-                            <img
+                            <Image
                               src={album.image_url || '/placeholder-album.png'}
                               alt={album.album_name}
+                              width={64}
+                              height={64}
                               className="w-16 h-16 rounded-lg object-cover group-hover:scale-105 transition-transform duration-200 cursor-pointer"
                               onClick={() => window.location.href = `/album/${album.spotify_id}`}
                             />
@@ -937,16 +976,23 @@ const UserProfilePage = () => {
             ) : (
               <div className="text-center py-12">
                 <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">Tu registro está vacío</h3>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  {isOwnProfile ? 'Tu registro está vacío' : `${profileUser.username} no tiene historial de escucha`}
+                </h3>
                 <p className="text-gray-300 mb-6">
-                  Empieza a escuchar álbumes para ver tu historial de escucha aquí
+                  {isOwnProfile 
+                    ? 'Empieza a escuchar álbumes para ver tu historial de escucha aquí'
+                    : 'Este usuario aún no ha marcado álbumes como escuchados'
+                  }
                 </p>
-                <Link 
-                  href="/"
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
-                >
-                  Explorar Música
-                </Link>
+                {isOwnProfile && (
+                  <Link 
+                    href="/"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                  >
+                    Explorar Música
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -962,9 +1008,29 @@ const UserProfilePage = () => {
                     className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
                   >
                     <div className="flex items-center space-x-4 mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center">
-                        <User className="w-6 h-6 text-white" />
-                      </div>
+                      {follower.profile_picture ? (
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white/20">
+                          {isGif(follower.profile_picture) ? (
+                            <img
+                              src={follower.profile_picture}
+                              alt={`Foto de perfil de ${follower.username}`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Image
+                              src={follower.profile_picture}
+                              alt={`Foto de perfil de ${follower.username}`}
+                              fill
+                              className="object-cover"
+                              sizes="48px"
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center">
+                          <User className="w-6 h-6 text-white" />
+                        </div>
+                      )}
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-white">@{follower.username}</h3>
                         <p className="text-gray-300 text-sm">{follower.email}</p>
@@ -1063,9 +1129,29 @@ const UserProfilePage = () => {
                     className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
                   >
                     <div className="flex items-center space-x-4 mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-600 rounded-full flex items-center justify-center">
-                        <User className="w-6 h-6 text-white" />
-                      </div>
+                      {followedUser.profile_picture ? (
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white/20">
+                          {isGif(followedUser.profile_picture) ? (
+                            <img
+                              src={followedUser.profile_picture}
+                              alt={`Foto de perfil de ${followedUser.username}`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Image
+                              src={followedUser.profile_picture}
+                              alt={`Foto de perfil de ${followedUser.username}`}
+                              fill
+                              className="object-cover"
+                              sizes="48px"
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-600 rounded-full flex items-center justify-center">
+                          <User className="w-6 h-6 text-white" />
+                        </div>
+                      )}
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-white">@{followedUser.username}</h3>
                         <p className="text-gray-300 text-sm">{followedUser.email}</p>
@@ -1189,9 +1275,11 @@ const UserProfilePage = () => {
             <div className="space-y-4">
               {/* Album Info */}
               <div className="flex items-center space-x-3 p-3 bg-white/10 rounded-lg">
-                <img
+                <Image
                   src={editingReview.image_url}
                   alt={editingReview.album_name}
+                  width={48}
+                  height={48}
                   className="w-12 h-12 rounded-lg object-cover"
                 />
                 <div>

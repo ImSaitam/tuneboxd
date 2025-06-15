@@ -14,6 +14,8 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -42,6 +44,10 @@ const LoginPage = () => {
       const data = await response.json();
 
       if (!data.success) {
+        if (data.needsVerification) {
+          setNeedsVerification(true);
+          setUserEmail(data.email);
+        }
         setError(data.message);
         return;
       }
@@ -57,6 +63,24 @@ const LoginPage = () => {
       setError('Error al conectar con el servidor. Inténtalo de nuevo.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: userEmail }),
+      });
+
+      const data = await response.json();
+      setError(data.message);
+      
+    } catch (err) {
+      setError('Error al reenviar el email. Inténtalo de nuevo.');
     }
   };
 
@@ -109,6 +133,16 @@ const LoginPage = () => {
           {error && (
             <div className="bg-red-500/20 border border-red-400/30 rounded-2xl p-4 mb-6">
               <p className="text-red-200 text-sm text-center">{error}</p>
+              {needsVerification && (
+                <div className="mt-4 pt-4 border-t border-red-400/20">
+                  <button
+                    onClick={handleResendVerification}
+                    className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    Reenviar email de verificación
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

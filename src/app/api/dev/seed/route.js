@@ -19,14 +19,14 @@ export async function POST(request) {
       console.log('Creando usuario de prueba...');
       testUserId = await userService.createUser({
         username: 'musiclover',
-        email: 'test@musicboxd.com',
+        email: 'test@tuneboxd.com',
         password: hashedPassword
       });
       console.log('Usuario creado con ID:', testUserId);
     } catch (error) {
       console.log('Error creando usuario:', error.message);
       // El usuario ya existe, obtenerlo por email O username
-      let existingUser = await userService.findByEmail('test@musicboxd.com');
+      let existingUser = await userService.findByEmail('test@tuneboxd.com');
       if (!existingUser) {
         existingUser = await userService.findByUsername('musiclover');
       }
@@ -144,7 +144,7 @@ export async function POST(request) {
       success: true,
       message: 'Datos de prueba creados exitosamente',
       testUser: {
-        email: 'test@musicboxd.com',
+        email: 'test@tuneboxd.com',
         password: 'password123',
         username: 'musiclover'
       }

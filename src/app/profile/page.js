@@ -23,10 +23,10 @@ const ProfileRedirect = () => {
 
   // Mostrar loading mientras se redirige
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+    <div className="min-h-screen bg-theme-primary flex items-center justify-center">
       <div className="flex flex-col items-center space-y-4">
-        <Loader2 className="w-12 h-12 text-white animate-spin" />
-        <p className="text-white text-lg">Cargando perfil...</p>
+        <Loader2 className="w-12 h-12 text-theme-primary animate-spin" />
+        <p className="text-theme-primary text-lg">Cargando perfil...</p>
       </div>
     </div>
   );

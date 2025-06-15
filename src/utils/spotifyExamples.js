@@ -1,4 +1,4 @@
-// Ejemplos de uso de la API de Spotify en Musicboxd
+// Ejemplos de uso de la API de Spotify en Tuneboxd
 // Este archivo contiene ejemplos de cómo usar las funciones de la API
 
 import { useSpotify } from '@/hooks/useSpotify';

@@ -35,6 +35,8 @@ export async function GET(request) {
         u.id,
         u.username,
         u.email,
+        u.bio,
+        u.profile_picture,
         uf.followed_at,
         COUNT(r.id) as total_reviews,
         COALESCE(AVG(CAST(r.rating AS FLOAT)), 0) as avg_rating
@@ -42,7 +44,7 @@ export async function GET(request) {
       JOIN users u ON uf.followed_id = u.id
       LEFT JOIN reviews r ON u.id = r.user_id
       WHERE uf.follower_id = ?
-      GROUP BY u.id, u.username, u.email, uf.followed_at
+      GROUP BY u.id, u.username, u.email, u.bio, u.profile_picture, uf.followed_at
       ORDER BY uf.followed_at DESC
     `, [decoded.userId]);
 

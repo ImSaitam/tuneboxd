@@ -16,6 +16,8 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(1); // 1: formulario, 2: verificación
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
   // Validaciones de contraseña
   const passwordValidations = {
@@ -85,6 +87,29 @@ const RegisterPage = () => {
     }
   };
 
+  const handleResendEmail = async () => {
+    setResendLoading(true);
+    setResendMessage('');
+
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const data = await response.json();
+      setResendMessage(data.message);
+      
+    } catch (err) {
+      setResendMessage('Error al reenviar el email. Inténtalo de nuevo.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const ValidationItem = ({ isValid, text }) => (
     <div className={`flex items-center text-sm transition-colors duration-300 ${
       isValid ? 'text-green-400' : 'text-white/60'
@@ -113,9 +138,36 @@ const RegisterPage = () => {
               Te hemos enviado un correo de verificación a <strong>{formData.email}</strong>.
               Por favor, revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.
             </p>
+            
+            {/* Mensaje de reenvío */}
+            {resendMessage && (
+              <div className={`rounded-2xl p-4 mb-6 ${
+                resendMessage.includes('Error') 
+                  ? 'bg-red-500/20 border border-red-400/30' 
+                  : 'bg-green-500/20 border border-green-400/30'
+              }`}>
+                <p className={`text-sm text-center ${
+                  resendMessage.includes('Error') ? 'text-red-200' : 'text-green-200'
+                }`}>
+                  {resendMessage}
+                </p>
+              </div>
+            )}
+            
             <div className="space-y-4">
-              <button className="w-full bg-gradient-to-r from-red-400 to-teal-400 text-white py-3 rounded-2xl font-semibold hover:from-red-500 hover:to-teal-500 transition-all duration-300 transform hover:-translate-y-1">
-                Reenviar correo de verificación
+              <button 
+                onClick={handleResendEmail}
+                disabled={resendLoading}
+                className="w-full bg-gradient-to-r from-red-400 to-teal-400 text-white py-3 rounded-2xl font-semibold hover:from-red-500 hover:to-teal-500 transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-70 disabled:transform-none"
+              >
+                {resendLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                    Reenviando...
+                  </div>
+                ) : (
+                  'Reenviar correo de verificación'
+                )}
               </button>
               <Link
                 href="/login"
@@ -168,7 +220,7 @@ const RegisterPage = () => {
               <Music className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">
-              Únete a Musicboxd
+              Únete a Tuneboxd
             </h1>
             <p className="text-white/70">
               Crea tu cuenta y comienza tu viaje musical

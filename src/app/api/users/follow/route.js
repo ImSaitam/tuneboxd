@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '../../../../lib/database.js';
+import db, { notificationService } from '../../../../lib/database.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
@@ -77,6 +77,14 @@ export async function POST(request) {
       `INSERT INTO user_follows (follower_id, followed_id) VALUES (?, ?)`,
       [decoded.userId, user_id]
     );
+
+    // Crear notificación para el usuario seguido
+    try {
+      await notificationService.notifyFollow(parseInt(user_id), decoded.userId);
+    } catch (notifError) {
+      console.error('Error creando notificación de seguimiento:', notifError);
+      // No fallar la operación principal por un error de notificación
+    }
 
     return NextResponse.json({
       success: true,

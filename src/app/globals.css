@@ -1,9 +1,52 @@
 @import "tailwindcss";
 @import "./modal-animations.css";
 
+/* Variables CSS para ambos temas */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+}
+
+/* Tema Dark (por defecto) */
+[data-theme="dark"] {
+  --background-start: #0f172a; /* slate-900 */
+  --background-middle: #111827; /* gray-900 */
+  --background-end: #000000; /* black */
+  
+  --accent-start: #34d399; /* emerald-400 */
+  --accent-end: #22d3ee; /* cyan-400 */
+  
+  --secondary-start: #1f2937; /* gray-800 */
+  --secondary-end: #1e293b; /* slate-800 */
+  
+  --text-primary: #f8fafc; /* slate-50 */
+  --text-secondary: #cbd5e1; /* slate-300 */
+  --text-muted: #94a3b8; /* slate-400 */
+  
+  --border-color: #374151; /* gray-700 */
+  --card-bg: rgba(31, 41, 55, 0.8); /* gray-800 with opacity */
+  --card-hover: rgba(55, 65, 81, 0.8); /* gray-700 with opacity */
+}
+
+/* Tema Light */
+[data-theme="light"] {
+  --background-start: #f9fafb; /* gray-50 */
+  --background-middle: #ffffff; /* white */
+  --background-end: #f3f4f6; /* gray-100 */
+  
+  --accent-start: #059669; /* emerald-600 */
+  --accent-end: #0891b2; /* cyan-600 */
+  
+  --secondary-start: #e5e7eb; /* gray-200 */
+  --secondary-end: #d1d5db; /* gray-300 */
+  
+  --text-primary: #111827; /* gray-900 */
+  --text-secondary: #374151; /* gray-700 */
+  --text-muted: #6b7280; /* gray-500 */
+  
+  --border-color: #d1d5db; /* gray-300 */
+  --card-bg: rgba(255, 255, 255, 0.9); /* white with opacity */
+  --card-hover: rgba(249, 250, 251, 0.9); /* gray-50 with opacity */
 }
 
 @theme inline {
@@ -24,4 +67,50 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Clases utility para usar con los temas */
+.bg-theme-primary {
+  background: linear-gradient(135deg, var(--background-start), var(--background-middle), var(--background-end));
+}
+
+.bg-theme-accent {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+}
+
+.bg-theme-secondary {
+  background: linear-gradient(135deg, var(--secondary-start), var(--secondary-end));
+}
+
+.text-theme-primary {
+  color: var(--text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+
+.text-theme-muted {
+  color: var(--text-muted);
+}
+
+.border-theme {
+  border-color: var(--border-color);
+}
+
+.bg-theme-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+}
+
+.bg-theme-card-hover {
+  background: var(--card-hover);
+}
+
+/* Gradiente de texto para los acentos */
+.text-theme-accent {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

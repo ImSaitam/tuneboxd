@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { userService } from '../../../../lib/database.js';
+import { generateVerificationToken, sendVerificationEmail } from '../../../../lib/email.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
 
@@ -58,16 +59,31 @@ export async function POST(request) {
     // Obtener el usuario creado
     const newUser = await userService.findById(userId);
 
-    // En un proyecto real, aquí enviarías un email de verificación
-    console.log(`Email de verificación enviado a ${email}`);
+    // Generar token de verificación
+    const verificationToken = generateVerificationToken();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
+    // Guardar token en la base de datos
+    await userService.createEmailVerification(userId, verificationToken, expiresAt.toISOString());
+
+    // Enviar email de verificación
+    const emailResult = await sendVerificationEmail(email.toLowerCase(), username, verificationToken);
+    
+    if (emailResult.success) {
+      console.log(`✅ Email de verificación enviado a ${email}`);
+    } else {
+      console.error(`❌ Error enviando email de verificación: ${emailResult.error}`);
+      // Continuar con el registro aunque falle el email
+    }
 
     return Response.json({
       success: true,
-      message: 'Cuenta creada exitosamente. Revisa tu email para verificar tu cuenta.',
+      message: 'Cuenta creada exitosamente. Te hemos enviado un correo de verificación. Por favor, revisa tu bandeja de entrada.',
       user: {
         id: newUser.id,
         username: newUser.username,
         email: newUser.email,
+        verified: newUser.verified,
         createdAt: newUser.created_at
       }
     });

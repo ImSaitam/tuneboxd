@@ -23,7 +23,7 @@ dist/
 *.sqlite
 *.sqlite3
 database.db
-musicboxd.db
+tuneboxd.db
 
 # Logs
 logs/

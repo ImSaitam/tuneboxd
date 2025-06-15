@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, Music, Edit3, Users, Target, BarChart3, Eye, Loader2, Menu, X, User, LogOut, Heart } from 'lucide-react';
+import { Search, Music, Edit3, Users, Target, BarChart3, Eye, Loader2, Menu, X, User, LogOut, Heart, List } from 'lucide-react';
 import { useSpotify } from '@/hooks/useSpotify';
 import { useAuth } from '@/hooks/useAuth';
+import NotificationBell from '@/components/NotificationBell';
+import ThemeToggle from '@/components/ThemeToggle';
 
-const MusicboxdApp = () => {
+const TuneboxdApp = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
   const [visibleStats, setVisibleStats] = useState(false);
@@ -16,6 +18,8 @@ const MusicboxdApp = () => {
   const [searchType, setSearchType] = useState('album');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [globalStats, setGlobalStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
   const statsRef = useRef(null);
   const heroRef = useRef(null);
   const searchRef = useRef(null);
@@ -81,26 +85,48 @@ const MusicboxdApp = () => {
     }
   ];
 
-  const albumsData = [
+  /* const albumsData = [
     { title: "Indie Rock Vibes", rating: 4, gradient: "from-red-400 to-orange-500" },
     { title: "Electronic Dreams", rating: 5, gradient: "from-teal-400 to-green-500" },
     { title: "Jazz Fusion", rating: 4, gradient: "from-blue-400 to-green-400" },
     { title: "Pop Anthems", rating: 3, gradient: "from-pink-400 to-red-400" },
     { title: "Alternative Rock", rating: 5, gradient: "from-blue-400 to-cyan-400" },
     { title: "Ambient Sounds", rating: 4, gradient: "from-teal-200 to-pink-200" }
-  ];
+  ]; 
+  */
 
-  const statsData = [
-    { number: "50K+", label: "Usuarios Activos" },
-    { number: "2M+", label: "Álbumes Calificados" },
-    { number: "500K+", label: "Reseñas Escritas" },
-    { number: "100K+", label: "Listas Creadas" }
-  ];
+  // Función para formatear números grandes
+  const formatNumber = (num) => {
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1)}M+`;
+    } else if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K+`;
+    } else if (num > 0) {
+      return `${num}`;
+    }
+    return "0";
+  };
+
+  // Generar estadísticas basadas en datos reales o valores por defecto
+  const getStatsData = () => {
+    if (globalStats) {
+      return [
+        { number: formatNumber(globalStats.totalUsers), label: "Usuarios Activos" },
+        { number: formatNumber(globalStats.totalAlbums), label: "Álbumes Calificados" },
+        { number: formatNumber(globalStats.totalReviews), label: "Reseñas Escritas" },
+      ];
+    }
+    // Valores por defecto mientras cargan los datos reales
+    return [
+      { number: "Cargando...", label: "Usuarios Activos" },
+      { number: "Cargando...", label: "Álbumes Calificados" },
+      { number: "Cargando...", label: "Reseñas Escritas" },
+    ];
+  };
 
   // Links de navegación dinámicos basados en autenticación
   const getNavLinks = () => {
     const baseLinks = [
-      { href: "#home", label: "Inicio" },
       { href: "/social", label: "Social", isLink: true },
       { href: "/reviews", label: "Reseñas", isLink: true },
       { href: "/community", label: "Comunidad", isLink: true }
@@ -120,6 +146,26 @@ const MusicboxdApp = () => {
   useEffect(() => {
     // Marcar que estamos en el cliente para evitar problemas de hidratación
     setIsClient(true);
+
+    // Cargar estadísticas globales
+    const loadGlobalStats = async () => {
+      try {
+        setStatsLoading(true);
+        const response = await fetch('/api/stats/global');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setGlobalStats(data.stats);
+          }
+        }
+      } catch (error) {
+        console.error('Error cargando estadísticas globales:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    loadGlobalStats();
 
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 100);
@@ -265,23 +311,27 @@ const MusicboxdApp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 text-white overflow-x-hidden">
+    <div className="min-h-screen bg-theme-primary text-theme-primary overflow-x-hidden">
       {/* Navbar */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-black/95' : 'bg-black/90'
-      } backdrop-blur-md`}>
+      <nav
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+          isScrolled ? "bg-theme-card" : "bg-theme-card/80"
+        } backdrop-blur-md border-b border-theme`}
+      >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="text-2xl font-bold bg-gradient-to-r from-red-400 to-teal-400 bg-clip-text text-transparent">
-              Musicboxd
-            </div>
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="text-2xl font-bold text-theme-accent">
+                Tuneboxd
+              </div>
+            </Link>
             <div className="hidden md:flex space-x-8 items-center">
-              {getNavLinks().map((link) => (
+              {getNavLinks().map((link) =>
                 link.isLink ? (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="text-white hover:bg-white/10 px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-1"
+                    className="text-theme-primary hover:bg-theme-card-hover px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-1"
                   >
                     {link.label}
                   </Link>
@@ -289,29 +339,45 @@ const MusicboxdApp = () => {
                   <button
                     key={link.href}
                     onClick={() => scrollToSection(link.href)}
-                    className="text-white hover:bg-white/10 px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-1"
+                    className="text-theme-primary hover:bg-theme-card-hover px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-1"
                   >
                     {link.label}
                   </button>
                 )
-              ))}
-              
+              )}
+
+              {/* Search Button */}
+              <Link
+                href="/search"
+                className="flex items-center space-x-2 text-theme-primary hover:bg-theme-card-hover px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-1"
+                title="Búsqueda Global"
+              >
+                <Search className="w-4 h-4" />
+                <span className="hidden lg:inline">Buscar</span>
+              </Link>
+
+              {/* Notification Bell - Solo si está autenticado */}
+              {isAuthenticated && <NotificationBell />}
+
+              {/* Theme Toggle */}
+              <ThemeToggle />
+
               {/* User Menu */}
               {isAuthenticated && (
                 <div className="relative user-menu">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center space-x-2 text-white hover:bg-white/10 px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-1"
+                    className="flex items-center space-x-2 text-theme-primary hover:bg-theme-card-hover px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                   >
                     <User className="w-4 h-4" />
                     <span className="hidden sm:inline">{user?.username}</span>
                   </button>
-                  
+
                   {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-black/95 backdrop-blur-md rounded-xl border border-white/20 shadow-lg py-2">
+                    <div className="absolute right-0 mt-2 w-48 bg-theme-card border border-theme rounded-xl shadow-lg py-2">
                       <Link
                         href={`/profile/${user?.username}`}
-                        className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
+                        className="block px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <User className="w-4 h-4 inline mr-2" />
@@ -319,18 +385,26 @@ const MusicboxdApp = () => {
                       </Link>
                       <Link
                         href="/listen-list"
-                        className="block px-4 py-2 text-white hover:bg-white/10 transition-colors"
+                        className="block px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <Heart className="w-4 h-4 inline mr-2" />
                         Mi Lista de Escucha
+                      </Link>
+                      <Link
+                        href="/lists"
+                        className="block px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <List className="w-4 h-4 inline mr-2" />
+                        Mis Listas
                       </Link>
                       <button
                         onClick={() => {
                           handleLogout();
                           setUserMenuOpen(false);
                         }}
-                        className="block w-full text-left px-4 py-2 text-white hover:bg-white/10 transition-colors"
+                        className="block w-full text-left px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
                       >
                         <LogOut className="w-4 h-4 inline mr-2" />
                         Cerrar Sesión
@@ -343,21 +417,25 @@ const MusicboxdApp = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden text-white p-2"
+              className="md:hidden text-theme-primary p-2"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
-          
+
           {/* Mobile menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden bg-black/90 backdrop-blur-md rounded-2xl mt-4 p-4 border border-white/20">
-              {getNavLinks().map((link) => (
+            <div className="md:hidden bg-theme-card border border-theme rounded-2xl mt-4 p-4">
+              {getNavLinks().map((link) =>
                 link.isLink ? (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="block text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300 mb-2"
+                    className="block text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {link.label}
@@ -369,22 +447,35 @@ const MusicboxdApp = () => {
                       scrollToSection(link.href);
                       setMobileMenuOpen(false);
                     }}
-                    className="block w-full text-left text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300 mb-2"
+                    className="block w-full text-left text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
                   >
                     {link.label}
                   </button>
                 )
-              ))}
-              
+              )}
+
+              {/* Search Button in Mobile */}
+              <Link
+                href="/search"
+                className="flex items-center gap-3 text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Search className="w-4 h-4" />
+                Búsqueda Global
+              </Link>
+
               {/* User section in mobile menu */}
               {isAuthenticated && (
-                <div className="border-t border-white/20 mt-4 pt-4">
-                  <div className="text-white/80 px-4 py-2 mb-2">
-                    Hola, <span className="font-semibold text-white">{user?.username}</span>
+                <div className="border-t border-theme mt-4 pt-4">
+                  <div className="text-theme-secondary px-4 py-2 mb-2">
+                    Hola,{" "}
+                    <span className="font-semibold text-theme-primary">
+                      {user?.username}
+                    </span>
                   </div>
                   <Link
                     href={`/profile/${user?.username}`}
-                    className="block text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300 mb-2"
+                    className="block text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <User className="w-4 h-4 inline mr-2" />
@@ -392,18 +483,26 @@ const MusicboxdApp = () => {
                   </Link>
                   <Link
                     href="/listen-list"
-                    className="block text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300 mb-2"
+                    className="block text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Heart className="w-4 h-4 inline mr-2" />
                     Mi Lista de Escucha
+                  </Link>
+                  <Link
+                    href="/lists"
+                    className="block text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <List className="w-4 h-4 inline mr-2" />
+                    Mis Listas
                   </Link>
                   <button
                     onClick={() => {
                       handleLogout();
                       setMobileMenuOpen(false);
                     }}
-                    className="block w-full text-left text-white hover:bg-white/10 px-4 py-3 rounded-xl transition-all duration-300"
+                    className="block w-full text-left text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300"
                   >
                     <LogOut className="w-4 h-4 inline mr-2" />
                     Cerrar Sesión
@@ -421,12 +520,12 @@ const MusicboxdApp = () => {
           {musicNotesPositions.map((position, i) => (
             <div
               key={i}
-              className="absolute text-white/10 text-2xl animate-pulse"
+              className="absolute text-theme-muted text-2xl animate-pulse"
               style={{
                 left: position.left,
                 top: position.top,
                 animationDelay: position.delay,
-                animationDuration: position.duration
+                animationDuration: position.duration,
               }}
             >
               ♪
@@ -436,21 +535,26 @@ const MusicboxdApp = () => {
       )}
 
       {/* Hero Section */}
-      <section ref={heroRef} id="home" className="min-h-screen flex items-center justify-center text-center relative">
+      <section
+        ref={heroRef}
+        id="home"
+        className="min-h-screen flex items-center justify-center text-center relative"
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 z-10">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-red-400 via-teal-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
-            Musicboxd
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 text-theme-accent animate-pulse">
+            Tuneboxd
           </h1>
-          <p className="text-xl md:text-2xl mb-8 opacity-90 max-w-3xl mx-auto">
-            Descubre, califica y comparte tu pasión por la música. Tu diario musical personal donde cada canción cuenta una historia.
+          <p className="text-xl md:text-2xl mb-8 text-theme-secondary max-w-3xl mx-auto">
+            Descubre, califica y comparte tu pasión por la música. Tu diario
+            musical personal donde cada canción cuenta una historia.
           </p>
-          
+
           {/* Search Bar */}
           <div ref={searchRef} className="max-w-lg mx-auto mb-8 relative">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-theme-muted w-5 h-5" />
               {spotifyLoading && (
-                <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5 animate-spin" />
+                <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 text-theme-muted w-5 h-5 animate-spin" />
               )}
               <input
                 type="text"
@@ -458,26 +562,25 @@ const MusicboxdApp = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchResults.length > 0 && setShowResults(true)}
                 placeholder="Buscar álbumes, artistas, canciones..."
-                className="w-full pl-12 pr-12 py-4 bg-white/10 border border-white/20 rounded-full text-white placeholder-white/70 backdrop-blur-md focus:outline-none focus:bg-white/20 focus:border-teal-400 focus:shadow-lg focus:shadow-teal-400/30 transition-all duration-300"
+                className="w-full pl-12 pr-12 py-4 bg-theme-card border border-theme rounded-full text-theme-primary placeholder-theme-muted backdrop-blur-md focus:outline-none focus:bg-theme-card-hover focus:border-theme transition-all duration-300"
               />
             </div>
-            
+
             {/* Search Type Selector */}
             <div className="flex justify-center mt-3 space-x-2">
               {[
-                { key: 'album', label: 'Álbumes' },
-                { key: 'artist', label: 'Artistas' },
-                { key: 'track', label: 'Canciones' }
-              ].map((type) => (
-                <button
-                  key={type.key}
-                  onClick={() => setSearchType(type.key)}
-                  className={`px-3 py-1 rounded-full text-sm transition-all duration-300 ${
-                    searchType === type.key
-                      ? 'bg-teal-400 text-black font-semibold'
-                      : 'bg-white/10 text-white/80 hover:bg-white/20'
-                  }`}
-                >
+                { key: "album", label: "Álbumes" },
+                { key: "artist", label: "Artistas" },
+                { key: "track", label: "Canciones" },
+              ].map((type) => (                  <button
+                    key={type.key}
+                    onClick={() => setSearchType(type.key)}
+                    className={`px-3 py-1 rounded-full text-sm transition-all duration-300 ${
+                      searchType === type.key
+                        ? "bg-theme-accent text-theme-primary font-semibold"
+                        : "bg-theme-card text-theme-secondary hover:bg-theme-card-hover"
+                    }`}
+                  >
                   {type.label}
                 </button>
               ))}
@@ -494,9 +597,11 @@ const MusicboxdApp = () => {
                   >
                     <div className="w-12 h-12 rounded-lg overflow-hidden mr-4 bg-gradient-to-br from-red-400 to-teal-400">
                       {item.images?.[0]?.url ? (
-                        <div 
+                        <div
                           className="w-full h-full bg-cover bg-center"
-                          style={{ backgroundImage: `url(${item.images[0].url})` }}
+                          style={{
+                            backgroundImage: `url(${item.images[0].url})`,
+                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-white">
@@ -505,7 +610,9 @@ const MusicboxdApp = () => {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-white font-medium truncate">{item.name}</div>
+                      <div className="text-white font-medium truncate">
+                        {item.name}
+                      </div>
                       <div className="text-white/60 text-sm truncate">
                         {formatSearchResultSubtitle(item, searchType)}
                       </div>
@@ -527,16 +634,16 @@ const MusicboxdApp = () => {
             {isAuthenticated ? (
               <>
                 <button
-                  onClick={() => scrollToSection('#features')}
-                  className="relative bg-gradient-to-r from-red-400 to-teal-400 text-white px-8 py-4 rounded-full text-lg font-semibold hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden group"
+                  onClick={() => scrollToSection("#features")}
+                  className="relative bg-theme-accent text-theme-primary px-8 py-4 rounded-full text-lg font-semibold hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden group"
                 >
                   <span className="relative z-10">Explorar música</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-theme-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:left-full transition-all duration-500"></div>
                 </button>
                 <button
-                  onClick={() => scrollToSection('#albums')}
-                  className="relative bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/20 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 text-center"
+                  onClick={() => scrollToSection("#albums")}
+                  className="relative bg-theme-card backdrop-blur-md border border-theme text-theme-primary px-8 py-4 rounded-full text-lg font-semibold hover:bg-theme-card-hover hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 text-center"
                 >
                   Ver álbumes populares
                 </button>
@@ -544,10 +651,12 @@ const MusicboxdApp = () => {
             ) : (
               <>
                 <button
-                  onClick={() => scrollToSection('#features')}
+                  onClick={() => scrollToSection("#features")}
                   className="relative bg-gradient-to-r from-red-400 to-teal-400 text-white px-8 py-4 rounded-full text-lg font-semibold hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden group"
                 >
-                  <span className="relative z-10">Comenzar mi viaje musical</span>
+                  <span className="relative z-10">
+                    Comenzar mi viaje musical
+                  </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:left-full transition-all duration-500"></div>
                 </button>
@@ -564,29 +673,33 @@ const MusicboxdApp = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-black/20 backdrop-blur-md">
+      <section id="features" className="py-20 bg-theme-secondary">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-red-400 to-teal-400 bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-theme-accent">
             Todo lo que necesitas para tu música
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuresData.map((feature, index) => (
               <div
                 key={index}
-                className="bg-white/10 backdrop-blur-md p-8 rounded-3xl text-center border border-white/10 hover:-translate-y-4 hover:bg-white/15 hover:shadow-2xl transition-all duration-300 group"
+                className="bg-theme-card p-8 rounded-3xl text-center border border-theme hover:-translate-y-4 hover:bg-theme-card-hover hover:shadow-2xl transition-all duration-300 group"
               >
-                <div className="text-red-400 group-hover:text-teal-400 mb-6 flex justify-center transition-colors duration-300">
+                <div className="text-theme-accent mb-6 flex justify-center transition-colors duration-300">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-4 text-white">{feature.title}</h3>
-                <p className="text-white/80 leading-relaxed">{feature.description}</p>
+                <h3 className="text-xl font-bold mb-4 text-theme-primary">
+                  {feature.title}
+                </h3>
+                <p className="text-theme-secondary leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Albums Showcase */}
+      {/*
       <section id="albums" className="py-20 bg-gradient-to-br from-blue-900/50 to-purple-900/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-red-400 to-teal-400 bg-clip-text text-transparent">
@@ -615,20 +728,30 @@ const MusicboxdApp = () => {
           </div>
         </div>
       </section>
+      */}
 
       {/* Stats Section */}
-      <section ref={statsRef} className="py-20 bg-black/30 backdrop-blur-md">
+      <section ref={statsRef} className="py-20 bg-theme-secondary">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {statsData.map((stat, index) => (
+            {getStatsData().map((stat, index) => (
               <div
                 key={index}
-                className="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/10 hover:-translate-y-2 hover:bg-white/15 transition-all duration-300"
+                className="bg-theme-card p-8 rounded-3xl border border-theme hover:-translate-y-2 hover:bg-theme-card-hover transition-all duration-300"
               >
-                <div className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-red-400 to-teal-400 bg-clip-text text-transparent">
-                  <AnimatedCounter value={stat.number} isVisible={visibleStats} />
+                <div className="text-3xl md:text-4xl font-bold mb-2 text-theme-accent">
+                  {statsLoading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="w-8 h-8 animate-spin text-theme-accent" />
+                    </div>
+                  ) : (
+                    <AnimatedCounter
+                      value={stat.number}
+                      isVisible={visibleStats}
+                    />
+                  )}
                 </div>
-                <div className="text-white/80 font-medium">{stat.label}</div>
+                <div className="text-theme-secondary font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -636,20 +759,20 @@ const MusicboxdApp = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-black/90 py-12">
+      <footer className="bg-theme-secondary py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex justify-center space-x-6 mb-8">
-            {['♪', '♫', '♬', '♭'].map((symbol, index) => (
+            {["♪", "♫", "♬", "♭"].map((symbol, index) => (
               <button
                 key={index}
-                className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-2xl hover:bg-gradient-to-r hover:from-red-400 hover:to-teal-400 hover:-translate-y-2 transition-all duration-300"
+                className="w-12 h-12 bg-theme-card rounded-full flex items-center justify-center text-2xl hover:bg-theme-accent hover:-translate-y-2 transition-all duration-300"
               >
                 {symbol}
               </button>
             ))}
           </div>
-          <p className="text-white/80">
-            © 2025 Musicboxd. Donde la música encuentra su voz.
+          <p className="text-theme-secondary">
+            © 2025 Tuneboxd. Donde la música encuentra su voz.
           </p>
         </div>
       </footer>
@@ -657,4 +780,4 @@ const MusicboxdApp = () => {
   );
 };
 
-export default MusicboxdApp;
+export default TuneboxdApp;

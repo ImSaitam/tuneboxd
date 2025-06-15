@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Users, Star, Music, Heart, ArrowLeft, Loader2, User, 
   Calendar, Plus, Search, Clock, TrendingUp, BookOpen,
@@ -11,7 +12,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNotifications } from '../../hooks/useNotifications';
 
 const SocialPage = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { success, error } = useNotifications();
   
   // Estados principales
@@ -27,10 +28,12 @@ const SocialPage = () => {
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    console.log('Social page: Auth status changed', { isAuthenticated, authLoading, user: user?.username });
+    
+    if (isAuthenticated && !authLoading) {
       fetchSocialData();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading, user?.username]);
 
   const fetchSocialData = async () => {
     try {
@@ -98,7 +101,7 @@ const SocialPage = () => {
     }
   };
 
-  const handleSearchUsers = async () => {
+  const handleSearchUsers = useCallback(async () => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
       setIsSearching(false);
@@ -107,7 +110,11 @@ const SocialPage = () => {
 
     try {
       setIsSearching(true);
-      const response = await fetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}&limit=10`);
+      const response = await fetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}&limit=10`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      });
       
       if (response.ok) {
         const data = await response.json();
@@ -118,7 +125,20 @@ const SocialPage = () => {
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [searchQuery]);
+
+  // Búsqueda automática con debounce
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim().length >= 2) {
+        handleSearchUsers();
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, handleSearchUsers]);
 
   const formatTimeAgo = (dateString) => {
     const now = new Date();
@@ -192,9 +212,11 @@ const SocialPage = () => {
             <div className="flex items-start gap-4">
               {/* Album/Artist Image */}
               <div className="flex-shrink-0">
-                <img
+                <Image
                   src={activity.image_url || '/placeholder-artist.jpg'}
                   alt={activity.album_name}
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-lg object-cover"
                 />
               </div>
@@ -248,6 +270,18 @@ const SocialPage = () => {
       </div>
     );
   };
+
+  // Mostrar pantalla de carga mientras se verifica la autenticación
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="w-12 h-12 text-white animate-spin" />
+          <p className="text-white text-lg">Verificando autenticación...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -481,7 +515,7 @@ const SocialPage = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearchUsers()}
-                    placeholder="@usuario o email..."
+                    placeholder="Buscar por nombre de usuario..."
                     className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <button
@@ -499,15 +533,36 @@ const SocialPage = () => {
                       <Link
                         key={user.id}
                         href={`/profile/${user.username}`}
-                        className="flex items-center gap-3 p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+                        className="flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
                       >
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                          <User className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
+                        {user.profile_picture ? (
+                          <div className="w-10 h-10 rounded-full overflow-hidden">
+                            <Image
+                              src={user.profile_picture}
+                              alt={`Foto de perfil de ${user.username}`}
+                              width={40}
+                              height={40}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
                           <div className="font-medium text-white">@{user.username}</div>
-                          <div className="text-gray-400 text-xs">{user.email}</div>
+                          {user.bio ? (
+                            <div className="text-gray-400 text-xs truncate">{user.bio}</div>
+                          ) : (
+                            <div className="text-gray-400 text-xs">{user.total_reviews} reseñas</div>
+                          )}
                         </div>
+                        {user.is_following && (
+                          <div className="text-green-400 text-xs">
+                            <UserCheck className="w-4 h-4" />
+                          </div>
+                        )}
                       </Link>
                     ))}
                   </div>

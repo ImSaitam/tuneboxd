@@ -6,7 +6,7 @@ import { Search, Music, Edit3, Users, Target, BarChart3, Eye, Loader2, Menu, X, 
 import { useSpotify } from '@/hooks/useSpotify';
 import { useAuth } from '@/hooks/useAuth';
 
-const MusicboxdApp = () => {
+const TuneboxdApp = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
   const [visibleStats, setVisibleStats] = useState(false);
@@ -271,7 +271,7 @@ const MusicboxdApp = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="text-2xl font-bold bg-gradient-to-r from-red-400 to-teal-400 bg-clip-text text-transparent">
-              Musicboxd
+              Tuneboxd
             </div>
             <div className="hidden md:flex space-x-8 items-center">
               {getNavLinks().map((link) => (
@@ -421,7 +421,7 @@ const MusicboxdApp = () => {
       <section ref={heroRef} id="home" className="min-h-screen flex items-center justify-center text-center relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 z-10">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-red-400 via-teal-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
-            Musicboxd
+            Tuneboxd
           </h1>
           <p className="text-xl md:text-2xl mb-8 opacity-90 max-w-3xl mx-auto">
             Descubre, califica y comparte tu pasión por la música. Tu diario musical personal donde cada canción cuenta una historia.
@@ -631,7 +631,7 @@ const MusicboxdApp = () => {
             ))}
           </div>
           <p className="text-white/80">
-            © 2025 Musicboxd. Donde la música encuentra su voz.
+            © 2025 Tuneboxd. Donde la música encuentra su voz.
           </p>
         </div>
       </footer>
@@ -639,4 +639,4 @@ const MusicboxdApp = () => {
   );
 };
 
-export default MusicboxdApp;
+export default TuneboxdApp;

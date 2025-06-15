@@ -36,14 +36,18 @@ export async function POST(request) {
       );
     }
 
-    // Por ahora permitimos login sin verificación para facilitar las pruebas
-    // En producción, descomenta estas líneas:
-    // if (!user.verified) {
-    //   return Response.json(
-    //     { success: false, message: 'Por favor verifica tu cuenta antes de iniciar sesión' },
-    //     { status: 401 }
-    //   );
-    // }
+    // Verificar si el usuario está verificado
+    if (!user.verified) {
+      return Response.json(
+        { 
+          success: false, 
+          message: 'Por favor verifica tu cuenta antes de iniciar sesión. Revisa tu email o solicita un nuevo enlace de verificación.',
+          needsVerification: true,
+          email: user.email
+        },
+        { status: 401 }
+      );
+    }
 
     // Generar JWT token
     const token = jwt.sign(

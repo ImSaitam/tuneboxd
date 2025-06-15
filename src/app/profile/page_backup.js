@@ -130,7 +130,7 @@ export default function ProfilePage() {
               Volver al inicio
             </Link>
             <div className="text-2xl font-bold bg-gradient-to-r from-red-400 to-teal-400 bg-clip-text text-transparent">
-              Musicboxd
+              Tuneboxd
             </div>
           </div>
         </div>

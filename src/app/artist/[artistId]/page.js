@@ -364,7 +364,7 @@ export default function ArtistPage() {
               <div className="flex items-center gap-2">
                 <User size={20} className="text-gray-400" />
                 <span className="text-gray-300">
-                  {appFollowersCount.toLocaleString()} seguidores en Musicboxd
+                  {appFollowersCount.toLocaleString()} seguidores en Tuneboxd
                 </span>
               </div>
               <a

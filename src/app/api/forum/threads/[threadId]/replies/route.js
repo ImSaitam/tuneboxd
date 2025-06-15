@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { forumService } from '../../../../../lib/database.js';
+import { forumService, notificationService } from '../../../../../../lib/database.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -68,6 +68,14 @@ export async function POST(request, { params }) {
       decoded.userId,
       content.trim()
     );
+
+    // Crear notificación para el autor del hilo
+    try {
+      await notificationService.notifyThreadComment(parseInt(threadId), decoded.userId);
+    } catch (notifError) {
+      console.error('Error creando notificación de comentario en hilo:', notifError);
+      // No fallar la operación principal por un error de notificación
+    }
 
     return NextResponse.json({
       success: true,

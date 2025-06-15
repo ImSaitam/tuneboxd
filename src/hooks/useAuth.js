@@ -23,16 +23,33 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = useCallback(async () => {
     try {
       setLoading(true);
-      // Aquí verificarías si hay un token válido en localStorage/cookies
+      setError(null);
+      
+      // Verificar si hay un token válido en localStorage
       const token = localStorage.getItem('auth_token');
       if (token) {
-        // Validar el token con el servidor
-        const userData = await validateToken(token);
-        setUser(userData.user); // Extraer el usuario de la respuesta
+        try {
+          // Validar el token con el servidor
+          const userData = await validateToken(token);
+          setUser(userData.user);
+        } catch (validationError) {
+          console.error('Error validando token:', validationError);
+          
+          // Solo eliminar token si es definitivamente inválido (no errores de red)
+          if (validationError.message === 'Token inválido') {
+            localStorage.removeItem('auth_token');
+          }
+          setUser(null);
+        }
+      } else {
+        // No hay token, usuario no autenticado
+        setUser(null);
       }
     } catch (error) {
       console.error('Error verificando autenticación:', error);
-      localStorage.removeItem('auth_token');
+      // Error general, no eliminar token automáticamente
+      setUser(null);
+      setError(null);
     } finally {
       setLoading(false);
     }
@@ -44,7 +61,7 @@ export const AuthProvider = ({ children }) => {
   }, [checkAuthStatus]);
 
   const validateToken = async (token) => {
-    // Aquí harías una llamada al API para validar el token
+    // Hacer llamada al API para validar el token
     const response = await fetch('/api/auth/validate', {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -52,6 +69,11 @@ export const AuthProvider = ({ children }) => {
     });
     
     if (!response.ok) {
+      // Si es un error de red (500, etc.) no invalidar el token
+      if (response.status >= 500) {
+        throw new Error('Error de servidor al validar token');
+      }
+      // Solo para errores 401/403 (token inválido/expirado)
       throw new Error('Token inválido');
     }
     
