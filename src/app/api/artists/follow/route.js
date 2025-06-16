@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '../../../../lib/database.js';
+import db, { runAsync, getAsync } from '../../../../lib/database.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
@@ -32,7 +32,7 @@ export async function POST(request) {
     const db_instance = db;
     
     // Verificar if ya sigue al artista
-    const existingFollow = await db_instance.getAsync(
+    const existingFollow = await getAsync(
       `SELECT * FROM artist_follows WHERE user_id = ? AND artist_id = ?`,
       [decoded.userId, artist_id]
     );
@@ -45,21 +45,26 @@ export async function POST(request) {
     }
 
     // Crear tabla si no existe
-    await db_instance.exec(`
-      CREATE TABLE IF NOT EXISTS artist_follows (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        artist_id TEXT NOT NULL,
-        artist_name TEXT NOT NULL,
-        artist_image TEXT,
-        followed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(user_id, artist_id),
-        FOREIGN KEY (user_id) REFERENCES users (id)
-      )
-    `);
+    await new Promise((resolve, reject) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS artist_follows (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          artist_id TEXT NOT NULL,
+          artist_name TEXT NOT NULL,
+          artist_image TEXT,
+          followed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(user_id, artist_id),
+          FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+      `, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
 
     // Insertar seguimiento
-    await db_instance.runAsync(
+    await runAsync(
       `INSERT INTO artist_follows (user_id, artist_id, artist_name, artist_image) 
        VALUES (?, ?, ?, ?)`,
       [decoded.userId, artist_id, artist_name, artist_image]
@@ -115,7 +120,7 @@ export async function DELETE(request) {
     const db_instance = db;
     
     // Eliminar seguimiento
-    const result = await db_instance.runAsync(
+    const result = await runAsync(
       `DELETE FROM artist_follows WHERE user_id = ? AND artist_id = ?`,
       [decoded.userId, artist_id]
     );
@@ -177,7 +182,7 @@ export async function GET(request) {
     const db_instance = db;
     
     // Verificar si sigue al artista
-    const follow = await db_instance.getAsync(
+    const follow = await getAsync(
       `SELECT * FROM artist_follows WHERE user_id = ? AND artist_id = ?`,
       [decoded.userId, artist_id]
     );

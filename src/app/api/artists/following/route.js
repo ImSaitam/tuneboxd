@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '../../../../lib/database.js';
+import { allAsync } from '../../../../lib/database.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
@@ -27,10 +27,8 @@ export async function GET(request) {
       }, { status: 401 });
     }
 
-    const db_instance = db;
-    
     // Obtener artistas seguidos
-    const followedArtists = await db_instance.allAsync(
+    const followedArtists = await allAsync(
       `SELECT artist_id, artist_name, artist_image, followed_at 
        FROM artist_follows 
        WHERE user_id = ? 

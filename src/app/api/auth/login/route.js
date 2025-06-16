@@ -10,9 +10,16 @@ export async function POST(request) {
 
     // Validar datos de entrada
     if (!email || !password) {
-      return Response.json(
-        { success: false, message: 'Email y contraseña son requeridos' },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({ success: false, message: 'Email y contraseña son requeridos' }),
+        { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Content-Encoding': 'identity'
+          }
+        }
       );
     }
 
@@ -22,7 +29,13 @@ export async function POST(request) {
     if (!user) {
       return Response.json(
         { success: false, message: 'Credenciales inválidas' },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        }
       );
     }
 
@@ -32,7 +45,13 @@ export async function POST(request) {
     if (!passwordMatch) {
       return Response.json(
         { success: false, message: 'Credenciales inválidas' },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        }
       );
     }
 
@@ -45,7 +64,13 @@ export async function POST(request) {
           needsVerification: true,
           email: user.email
         },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        }
       );
     }
 
@@ -63,18 +88,36 @@ export async function POST(request) {
     // Remover contraseña de la respuesta
     const { password: _, ...userWithoutPassword } = user;
 
-    return Response.json({
+    const responseData = {
       success: true,
       token,
       user: userWithoutPassword,
       message: 'Inicio de sesión exitoso'
-    });
+    };
+
+    return new Response(
+      JSON.stringify(responseData),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Content-Encoding': 'identity'
+        }
+      }
+    );
 
   } catch (error) {
     console.error('Error en login:', error);
     return Response.json(
       { success: false, message: 'Error interno del servidor' },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        }
+      }
     );
   }
 }

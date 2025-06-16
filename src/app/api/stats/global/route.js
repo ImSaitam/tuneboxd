@@ -15,7 +15,7 @@ export async function GET() {
       getTotalWatchlistItems()
     ]);
 
-    return Response.json({
+    const responseData = {
       success: true,
       stats: {
         totalUsers,
@@ -23,13 +23,31 @@ export async function GET() {
         totalReviews,
         totalWatchlistItems
       }
-    });
+    };
+
+    return new Response(
+      JSON.stringify(responseData),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'public, max-age=60',
+          'Content-Encoding': 'identity'
+        }
+      }
+    );
 
   } catch (error) {
     console.error('Error obteniendo estadísticas globales:', error);
-    return Response.json(
-      { success: false, message: 'Error interno del servidor' },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ success: false, message: 'Error interno del servidor' }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Content-Encoding': 'identity'
+        }
+      }
     );
   }
 }

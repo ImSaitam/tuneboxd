@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Star, ArrowLeft, User, Calendar, ExternalLink, Heart, HeartOff, Clock, Info, X, Music, List } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
+import { useTheme } from '../../../hooks/useTheme';
 import Link from 'next/link';
 import AddToListModal from '../../../components/AddToListModal';
 
 export default function AlbumPage() {
   const params = useParams();
   const { user, isAuthenticated } = useAuth();
+  const { theme } = useTheme();
   const [album, setAlbum] = useState(null);
   const [albumData, setAlbumData] = useState(null); // Datos de Spotify
   const [stats, setStats] = useState(null);
@@ -386,18 +388,18 @@ export default function AlbumPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-700 rounded w-1/3 mb-6"></div>
+            <div className={`h-8 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded w-1/3 mb-6`}></div>
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="h-80 bg-gray-700 rounded-lg"></div>
+              <div className={`h-80 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded-lg`}></div>
               <div className="md:col-span-2">
-                <div className="h-10 bg-gray-700 rounded w-3/4 mb-4"></div>
-                <div className="h-6 bg-gray-700 rounded w-1/2 mb-6"></div>
+                <div className={`h-10 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded w-3/4 mb-4`}></div>
+                <div className={`h-6 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded w-1/2 mb-6`}></div>
                 <div className="space-y-3">
-                  <div className="h-4 bg-gray-700 rounded"></div>
-                  <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+                  <div className={`h-4 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded`}></div>
+                  <div className={`h-4 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded w-3/4`}></div>
                 </div>
               </div>
             </div>
@@ -409,15 +411,15 @@ export default function AlbumPage() {
 
   if (error || !albumData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center text-white">
+      <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} flex items-center justify-center`}>
+        <div className={`text-center ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
           <h1 className="text-2xl font-bold mb-4">
             {error || 'Álbum no encontrado'}
           </h1>
-          <p className="text-gray-300 mb-4">
+          <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
             {error ? 'Hubo un error al cargar el álbum.' : 'No se pudo encontrar el álbum solicitado.'}
           </p>
-          <Link href="/" className="text-blue-400 hover:text-blue-300">
+          <Link href="/" className="text-blue-500 hover:text-blue-600">
             Volver al inicio
           </Link>
         </div>
@@ -426,14 +428,14 @@ export default function AlbumPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Link href="/" className="text-white hover:text-gray-300 transition-colors">
+          <Link href="/" className={`${theme === 'dark' ? 'text-white hover:text-gray-300' : 'text-gray-900 hover:text-gray-700'} transition-colors`}>
             <ArrowLeft size={24} />
           </Link>
-          <h1 className="text-2xl font-bold text-white">Detalles del Álbum</h1>
+          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Detalles del Álbum</h1>
         </div>
 
         {/* Album Info */}
@@ -460,25 +462,25 @@ export default function AlbumPage() {
           </div>
 
           {/* Album Details */}
-          <div className="md:col-span-2 text-white">
-            <h2 className="text-4xl font-bold mb-2">{albumData.name}</h2>
+          <div className="md:col-span-2">
+            <h2 className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{albumData.name}</h2>
             <Link 
               href={`/artist/${albumData.artists[0]?.id}`}
-              className="text-2xl text-gray-300 hover:text-white transition-colors mb-4 inline-block"
+              className={`text-2xl ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors mb-4 inline-block`}
             >
               {albumData.artists[0]?.name}
             </Link>
             
             <div className="flex items-center gap-6 mb-6">
               <div className="flex items-center gap-2">
-                <Calendar size={20} className="text-gray-400" />
-                <span className="text-gray-300">{albumData.release_date}</span>
+                <Calendar size={20} className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
+                <span className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{albumData.release_date}</span>
               </div>
               <a
                 href={albumData.external_urls?.spotify}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-green-400 hover:text-green-300 transition-colors"
+                className="flex items-center gap-2 text-green-500 hover:text-green-600 transition-colors"
               >
                 <ExternalLink size={20} />
                 <span>Abrir en Spotify</span>
@@ -487,18 +489,18 @@ export default function AlbumPage() {
 
             {/* Stats */}
             {stats && (
-              <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 mb-6">
-                <h4 className="text-xl font-semibold mb-4">Estadísticas</h4>
+              <div className={`${theme === 'dark' ? 'bg-gray-800/50' : 'bg-white/80'} backdrop-blur-md rounded-lg p-6 mb-6 shadow-lg`}>
+                <h4 className={`text-xl font-semibold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Estadísticas</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-3xl font-bold text-yellow-400">
+                    <div className="text-3xl font-bold text-yellow-500">
                       {stats.avg_rating > 0 ? stats.avg_rating : '--'}
                     </div>
-                    <div className="text-sm text-gray-300">Rating promedio</div>
+                    <div className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Rating promedio</div>
                   </div>
                   <div>
-                    <div className="text-3xl font-bold text-blue-400">{stats.total_reviews}</div>
-                    <div className="text-sm text-gray-300">Reseñas</div>
+                    <div className="text-3xl font-bold text-blue-500">{stats.total_reviews}</div>
+                    <div className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Reseñas</div>
                   </div>
                 </div>
               </div>
@@ -510,22 +512,22 @@ export default function AlbumPage() {
                 <div className="space-y-3">
                   {userReview ? (
                     <div className="space-y-3">
-                      <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
-                        <p className="text-green-300 mb-2">Ya has reseñado este álbum</p>
+                      <div className={`${theme === 'dark' ? 'bg-green-500/20 border-green-500/30' : 'bg-green-100 border-green-300'} border rounded-lg p-4`}>
+                        <p className={`${theme === 'dark' ? 'text-green-300' : 'text-green-700'} mb-2`}>Ya has reseñado este álbum</p>
                         <div className="flex items-center gap-2 mb-3">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
                               size={20}
-                              className={star <= userReview.rating ? 'text-yellow-400 fill-current' : 'text-gray-400'}
+                              className={star <= userReview.rating ? 'text-yellow-500 fill-current' : `${theme === 'dark' ? 'text-gray-400' : 'text-gray-300'}`}
                             />
                           ))}
                         </div>
                         {userReview.title && (
-                          <h4 className="text-white font-semibold mb-2">{userReview.title}</h4>
+                          <h4 className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'} font-semibold mb-2`}>{userReview.title}</h4>
                         )}
                         {userReview.content && (
-                          <p className="text-gray-300 text-sm">{userReview.content}</p>
+                          <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} text-sm`}>{userReview.content}</p>
                         )}
                       </div>
                       <button
@@ -533,7 +535,7 @@ export default function AlbumPage() {
                           setShowReviewForm(true);
                           setIsReviewModalAnimating(true);
                         }}
-                        className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+                        className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
                       >
                         Editar Reseña
                       </button>
@@ -544,7 +546,7 @@ export default function AlbumPage() {
                         setShowReviewForm(true);
                         setIsReviewModalAnimating(true);
                       }}
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
                     >
                       Escribir Reseña
                     </button>
@@ -556,8 +558,8 @@ export default function AlbumPage() {
                     disabled={listenListLoading}
                     className={`w-full flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
                       isInListenList
-                        ? 'bg-red-600 hover:bg-red-700 text-white'
-                        : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white'
+                        ? 'bg-red-500 hover:bg-red-600 text-white'
+                        : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
                     } disabled:opacity-50 disabled:transform-none disabled:cursor-not-allowed`}
                   >
                     {listenListLoading ? (
@@ -599,9 +601,9 @@ export default function AlbumPage() {
                   </button>
                 </div>
               ) : (
-                <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
-                  <p className="text-blue-300 text-center">
-                    <Link href="/login" className="underline hover:text-blue-200">
+                <div className={`${theme === 'dark' ? 'bg-blue-500/20 border-blue-500/30' : 'bg-blue-100 border-blue-300'} border rounded-lg p-4`}>
+                  <p className={`${theme === 'dark' ? 'text-blue-300' : 'text-blue-700'} text-center`}>
+                    <Link href="/login" className={`underline ${theme === 'dark' ? 'hover:text-blue-200' : 'hover:text-blue-600'}`}>
                       Inicia sesión
                     </Link> para escribir reseñas y añadir álbumes a tu lista de escucha
                   </p>
@@ -630,23 +632,24 @@ export default function AlbumPage() {
                 onCancel={closeReviewModal}
                 albumName={albumData.name}
                 artistName={albumData.artists[0]?.name}
+                theme={theme}
               />
             </div>
           </div>
         )}
 
         {/* Reviews Section */}
-        <div className="bg-white/10 backdrop-blur-md rounded-lg p-6">
-          <h3 className="text-2xl font-bold text-white mb-6">Reseñas Recientes</h3>
+        <div className={`${theme === 'dark' ? 'bg-white/10' : 'bg-white/80'} backdrop-blur-md rounded-lg p-6`}>
+          <h3 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-6`}>Reseñas Recientes</h3>
           
           {reviews && reviews.length > 0 ? (
             <div className="space-y-6">
               {reviews.map((review) => (
-                <ReviewCard key={review.id} review={review} />
+                <ReviewCard key={review.id} review={review} theme={theme} />
               ))}
             </div>
           ) : (
-            <p className="text-gray-300 text-center py-8">
+            <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-center py-8`}>
               No hay reseñas aún. ¡Sé el primero en escribir una!
             </p>
           )}
@@ -661,13 +664,13 @@ export default function AlbumPage() {
             onClick={closeTracksModal}
           >
             <div 
-              className={`bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-white/20 shadow-2xl ${
+              className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} shadow-2xl ${
                 isTracksModalAnimating ? 'modal-scale-enter' : 'modal-scale-exit'
               }`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header del modal */}
-              <div className="flex items-center justify-between p-6 border-b border-white/20">
+              <div className={`flex items-center justify-between p-6 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div className="flex items-center gap-4">
                   <img
                     src={albumData.images[0]?.url || '/placeholder-album.jpg'}
@@ -675,15 +678,15 @@ export default function AlbumPage() {
                     className="w-16 h-16 object-cover rounded-lg"
                   />
                   <div>
-                    <h3 className="text-xl font-bold text-white">{albumData.name}</h3>
-                    <p className="text-gray-300">
+                    <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{albumData.name}</h3>
+                    <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                       {albumData.artists[0]?.name} • {albumData.release_date?.split('-')[0]} • {albumData.total_tracks} canciones
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={closeTracksModal}
-                  className="text-gray-400 hover:text-white transition-colors p-2"
+                  className={`${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors p-2`}
                 >
                   <X size={24} />
                 </button>
@@ -693,30 +696,30 @@ export default function AlbumPage() {
               <div className="p-6 overflow-y-auto max-h-[60vh]">
                 {loadingTracks ? (
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-300">Cargando canciones...</p>
+                    <div className={`w-12 h-12 border-4 ${theme === 'dark' ? 'border-white/30 border-t-white' : 'border-gray-300 border-t-gray-600'} rounded-full animate-spin mb-4`}></div>
+                    <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Cargando canciones...</p>
                   </div>
                 ) : albumTracks.length > 0 ? (
                   <div className="space-y-2">
                     {albumTracks.map((track, index) => (
-                      <div key={track.id} className="grid grid-cols-12 items-center gap-4 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                      <div key={track.id} className={`grid grid-cols-12 items-center gap-4 p-3 rounded-lg ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-100'} transition-colors`}>
                         <div className="col-span-1 text-center">
-                          <span className="text-gray-400 text-sm font-medium">{index + 1}</span>
+                          <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm font-medium`}>{index + 1}</span>
                         </div>
                         <div className="col-span-8 flex items-center gap-3">
                           <div>
-                            <h4 className="text-white font-medium hover:text-blue-300 transition-colors">
+                            <h4 className={`${theme === 'dark' ? 'text-white hover:text-blue-300' : 'text-gray-900 hover:text-blue-600'} font-medium transition-colors`}>
                               {track.name}
                             </h4>
                             {track.explicit && (
-                              <span className="inline-block bg-gray-600 text-gray-300 text-xs px-1.5 py-0.5 rounded mt-1">
+                              <span className={`inline-block ${theme === 'dark' ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-700'} text-xs px-1.5 py-0.5 rounded mt-1`}>
                                 Explícito
                               </span>
                             )}
                           </div>
                         </div>
                         <div className="col-span-3 flex items-center justify-end">
-                          <span className="text-gray-400 text-sm">
+                          <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm`}>
                             {formatDuration(track.duration_ms)}
                           </span>
                         </div>
@@ -725,11 +728,11 @@ export default function AlbumPage() {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <Music className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">
+                    <Music className={`w-16 h-16 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} mx-auto mb-4`} />
+                    <h3 className={`text-xl font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-2`}>
                       No se pudieron cargar las canciones
                     </h3>
-                    <p className="text-gray-400">
+                    <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                       No hay información disponible sobre las canciones de este álbum.
                     </p>
                   </div>
@@ -737,13 +740,13 @@ export default function AlbumPage() {
               </div>
 
               {/* Footer del modal */}
-              <div className="flex items-center justify-between p-6 border-t border-white/20">
-                <div className="text-sm text-gray-400">
+              <div className={`flex items-center justify-between p-6 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+                <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                   {albumTracks.length > 0 && `${albumTracks.length} canciones`}
                 </div>
                 <button
                   onClick={closeTracksModal}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                  className={`px-4 py-2 ${theme === 'dark' ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} ${theme === 'dark' ? 'text-white' : 'text-gray-900'} rounded-lg font-medium transition-colors`}
                 >
                   Cerrar
                 </button>
@@ -773,7 +776,7 @@ export default function AlbumPage() {
 }
 
 // Componente ReviewForm
-function ReviewForm({ onSubmit, onCancel, albumName, artistName }) {
+function ReviewForm({ onSubmit, onCancel, albumName, artistName, theme }) {
   const [rating, setRating] = useState(0);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -803,18 +806,18 @@ function ReviewForm({ onSubmit, onCancel, albumName, artistName }) {
   };
 
   return (
-    <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl w-full max-w-lg border border-white/20 shadow-2xl">
+    <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-2xl w-full max-w-lg border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} shadow-2xl`}>
       {/* Header del modal */}
-      <div className="flex items-center justify-between p-6 border-b border-white/20">
+      <div className={`flex items-center justify-between p-6 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
         <div>
-          <h3 className="text-xl font-bold text-white">Escribir Reseña</h3>
-          <p className="text-gray-300 text-sm">
+          <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Escribir Reseña</h3>
+          <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm`}>
             &quot;{albumName}&quot; - {artistName}
           </p>
         </div>
         <button
           onClick={onCancel}
-          className="text-gray-400 hover:text-white transition-colors p-2"
+          className={`${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors p-2`}
         >
           <X size={24} />
         </button>
@@ -825,7 +828,7 @@ function ReviewForm({ onSubmit, onCancel, albumName, artistName }) {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Rating */}
           <div>
-            <label className="block text-white font-semibold mb-3">Calificación *</label>
+            <label className={`block ${theme === 'dark' ? 'text-white' : 'text-gray-900'} font-semibold mb-3`}>Calificación *</label>
             <div className="flex gap-2 justify-center">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -836,44 +839,44 @@ function ReviewForm({ onSubmit, onCancel, albumName, artistName }) {
                 >
                   <Star
                     size={40}
-                    className={star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-400 hover:text-yellow-300'}
+                    className={star <= rating ? 'text-yellow-400 fill-current' : `${theme === 'dark' ? 'text-gray-400 hover:text-yellow-300' : 'text-gray-300 hover:text-yellow-400'}`}
                   />
                 </button>
               ))}
             </div>
-            <p className="text-center text-gray-400 text-sm mt-2">
+            <p className={`text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} text-sm mt-2`}>
               {rating === 0 ? 'Selecciona una calificación' : `${rating} de 5 estrellas`}
             </p>
           </div>
 
           {/* Title */}
           <div>
-            <label className="block text-white font-semibold mb-2">Título (opcional)</label>
+            <label className={`block ${theme === 'dark' ? 'text-white' : 'text-gray-900'} font-semibold mb-2`}>Título (opcional)</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className={`w-full px-4 py-3 ${theme === 'dark' ? 'bg-white/10 border-white/20 text-white placeholder-gray-400' : 'bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
               placeholder="Un título para tu reseña..."
               maxLength={100}
             />
-            <div className="text-right text-gray-400 text-xs mt-1">
+            <div className={`text-right ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} text-xs mt-1`}>
               {title.length}/100
             </div>
           </div>
 
           {/* Content */}
           <div>
-            <label className="block text-white font-semibold mb-2">Reseña (opcional)</label>
+            <label className={`block ${theme === 'dark' ? 'text-white' : 'text-gray-900'} font-semibold mb-2`}>Reseña (opcional)</label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"
+              className={`w-full px-4 py-3 ${theme === 'dark' ? 'bg-white/10 border-white/20 text-white placeholder-gray-400' : 'bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all`}
               placeholder="Comparte tus pensamientos sobre este álbum..."
               rows={4}
               maxLength={1000}
             />
-            <div className="text-right text-gray-400 text-xs mt-1">
+            <div className={`text-right ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} text-xs mt-1`}>
               {content.length}/1000
             </div>
           </div>
@@ -883,7 +886,7 @@ function ReviewForm({ onSubmit, onCancel, albumName, artistName }) {
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+              className={`flex-1 px-6 py-3 ${theme === 'dark' ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} ${theme === 'dark' ? 'text-white' : 'text-gray-900'} font-semibold rounded-lg transition-all duration-300`}
             >
               Cancelar
             </button>
@@ -909,9 +912,9 @@ function ReviewForm({ onSubmit, onCancel, albumName, artistName }) {
 }
 
 // Componente ReviewCard
-function ReviewCard({ review }) {
+function ReviewCard({ review, theme }) {
   return (
-    <div className="border border-white/20 rounded-lg p-4">
+    <div className={`border ${theme === 'dark' ? 'border-white/20' : 'border-gray-200'} rounded-lg p-4`}>
       <div className="flex items-start gap-4">
         <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
           <User size={20} className="text-white" />
@@ -919,27 +922,27 @@ function ReviewCard({ review }) {
         
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-white font-semibold">{review.username}</span>
+            <span className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'} font-semibold`}>{review.username}</span>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
                   size={16}
-                  className={star <= review.rating ? 'text-yellow-400 fill-current' : 'text-gray-400'}
+                  className={star <= review.rating ? 'text-yellow-400 fill-current' : `${theme === 'dark' ? 'text-gray-400' : 'text-gray-300'}`}
                 />
               ))}
             </div>
           </div>
           
           {review.title && (
-            <h4 className="text-white font-semibold mb-2">{review.title}</h4>
+            <h4 className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'} font-semibold mb-2`}>{review.title}</h4>
           )}
           
           {review.content && (
-            <p className="text-gray-300 mb-2">{review.content}</p>
+            <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} mb-2`}>{review.content}</p>
           )}
           
-          <div className="text-sm text-gray-400">
+          <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             {new Date(review.created_at).toLocaleDateString('es')}
           </div>
         </div>

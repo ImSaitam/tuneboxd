@@ -80,10 +80,10 @@ export async function POST() {
     }
 
     // Actualizar las fechas manualmente en la base de datos para simular diferentes días
-    const db = (await import('../../../../lib/database.js')).default;
+    const { default: db, allAsync, runAsync } = await import('../../../../lib/database.js');
     
     // Obtener las últimas entradas y actualizarlas con fechas pasadas
-    const recentEntries = await db.allAsync(`
+    const recentEntries = await allAsync(`
       SELECT id, user_id FROM listening_history 
       ORDER BY listened_at DESC 
       LIMIT 18
@@ -109,7 +109,7 @@ export async function POST() {
       targetDate.setHours(Math.floor(Math.random() * 24));
       targetDate.setMinutes(Math.floor(Math.random() * 60));
       
-      await db.runAsync(
+      await runAsync(
         'UPDATE listening_history SET listened_at = ? WHERE id = ?',
         [targetDate.toISOString(), entry.id]
       );

@@ -1,5 +1,5 @@
 // Script para probar el rendimiento de las APIs optimizadas
-const API_BASE = 'http://localhost:3001';
+const API_BASE = 'http://localhost:3000';
 
 // Función para medir tiempo de respuesta
 async function measureAPIPerformance(endpoint, description) {

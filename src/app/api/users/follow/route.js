@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db, { notificationService } from '../../../../lib/database.js';
+import db, { getAsync, runAsync, notificationService } from '../../../../lib/database.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
@@ -44,10 +44,8 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    const db_instance = db;
-    
     // Verificar if ya sigue al usuario
-    const existingFollow = await db_instance.getAsync(
+    const existingFollow = await getAsync(
       `SELECT * FROM user_follows WHERE follower_id = ? AND followed_id = ?`,
       [decoded.userId, user_id]
     );
@@ -60,7 +58,7 @@ export async function POST(request) {
     }
 
     // Crear tabla si no existe
-    await db_instance.exec(`
+    await db.exec(`
       CREATE TABLE IF NOT EXISTS user_follows (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         follower_id INTEGER NOT NULL,
@@ -73,7 +71,7 @@ export async function POST(request) {
     `);
 
     // Insertar seguimiento
-    await db_instance.runAsync(
+    await runAsync(
       `INSERT INTO user_follows (follower_id, followed_id) VALUES (?, ?)`,
       [decoded.userId, user_id]
     );
@@ -133,32 +131,20 @@ export async function DELETE(request) {
       }, { status: 401 });
     }
 
-    const db_instance = db;
-    
     // Eliminar seguimiento
     try {
-      await new Promise((resolve, reject) => {
-        db_instance.run(
-          `DELETE FROM user_follows WHERE follower_id = ? AND followed_id = ?`,
-          [decoded.userId, user_id],
-          function(error) {
-            if (error) {
-              reject(error);
-            } else if (this.changes === 0) {
-              reject(new Error('NOT_FOLLOWING'));
-            } else {
-              resolve();
-            }
-          }
-        );
-      });
-    } catch (error) {
-      if (error.message === 'NOT_FOLLOWING') {
+      const result = await runAsync(
+        `DELETE FROM user_follows WHERE follower_id = ? AND followed_id = ?`,
+        [decoded.userId, user_id]
+      );
+      
+      if (result.changes === 0) {
         return NextResponse.json({
           success: false,
           message: 'No sigues a este usuario'
         }, { status: 400 });
       }
+    } catch (error) {
       throw error;
     }
 
@@ -209,10 +195,8 @@ export async function GET(request) {
       });
     }
 
-    const db_instance = db;
-    
     // Verificar si sigue al usuario
-    const follow = await db_instance.getAsync(
+    const follow = await getAsync(
       `SELECT * FROM user_follows WHERE follower_id = ? AND followed_id = ?`,
       [decoded.userId, user_id]
     );

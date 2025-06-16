@@ -20,8 +20,8 @@ const nextConfig = {
     loader: 'default',
   },
   
-  // Configuración de compresión y rendimiento
-  compress: true, // Habilitar compresión gzip
+  // Configuración de compresión deshabilitada para evitar errores de decodificación
+  compress: false,
   
   // Configuración experimental para mejorar rendimiento
   experimental: {
@@ -31,11 +31,41 @@ const nextConfig = {
     }
   },
   
-  // Configuración de headers para cache y seguridad
+  // Headers personalizados unificados
   async headers() {
     return [
       {
-        source: '/api/:path*',
+        source: '/api/auth/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Content-Encoding',
+            value: 'identity',
+          },
+        ],
+      },
+      {
+        source: '/api/stats/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=60',
+          },
+          {
+            key: 'Content-Encoding',
+            value: 'identity',
+          },
+        ],
+      },
+      {
+        source: '/api/forum/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -43,8 +73,8 @@ const nextConfig = {
           },
           {
             key: 'Content-Encoding',
-            value: 'gzip'
-          }
+            value: 'identity',
+          },
         ]
       }
     ];

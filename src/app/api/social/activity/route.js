@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '../../../../lib/database.js';
+import db, { allAsync } from '../../../../lib/database.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
@@ -31,10 +31,8 @@ export async function GET(request) {
     const limit = parseInt(url.searchParams.get('limit')) || 20;
     const offset = parseInt(url.searchParams.get('offset')) || 0;
 
-    const db_instance = db;
-    
     // Crear tabla de user_follows si no existe
-    await db_instance.exec(`
+    await db.exec(`
       CREATE TABLE IF NOT EXISTS user_follows (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         follower_id INTEGER NOT NULL,
@@ -47,7 +45,7 @@ export async function GET(request) {
     `);
 
     // Obtener actividad de usuarios seguidos
-    const activities = await db_instance.allAsync(`
+    const activities = await allAsync(`
       SELECT 
         'review' as activity_type,
         r.id as activity_id,

@@ -3,14 +3,19 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, Activity, Database, Zap, RefreshCw, 
   TrendingUp, Server, Clock, Users, MessageSquare,
-  BarChart3, PieChart, LineChart
+  BarChart3, PieChart, LineChart, Shield, Lock
 } from 'lucide-react';
 import PerformanceStats from '../../../components/PerformanceStats';
+import { useAuth } from '../../../hooks/useAuth';
 
 const AdminPerformancePage = () => {
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const router = useRouter();
+  
   const [systemInfo, setSystemInfo] = useState({
     uptime: 0,
     memoryUsage: 0,
@@ -21,51 +26,63 @@ const AdminPerformancePage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
 
+  // Verificar permisos de administrador
   useEffect(() => {
-    fetchSystemInfo();
-    const interval = setInterval(fetchSystemInfo, 10000); // Cada 10 segundos
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchSystemInfo = async () => {
-    try {
-      // En un entorno real, esto vendría de una API del sistema
-      setSystemInfo({
-        uptime: Math.floor(process.uptime ? process.uptime() : 0),
-        memoryUsage: Math.random() * 100,
-        cpuUsage: Math.random() * 100,
-        diskUsage: Math.random() * 100
-      });
-    } catch (error) {
-      console.error('Error fetching system info:', error);
+    if (!authLoading) {
+      if (!isAuthenticated) {
+        router.push('/login?redirect=/admin/performance');
+        return;
+      }
+      
+      if (user?.role !== 'admin') {
+        router.push('/?error=access_denied');
+        return;
+      }
     }
-  };
+  }, [user, isAuthenticated, authLoading, router]);
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await fetchSystemInfo();
-    setLastRefresh(new Date());
-    setTimeout(() => setIsRefreshing(false), 1000);
-  };
+  // Mostrar loading mientras se verifica la autenticación
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-theme-accent mx-auto mb-4"></div>
+          <p className="text-theme-muted">Verificando permisos...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const formatUptime = (seconds) => {
-    const days = Math.floor(seconds / (24 * 3600));
-    const hours = Math.floor((seconds % (24 * 3600)) / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    return `${days}d ${hours}h ${minutes}m`;
-  };
-
-  const getStatusColor = (percentage) => {
-    if (percentage < 50) return 'text-green-400';
-    if (percentage < 80) return 'text-yellow-400';
-    return 'text-red-400';
-  };
-
-  const getStatusBg = (percentage) => {
-    if (percentage < 50) return 'bg-green-500/20 border-green-500/30';
-    if (percentage < 80) return 'bg-yellow-500/20 border-yellow-500/30';
-    return 'bg-red-500/20 border-red-500/30';
-  };
+  // Verificación de acceso
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
+        <div className="text-center p-8 bg-theme-card rounded-xl border border-theme-border">
+          <Lock className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-theme-primary mb-2">Acceso Denegado</h1>
+          <p className="text-theme-muted mb-6">
+            Necesitas permisos de administrador para acceder a esta página.
+          </p>
+          <div className="space-y-2">
+            <Link 
+              href="/" 
+              className="block w-full px-4 py-2 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg font-medium transition-colors"
+            >
+              Volver al Inicio
+            </Link>
+            {!isAuthenticated && (
+              <Link 
+                href="/login" 
+                className="block w-full px-4 py-2 border border-theme-border hover:bg-theme-card text-theme-primary rounded-lg font-medium transition-colors"
+              >
+                Iniciar Sesión
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-theme-primary">
@@ -85,9 +102,13 @@ const AdminPerformancePage = () => {
             
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-bold text-theme-primary flex items-center space-x-2">
-                <Activity className="w-8 h-8" />
-                <span>Performance Dashboard</span>
+                <Shield className="w-8 h-8 text-yellow-400" />
+                <span>Panel de Administración</span>
               </h1>
+              <div className="flex items-center space-x-2 text-sm">
+                <span className="text-theme-muted">Admin:</span>
+                <span className="text-theme-accent font-medium">{user?.username}</span>
+              </div>
             </div>
 
             <button

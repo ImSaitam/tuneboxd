@@ -1,7 +1,7 @@
 // Script simple para probar las APIs optimizadas
 import fetch from 'node-fetch';
 
-const API_BASE = 'http://localhost:3001';
+const API_BASE = 'http://localhost:3000';
 
 async function testAPI(endpoint, name) {
   const start = Date.now();

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '../../../../lib/database.js';
+import db, { runAsync, getAsync, allAsync } from '../../../../lib/database.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
@@ -39,27 +39,32 @@ export async function POST(request) {
     const db_instance = db;
     
     // Crear tabla si no existe
-    await db_instance.exec(`
-      CREATE TABLE IF NOT EXISTS artist_tags (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        artist_id TEXT NOT NULL,
-        tag TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(user_id, artist_id, tag),
-        FOREIGN KEY (user_id) REFERENCES users (id)
-      )
-    `);
+    await new Promise((resolve, reject) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS artist_tags (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          artist_id TEXT NOT NULL,
+          tag TEXT NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(user_id, artist_id, tag),
+          FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+      `, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
 
     // Eliminar tags existentes para este usuario y artista
-    await db_instance.runAsync(
+    await runAsync(
       `DELETE FROM artist_tags WHERE user_id = ? AND artist_id = ?`,
       [decoded.userId, artist_id]
     );
 
     // Insertar nuevas tags
     for (const tag of tags) {
-      await db_instance.runAsync(
+      await runAsync(
         `INSERT INTO artist_tags (user_id, artist_id, tag) VALUES (?, ?, ?)`,
         [decoded.userId, artist_id, tag]
       );
@@ -115,7 +120,7 @@ export async function GET(request) {
     const db_instance = db;
     
     // Obtener tags del usuario para este artista
-    const userTags = await db_instance.allAsync(
+    const userTags = await allAsync(
       `SELECT tag FROM artist_tags WHERE user_id = ? AND artist_id = ?`,
       [decoded.userId, artist_id]
     );

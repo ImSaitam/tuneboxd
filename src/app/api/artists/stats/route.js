@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '../../../../lib/database.js';
+import db, { getAsync } from '../../../../lib/database.js';
 
 export async function GET(request) {
   try {
@@ -16,7 +16,7 @@ export async function GET(request) {
     const db_instance = db;
     
     // Contar seguidores del artista en la aplicación
-    const followersCount = await db_instance.getAsync(
+    const followersCount = await getAsync(
       `SELECT COUNT(*) as count FROM artist_follows WHERE artist_id = ?`,
       [artist_id]
     );

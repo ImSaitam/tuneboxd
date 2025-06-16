@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { reviewService, userService, userFollowService } from '../../../../lib/database.js';
+import { reviewService, userService, userFollowService, getAsync, allAsync } from '../../../../lib/database.js';
 import db from '../../../../lib/database.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
@@ -92,7 +92,7 @@ export async function GET(request) {
 // Funciones auxiliares para obtener estadísticas
 async function getTotalReviews(userId) {
   try {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT COUNT(*) as count FROM reviews WHERE user_id = ?',
       [userId]
     );
@@ -105,7 +105,7 @@ async function getTotalReviews(userId) {
 
 async function getAverageRating(userId) {
   try {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT AVG(rating) as average FROM reviews WHERE user_id = ?',
       [userId]
     );
@@ -118,7 +118,7 @@ async function getAverageRating(userId) {
 
 async function getRecentActivity(userId) {
   try {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT COUNT(*) as count FROM reviews WHERE user_id = ? AND created_at >= datetime("now", "-30 days")',
       [userId]
     );
@@ -132,7 +132,7 @@ async function getRecentActivity(userId) {
 async function getTopGenres(userId) {
   try {
     // Esta es una implementación básica - en un proyecto real tendrías géneros en tu base de datos
-    const reviews = await db.allAsync(
+    const reviews = await allAsync(
       `SELECT a.name as album_name, a.artist 
        FROM reviews r 
        JOIN albums a ON r.album_id = a.id 
@@ -159,7 +159,7 @@ async function getTopGenres(userId) {
 
 async function getMonthlyStats(userId) {
   try {
-    const result = await db.allAsync(`
+    const result = await allAsync(`
       SELECT 
         strftime('%Y-%m', created_at) as month,
         COUNT(*) as reviews,
@@ -191,7 +191,7 @@ async function getMemberSinceDate(userId) {
 
 async function getUserReviewForAlbum(userId, albumId) {
   try {
-    const review = await db.getAsync(`
+    const review = await getAsync(`
       SELECT 
         r.id,
         r.rating,

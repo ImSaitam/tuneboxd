@@ -23,6 +23,7 @@ const UserProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [followStateLoading, setFollowStateLoading] = useState(true);
   
   // Control de peticiones duplicadas
   const isLoadingRef = useRef(false);
@@ -69,6 +70,10 @@ const UserProfilePage = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log(`Cargando perfil de usuario: ${username}`);
+      console.log(`Usuario autenticado: ${isAuthenticated}`);
+      console.log(`Usuario actual: ${currentUser?.username}`);
       
       // Obtener datos del usuario por username
       const userResponse = await fetch(`/api/user/profile/${username}`, { signal });
@@ -158,17 +163,38 @@ const UserProfilePage = () => {
 
       // Si no es su propio perfil, verificar si lo sigue
       if (isAuthenticated && currentUser?.username !== username) {
-        requests.push(
-          fetch(`/api/users/follow?user_id=${userData.user.id}`, {
-            signal,
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-            }
+        setFollowStateLoading(true);
+        console.log(`Verificando estado de seguimiento para ${username}...`);
+        
+        // Crear una promesa separada para la verificación de seguimiento
+        const followVerification = fetch(`/api/users/follow?user_id=${userData.user.id}`, {
+          signal,
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          }
+        })
+          .then(res => {
+            console.log(`Estado de respuesta para verificación de seguimiento: ${res.status}`);
+            return res.ok ? res.json() : { isFollowing: false };
           })
-            .then(res => res.ok ? res.json() : null)
-            .then(data => data && setIsFollowing(data.isFollowing))
-            .catch(() => null)
-        );
+          .then(data => {
+            console.log(`Estado de seguimiento obtenido: ${data.isFollowing}`);
+            setIsFollowing(data.isFollowing || false);
+            setFollowStateLoading(false);
+          })
+          .catch((error) => {
+            console.error('Error verificando estado de seguimiento:', error);
+            setIsFollowing(false);
+            setFollowStateLoading(false);
+          });
+        
+        // Agregar la verificación de seguimiento a las requests
+        requests.push(followVerification);
+      } else {
+        // Si es su propio perfil o no está autenticado, no está siguiendo
+        console.log('No verificando seguimiento - es propio perfil o no autenticado');
+        setIsFollowing(false);
+        setFollowStateLoading(false);
       }
 
       // Ejecutar todas las peticiones en paralelo
@@ -206,7 +232,8 @@ const UserProfilePage = () => {
     setListeningHistory([]);
     setFollowers([]);
     setFollowing([]);
-    setIsFollowing(false);
+    // NO resetear isFollowing aquí - se establecerá correctamente en fetchUserProfile
+    setFollowStateLoading(true); // Inicializar como cargando
     setError(null);
   }, [username]);
 
@@ -256,11 +283,86 @@ const UserProfilePage = () => {
           .catch(() => null)
       ];
 
+      // Si no es mi propio perfil, también verificar el estado de seguimiento
+      if (isAuthenticated && currentUser?.username !== profileUser.username) {
+        setFollowStateLoading(true);
+        requests.push(
+          fetch(`/api/users/follow?user_id=${profileUser.id}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+          })
+            .then(res => res.ok ? res.json() : { isFollowing: false })
+            .then(data => {
+              setIsFollowing(data.isFollowing || false);
+              setFollowStateLoading(false);
+            })
+            .catch(() => {
+              setIsFollowing(false);
+              setFollowStateLoading(false);
+            })
+        );
+      } else {
+        setFollowStateLoading(false);
+      }
+
       await Promise.allSettled(requests);
     } catch (error) {
       console.error('Error refrescando datos de seguimiento:', error);
     }
-  }, [profileUser, isAuthenticated]);
+  }, [profileUser, isAuthenticated, currentUser?.username]);
+
+  // Función específica para verificar el estado de seguimiento
+  const verifyFollowState = useCallback(async () => {
+    if (!profileUser || !isAuthenticated || currentUser?.username === profileUser.username) {
+      setIsFollowing(false);
+      setFollowStateLoading(false);
+      return;
+    }
+
+    try {
+      setFollowStateLoading(true);
+      console.log(`Verificando independientemente el estado de seguimiento para ${profileUser.username}...`);
+      
+      const response = await fetch(`/api/users/follow?user_id=${profileUser.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`Estado de seguimiento verificado: ${data.isFollowing}`);
+        setIsFollowing(data.isFollowing || false);
+      } else {
+        console.log('Error en respuesta, estableciendo como no siguiendo');
+        setIsFollowing(false);
+      }
+    } catch (error) {
+      console.error('Error verificando estado de seguimiento:', error);
+      setIsFollowing(false);
+    } finally {
+      setFollowStateLoading(false);
+    }
+  }, [profileUser, isAuthenticated, currentUser?.username]);
+
+  // Detectar recarga de página para verificar estado de seguimiento
+  useEffect(() => {
+    // Verificar si es una recarga de página directa
+    const isPageReload = performance.getEntriesByType('navigation')[0]?.type === 'reload';
+    
+    console.log(`Tipo de navegación: ${performance.getEntriesByType('navigation')[0]?.type}`);
+    console.log(`Es recarga de página: ${isPageReload}`);
+    
+    // Si es una recarga y tenemos los datos necesarios, verificar el estado de seguimiento
+    if (isPageReload && profileUser && isAuthenticated && currentUser?.username !== profileUser.username) {
+      console.log('Recarga de página detectada - verificando estado de seguimiento...');
+      // Esperar un poco para asegurar que todo esté inicializado
+      setTimeout(() => {
+        verifyFollowState();
+      }, 100);
+    }
+  }, [profileUser, isAuthenticated, currentUser?.username, verifyFollowState]);
 
   const handleFollowToggle = async () => {
     if (!isAuthenticated || !profileUser) return;
@@ -565,13 +667,22 @@ const UserProfilePage = () => {
               {!isOwnProfile && isAuthenticated && (
                 <button
                   onClick={handleFollowToggle}
+                  disabled={followStateLoading}
+                  data-testid="follow-button"
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    isFollowing
+                    followStateLoading
+                      ? 'bg-gray-500 cursor-not-allowed text-white'
+                      : isFollowing
                       ? 'bg-gray-600 hover:bg-gray-700 text-white'
                       : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
                 >
-                  {isFollowing ? (
+                  {followStateLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Cargando...</span>
+                    </>
+                  ) : isFollowing ? (
                     <>
                       <UserCheck className="w-4 h-4" />
                       <span>Siguiendo</span>

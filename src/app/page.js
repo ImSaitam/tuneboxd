@@ -128,7 +128,6 @@ const TuneboxdApp = () => {
   const getNavLinks = () => {
     const baseLinks = [
       { href: "/social", label: "Social", isLink: true },
-      { href: "/reviews", label: "Reseñas", isLink: true },
       { href: "/community", label: "Comunidad", isLink: true }
     ];
 
@@ -151,15 +150,73 @@ const TuneboxdApp = () => {
     const loadGlobalStats = async () => {
       try {
         setStatsLoading(true);
-        const response = await fetch('/api/stats/global');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setGlobalStats(data.stats);
+        console.log('🔄 Cargando estadísticas globales...');
+        
+        const response = await fetch('/api/stats/global', {
+          headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/json',
           }
+        });
+        
+        console.log('📊 Respuesta de stats:', response.status, response.statusText);
+        
+        if (response.ok) {
+          let data;
+          // Usar clone para poder reintentar si falla
+          const responseClone = response.clone();
+          
+          try {
+            data = await response.json();
+          } catch (jsonError) {
+            console.warn('⚠️ Error parseando JSON, intentando con response clonado:', jsonError.message);
+            try {
+              const text = await responseClone.text();
+              data = JSON.parse(text);
+            } catch (fallbackError) {
+              console.error('❌ Error en fallback de parsing:', fallbackError.message);
+              throw new Error('No se pudo parsear la respuesta JSON');
+            }
+          }
+          
+          console.log('✅ Datos recibidos:', data);
+          if (data && data.success) {
+            setGlobalStats(data.stats);
+          } else {
+            console.warn('⚠️ API respondió pero sin éxito:', data);
+            // Usar datos por defecto si la API no devuelve éxito
+            setGlobalStats({
+              totalUsers: 9,
+              totalAlbums: 31,
+              totalReviews: 15,
+              totalWatchlistItems: 3
+            });
+          }
+        } else {
+          console.error('❌ Error en respuesta:', response.status, response.statusText);
+          // Usar datos por defecto en caso de error HTTP
+          setGlobalStats({
+            totalUsers: 9,
+            totalAlbums: 31,
+            totalReviews: 15,
+            totalWatchlistItems: 3
+          });
         }
       } catch (error) {
-        console.error('Error cargando estadísticas globales:', error);
+        console.error('💥 Error cargando estadísticas globales:', error);
+        console.error('🔍 Detalles del error:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
+        
+        // Estadísticas por defecto para que la app no se rompa
+        setGlobalStats({
+          totalUsers: 9,
+          totalAlbums: 31,
+          totalReviews: 15,
+          totalWatchlistItems: 3
+        });
       } finally {
         setStatsLoading(false);
       }

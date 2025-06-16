@@ -1,11 +1,27 @@
 import { promisify } from 'util';
 import { forumCache } from './cache.js';
-import { dbPool } from './database-pool.js';
+import sqlite3 from 'sqlite3';
+
+// Crear conexión directa a SQLite por ahora (sin pool)
+const db = new sqlite3.Database('./users.db');
 
 // Promisificar los métodos de la base de datos para usar async/await
-const runAsync = promisify(dbPool.run.bind(dbPool));
-const getAsync = promisify(dbPool.get.bind(dbPool));
-const allAsync = promisify(dbPool.all.bind(dbPool));
+const runAsync = (sql, params = []) => {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function(error) {
+      if (error) {
+        reject(error);
+      } else {
+        resolve({
+          lastID: this.lastID,
+          changes: this.changes
+        });
+      }
+    });
+  });
+};
+const getAsync = promisify(db.get.bind(db));
+const allAsync = promisify(db.all.bind(db));
 
 // Usar una variable global para controlar la inicialización en modo desarrollo
 const GLOBAL_KEY = Symbol.for('tuneboxd.database.initialized');
@@ -22,7 +38,7 @@ const initializeDatabase = () => {
   }
 
   try {
-    dbPool.exec(`
+    db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
@@ -270,7 +286,7 @@ export const userService = {
 
   // Buscar usuario por email
   async findByEmail(email) {
-    return await db.getAsync(
+    return await getAsync(
       'SELECT * FROM users WHERE email = ?',
       [email.toLowerCase()]
     );
@@ -278,7 +294,7 @@ export const userService = {
 
   // Buscar usuario por username
   async findByUsername(username) {
-    return await db.getAsync(
+    return await getAsync(
       'SELECT * FROM users WHERE LOWER(username) = LOWER(?)',
       [username]
     );
@@ -286,7 +302,7 @@ export const userService = {
 
   // Buscar usuario por email o username
   async findByEmailOrUsername(email, username) {
-    return await db.getAsync(
+    return await getAsync(
       'SELECT * FROM users WHERE LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)',
       [email, username]
     );
@@ -294,7 +310,7 @@ export const userService = {
 
   // Buscar usuario por ID
   async findById(id) {
-    return await db.getAsync(
+    return await getAsync(
       'SELECT * FROM users WHERE id = ?',
       [id]
     );
@@ -302,7 +318,7 @@ export const userService = {
 
   // Obtener todos los usuarios (para debugging)
   async getAllUsers() {
-    return await db.allAsync('SELECT id, username, email, created_at, verified FROM users');
+    return await allAsync('SELECT id, username, email, created_at, verified FROM users');
   },
 
   // Actualizar token de reset de contraseña
@@ -324,7 +340,7 @@ export const userService = {
 
   // Buscar usuario por token de reset
   async findByResetToken(token) {
-    return await db.getAsync(
+    return await getAsync(
       'SELECT * FROM users WHERE reset_token = ? AND reset_token_expires > datetime("now")',
       [token]
     );
@@ -383,7 +399,7 @@ export const userService = {
 
   // Buscar token de verificación
   async findVerificationToken(token) {
-    return await db.getAsync(
+    return await getAsync(
       'SELECT * FROM email_verifications WHERE token = ? AND expires_at > datetime("now")',
       [token]
     );
@@ -535,7 +551,7 @@ export const userService = {
   async searchUsersByUsername(query, limit = 10, currentUserId = null, offset = 0) {
     try {
       // Buscar usuarios que coincidan con el patrón
-      const users = await db.allAsync(`
+      const users = await allAsync(`
         SELECT 
           u.id,
           u.username,
@@ -592,7 +608,7 @@ export const userService = {
   // Obtener conteo total de usuarios para una búsqueda
   async getUserSearchCount(query) {
     try {
-      const result = await db.getAsync(`
+      const result = await getAsync(`
         SELECT COUNT(*) as count
         FROM users u
         WHERE LOWER(u.username) LIKE LOWER(?)
@@ -608,7 +624,7 @@ export const userService = {
   // Obtener total de usuarios registrados
   async getTotalUsersCount() {
     try {
-      const result = await db.getAsync('SELECT COUNT(*) as count FROM users');
+      const result = await getAsync('SELECT COUNT(*) as count FROM users');
       return result?.count || 0;
     } catch (error) {
       console.error('Error obteniendo total de usuarios:', error);
@@ -624,7 +640,7 @@ export const albumService = {
     const { spotify_id, name, artist, release_date, image_url, spotify_url } = albumData;
     
     // Primero intentar encontrar el álbum
-    const existingAlbum = await db.getAsync(
+    const existingAlbum = await getAsync(
       'SELECT * FROM albums WHERE spotify_id = ?',
       [spotify_id]
     );
@@ -658,17 +674,17 @@ export const albumService = {
 
   // Buscar álbum por ID
   async findById(id) {
-    return await db.getAsync('SELECT * FROM albums WHERE id = ?', [id]);
+    return await getAsync('SELECT * FROM albums WHERE id = ?', [id]);
   },
 
   // Buscar álbum por Spotify ID
   async findBySpotifyId(spotify_id) {
-    return await db.getAsync('SELECT * FROM albums WHERE spotify_id = ?', [spotify_id]);
+    return await getAsync('SELECT * FROM albums WHERE spotify_id = ?', [spotify_id]);
   },
 
   // Obtener álbumes más reseñados
   async getMostReviewed(limit = 10) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT a.*, COUNT(r.id) as review_count, AVG(r.rating) as avg_rating
       FROM albums a
       LEFT JOIN reviews r ON a.id = r.album_id
@@ -681,7 +697,7 @@ export const albumService = {
   // Obtener total de álbumes en la base de datos
   async getTotalAlbumsCount() {
     try {
-      const result = await db.getAsync('SELECT COUNT(*) as count FROM albums');
+      const result = await getAsync('SELECT COUNT(*) as count FROM albums');
       return result?.count || 0;
     } catch (error) {
       console.error('Error obteniendo total de álbumes:', error);
@@ -760,15 +776,15 @@ export const reviewService = {
 
   // Buscar reseña por usuario y álbum
   async findByUserAndAlbum(userId, albumId) {
-    return await db.getAsync(
+    return await getAsync(
       'SELECT * FROM reviews WHERE user_id = ? AND album_id = ?',
-      [UserId, albumId]
+      [userId, albumId]
     );
   },
 
   // Obtener reseñas de un álbum
   async getAlbumReviews(albumId, limit = 20, offset = 0) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT r.*, u.username
       FROM reviews r
       JOIN users u ON r.user_id = u.id
@@ -780,7 +796,7 @@ export const reviewService = {
 
   // Obtener reseñas de un usuario
   async getUserReviews(userId, limit = 20, offset = 0) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT r.*, a.name as album_name, a.artist, a.image_url, a.spotify_id
       FROM reviews r
       JOIN albums a ON r.album_id = a.id
@@ -792,7 +808,7 @@ export const reviewService = {
 
   // Obtener reseñas recientes
   async getRecentReviews(limit = 10) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT r.*, u.username, a.name as album_name, a.artist, a.image_url, a.spotify_id
       FROM reviews r
       JOIN users u ON r.user_id = u.id
@@ -804,7 +820,7 @@ export const reviewService = {
 
   // Obtener estadísticas de un álbum
   async getAlbumStats(albumId) {
-    return await db.getAsync(`
+    return await getAsync(`
       SELECT 
         COUNT(*) as total_reviews,
         AVG(rating) as avg_rating,
@@ -821,7 +837,7 @@ export const reviewService = {
   // Obtener total de reseñas en la base de datos
   async getTotalReviewsCount() {
     try {
-      const result = await db.getAsync('SELECT COUNT(*) as count FROM reviews');
+      const result = await getAsync('SELECT COUNT(*) as count FROM reviews');
       return result?.count || 0;
     } catch (error) {
       console.error('Error obteniendo total de reseñas:', error);
@@ -868,7 +884,7 @@ export const watchlistService = {
 
   // Verificar si un álbum está en la watchlist del usuario
   async isInWatchlist(userId, albumId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT id FROM watchlist WHERE user_id = ? AND album_id = ?',
       [userId, albumId]
     );
@@ -877,7 +893,7 @@ export const watchlistService = {
 
   // Obtener la watchlist completa de un usuario
   async getUserWatchlist(userId, limit = 20, offset = 0) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT w.*, a.name as album_name, a.artist, a.image_url, a.spotify_id, a.release_date, a.spotify_url
       FROM watchlist w
       JOIN albums a ON w.album_id = a.id
@@ -889,7 +905,7 @@ export const watchlistService = {
 
   // Obtener cantidad de álbumes en watchlist
   async getWatchlistCount(userId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT COUNT(*) as count FROM watchlist WHERE user_id = ?',
       [userId]
     );
@@ -899,7 +915,7 @@ export const watchlistService = {
   // Obtener total de elementos en todas las watchlists
   async getTotalWatchlistCount() {
     try {
-      const result = await db.getAsync('SELECT COUNT(*) as count FROM watchlist');
+      const result = await getAsync('SELECT COUNT(*) as count FROM watchlist');
       return result?.count || 0;
     } catch (error) {
       console.error('Error obteniendo total de elementos en watchlist:', error);
@@ -915,7 +931,7 @@ export const listeningHistoryService = {
     const oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
     
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT id FROM listening_history WHERE user_id = ? AND album_id = ? AND listened_at > ?',
       [userId, albumId, oneDayAgo.toISOString()]
     );
@@ -947,7 +963,7 @@ export const listeningHistoryService = {
 
   // Obtener historial de escucha del usuario agrupado por fecha
   async getUserListeningHistory(userId, limit = 50, offset = 0) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT 
         DATE(lh.listened_at) as listen_date,
         lh.listened_at,
@@ -969,7 +985,7 @@ export const listeningHistoryService = {
   // Obtener historial agrupado por fecha para mostrar en formato lista
   async getUserListeningHistoryGrouped(userId, limit = 30) {
     // Cambiar el enfoque - obtener datos sin agrupar y agrupar en JavaScript
-    const history = await db.allAsync(`
+    const history = await allAsync(`
       SELECT 
         DATE(lh.listened_at) as listen_date,
         lh.listened_at,
@@ -1019,7 +1035,7 @@ export const listeningHistoryService = {
 
   // Obtener cantidad total de entradas en el historial
   async getHistoryCount(userId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT COUNT(*) as count FROM listening_history WHERE user_id = ?',
       [userId]
     );
@@ -1065,7 +1081,7 @@ export const userFollowService = {
 
   // Verificar si un usuario sigue a otro
   async isFollowing(followerId, followedId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT id FROM user_follows WHERE follower_id = ? AND followed_id = ?',
       [followerId, followedId]
     );
@@ -1074,7 +1090,7 @@ export const userFollowService = {
 
   // Obtener la lista de seguidores de un usuario
   async getFollowers(userId, limit = 20, offset = 0) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT 
         u.id,
         u.username,
@@ -1093,7 +1109,7 @@ export const userFollowService = {
 
   // Obtener la lista de usuarios seguidos por un usuario
   async getFollowing(userId, limit = 20, offset = 0) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT 
         u.id,
         u.username,
@@ -1112,7 +1128,7 @@ export const userFollowService = {
 
   // Obtener el número de seguidores de un usuario
   async getFollowersCount(userId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT COUNT(*) as count FROM user_follows WHERE followed_id = ?',
       [userId]
     );
@@ -1121,7 +1137,7 @@ export const userFollowService = {
 
   // Obtener el número de usuarios seguidos por un usuario
   async getFollowingCount(userId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT COUNT(*) as count FROM user_follows WHERE follower_id = ?',
       [userId]
     );
@@ -1203,7 +1219,7 @@ export const forumService = {
     query += ` ORDER BY ft.is_pinned DESC, ft.last_activity DESC LIMIT ? OFFSET ?`;
     params.push(limit, offset);
     
-    return await db.allAsync(query, params);
+    return await allAsync(query, params);
   },
 
   // Versión optimizada de getThreads usando pool de conexiones
@@ -1256,8 +1272,8 @@ export const forumService = {
     query += ` ORDER BY ft.is_pinned DESC, ft.last_activity DESC LIMIT ? OFFSET ?`;
     params.push(limit, offset);
     
-    // Usar pool de conexiones para la consulta
-    const result = await dbPool.executeQuery(query, params);
+    // Usar conexión directa para la consulta
+    const result = await allAsync(query, params);
     
     // Guardar en cache por 5 minutos
     forumCache.set(cacheKey, result, 300000);
@@ -1267,7 +1283,7 @@ export const forumService = {
 
   // Obtener un hilo específico con sus datos
   async getThread(threadId) {
-    return await db.getAsync(`
+    return await getAsync(`
       SELECT 
         ft.id,
         ft.title,
@@ -1291,7 +1307,7 @@ export const forumService = {
 
   // Incrementar las vistas de un hilo
   async incrementViews(threadId) {
-    return await db.runAsync(
+    return await runAsync(
       'UPDATE forum_threads SET views_count = views_count + 1 WHERE id = ?',
       [threadId]
     );
@@ -1333,7 +1349,7 @@ export const forumService = {
 
   // Obtener respuestas de un hilo
   async getReplies(threadId, limit = 20, offset = 0) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT 
         fr.id,
         fr.content,
@@ -1352,7 +1368,7 @@ export const forumService = {
 
   // Dar like a un hilo
   async likeThread(userId, threadId) {
-    return await db.runAsync(
+    return await runAsync(
       'INSERT OR IGNORE INTO forum_likes (user_id, thread_id) VALUES (?, ?)',
       [userId, threadId]
     );
@@ -1360,7 +1376,7 @@ export const forumService = {
 
   // Quitar like de un hilo
   async unlikeThread(userId, threadId) {
-    return await db.runAsync(
+    return await runAsync(
       'DELETE FROM forum_likes WHERE user_id = ? AND thread_id = ?',
       [userId, threadId]
     );
@@ -1368,7 +1384,7 @@ export const forumService = {
 
   // Dar like a una respuesta
   async likeReply(userId, replyId) {
-    return await db.runAsync(
+    return await runAsync(
       'INSERT OR IGNORE INTO forum_likes (user_id, reply_id) VALUES (?, ?)',
       [userId, replyId]
     );
@@ -1376,7 +1392,7 @@ export const forumService = {
 
   // Quitar like de una respuesta
   async unlikeReply(userId, replyId) {
-    return await db.runAsync(
+    return await runAsync(
       'DELETE FROM forum_likes WHERE user_id = ? AND reply_id = ?',
       [userId, replyId]
     );
@@ -1384,7 +1400,7 @@ export const forumService = {
 
   // Verificar si un usuario ha dado like a un hilo
   async hasLikedThread(userId, threadId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT id FROM forum_likes WHERE user_id = ? AND thread_id = ?',
       [userId, threadId]
     );
@@ -1393,7 +1409,7 @@ export const forumService = {
 
   // Verificar si un usuario ha dado like a una respuesta
   async hasLikedReply(userId, replyId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT id FROM forum_likes WHERE user_id = ? AND reply_id = ?',
       [userId, replyId]
     );
@@ -1402,7 +1418,7 @@ export const forumService = {
 
   // Obtener categorías disponibles
   async getCategories() {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT 
         category,
         COUNT(*) as thread_count
@@ -1414,7 +1430,7 @@ export const forumService = {
 
   // Obtener idiomas disponibles
   async getLanguages() {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT 
         language,
         COUNT(*) as thread_count
@@ -1426,7 +1442,7 @@ export const forumService = {
 
   // Buscar hilos
   async searchThreads(query, limit = 20, offset = 0) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT 
         ft.id,
         ft.title,
@@ -1452,7 +1468,7 @@ export const forumService = {
 
   // Eliminar un hilo (solo el autor o admin)
   async deleteThread(threadId, userId) {
-    return await db.runAsync(
+    return await runAsync(
       'DELETE FROM forum_threads WHERE id = ? AND user_id = ?',
       [threadId, userId]
     );
@@ -1460,7 +1476,7 @@ export const forumService = {
 
   // Eliminar una respuesta (marcar como eliminada)
   async deleteReply(replyId, userId) {
-    return await db.runAsync(
+    return await runAsync(
       'UPDATE forum_replies SET is_deleted = TRUE WHERE id = ? AND user_id = ?',
       [replyId, userId]
     );
@@ -1473,7 +1489,7 @@ export const artistService = {
   async getArtistStats(artistId) {
     try {
       // Obtener número de seguidores desde artist_follows
-      const followersResult = await db.getAsync(`
+      const followersResult = await getAsync(`
         SELECT COUNT(*) as followers_count
         FROM artist_follows 
         WHERE artist_id = ?
@@ -1481,7 +1497,7 @@ export const artistService = {
 
       // Obtener estadísticas de reseñas basadas en el nombre del artista
       // (ya que las reseñas están vinculadas a álbumes, no directamente a artistas)
-      const reviewsResult = await db.getAsync(`
+      const reviewsResult = await getAsync(`
         SELECT 
           COUNT(DISTINCT r.id) as total_reviews,
           AVG(r.rating) as avg_rating,
@@ -1564,13 +1580,13 @@ export const customListService = {
          GROUP BY cl.id
          ORDER BY cl.updated_at DESC`;
     
-    return await db.allAsync(query, [userId]);
+    return await allAsync(query, [userId]);
   },
 
   // Obtener una lista específica con sus álbumes
   async getListWithAlbums(listId, userId = null) {
     // Primero obtener la lista con información del usuario
-    const list = await db.getAsync(`
+    const list = await getAsync(`
       SELECT cl.*, u.username
       FROM custom_lists cl
       JOIN users u ON cl.user_id = u.id
@@ -1587,7 +1603,7 @@ export const customListService = {
     }
 
     // Obtener los álbumes de la lista
-    const albums = await db.allAsync(`
+    const albums = await allAsync(`
       SELECT 
         cla.*,
         a.spotify_id,
@@ -1611,7 +1627,7 @@ export const customListService = {
   // Agregar álbum a una lista
   async addAlbumToList(listId, albumId, userId, notes = null) {
     // Verificar que el usuario es propietario de la lista
-    const list = await db.getAsync(
+    const list = await getAsync(
       'SELECT * FROM custom_lists WHERE id = ? AND user_id = ?',
       [listId, userId]
     );
@@ -1621,7 +1637,7 @@ export const customListService = {
     }
 
     // Verificar si el álbum ya está en la lista
-    const existing = await db.getAsync(
+    const existing = await getAsync(
       'SELECT * FROM custom_list_albums WHERE list_id = ? AND album_id = ?',
       [listId, albumId]
     );
@@ -1631,13 +1647,13 @@ export const customListService = {
     }
 
     // Agregar el álbum
-    await db.runAsync(
+    await runAsync(
       'INSERT INTO custom_list_albums (list_id, album_id, notes) VALUES (?, ?, ?)',
       [listId, albumId, notes]
     );
 
     // Actualizar timestamp de la lista
-    await db.runAsync(
+    await runAsync(
       'UPDATE custom_lists SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [listId]
     );
@@ -1648,7 +1664,7 @@ export const customListService = {
   // Remover álbum de una lista
   async removeAlbumFromList(listId, albumId, userId) {
     // Verificar que el usuario es propietario de la lista
-    const list = await db.getAsync(
+    const list = await getAsync(
       'SELECT * FROM custom_lists WHERE id = ? AND user_id = ?',
       [listId, userId]
     );
@@ -1657,7 +1673,7 @@ export const customListService = {
       throw new Error('Lista no encontrada o no tienes permisos');
     }
 
-    const result = await db.runAsync(
+    const result = await runAsync(
       'DELETE FROM custom_list_albums WHERE list_id = ? AND album_id = ?',
       [listId, albumId]
     );
@@ -1667,7 +1683,7 @@ export const customListService = {
     }
 
     // Actualizar timestamp de la lista
-    await db.runAsync(
+    await runAsync(
       'UPDATE custom_lists SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [listId]
     );
@@ -1680,7 +1696,7 @@ export const customListService = {
     const { name, description, is_public } = updates;
     
     // Verificar permisos
-    const list = await db.getAsync(
+    const list = await getAsync(
       'SELECT * FROM custom_lists WHERE id = ? AND user_id = ?',
       [listId, userId]
     );
@@ -1689,18 +1705,18 @@ export const customListService = {
       throw new Error('Lista no encontrada o no tienes permisos');
     }
 
-    await db.runAsync(
+    await runAsync(
       'UPDATE custom_lists SET name = ?, description = ?, is_public = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [name, description, is_public, listId]
     );
 
-    return await db.getAsync('SELECT * FROM custom_lists WHERE id = ?', [listId]);
+    return await getAsync('SELECT * FROM custom_lists WHERE id = ?', [listId]);
   },
 
   // Eliminar lista
   async deleteList(listId, userId) {
     // Verificar permisos
-    const list = await db.getAsync(
+    const list = await getAsync(
       'SELECT * FROM custom_lists WHERE id = ? AND user_id = ?',
       [listId, userId]
     );
@@ -1710,7 +1726,7 @@ export const customListService = {
     }
 
     // Eliminar la lista (los álbumes se eliminan automáticamente por CASCADE)
-    const result = await db.runAsync(
+    const result = await runAsync(
       'DELETE FROM custom_lists WHERE id = ?',
       [listId]
     );
@@ -1720,7 +1736,7 @@ export const customListService = {
 
   // Obtener listas públicas recientes
   async getPublicLists(limit = 20, offset = 0) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT 
         cl.*,
         u.username,
@@ -1740,7 +1756,7 @@ export const customListService = {
   // Dar like a una lista
   async likeList(listId, userId) {
     // Verificar que la lista existe y es pública o es del usuario
-    const list = await db.getAsync(
+    const list = await getAsync(
       'SELECT * FROM custom_lists WHERE id = ? AND (is_public = 1 OR user_id = ?)',
       [listId, userId]
     );
@@ -1750,7 +1766,7 @@ export const customListService = {
     }
 
     // Verificar si ya le dio like
-    const existing = await db.getAsync(
+    const existing = await getAsync(
       'SELECT * FROM list_likes WHERE user_id = ? AND list_id = ?',
       [userId, listId]
     );
@@ -1760,7 +1776,7 @@ export const customListService = {
     }
 
     // Agregar like
-    await db.runAsync(
+    await runAsync(
       'INSERT INTO list_likes (user_id, list_id) VALUES (?, ?)',
       [userId, listId]
     );
@@ -1770,7 +1786,7 @@ export const customListService = {
 
   // Quitar like de una lista
   async unlikeList(listId, userId) {
-    const result = await db.runAsync(
+    const result = await runAsync(
       'DELETE FROM list_likes WHERE user_id = ? AND list_id = ?',
       [userId, listId]
     );
@@ -1784,7 +1800,7 @@ export const customListService = {
 
   // Verificar si el usuario le dio like a una lista
   async hasUserLikedList(listId, userId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT id FROM list_likes WHERE user_id = ? AND list_id = ?',
       [userId, listId]
     );
@@ -1793,7 +1809,7 @@ export const customListService = {
 
   // Obtener cantidad de likes de una lista
   async getListLikesCount(listId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT COUNT(*) as count FROM list_likes WHERE list_id = ?',
       [listId]
     );
@@ -1802,7 +1818,7 @@ export const customListService = {
 
   // Obtener usuarios que le dieron like a una lista
   async getListLikes(listId, limit = 10, offset = 0) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT 
         ll.created_at,
         u.id,
@@ -1820,7 +1836,7 @@ export const customListService = {
   // Agregar comentario a una lista
   async addCommentToList(listId, userId, content) {
     // Verificar que la lista existe y es pública o es del usuario
-    const list = await db.getAsync(
+    const list = await getAsync(
       'SELECT * FROM custom_lists WHERE id = ? AND (is_public = 1 OR user_id = ?)',
       [listId, userId]
     );
@@ -1838,13 +1854,13 @@ export const customListService = {
     }
 
     // Agregar comentario
-    const result = await db.runAsync(
+    const result = await runAsync(
       'INSERT INTO list_comments (user_id, list_id, content) VALUES (?, ?, ?)',
       [userId, listId, content.trim()]
     );
 
     // Obtener el comentario completo
-    return await db.getAsync(`
+    return await getAsync(`
       SELECT 
         lc.*,
         u.username
@@ -1856,7 +1872,7 @@ export const customListService = {
 
   // Obtener comentarios de una lista
   async getListComments(listId, limit = 20, offset = 0) {
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT 
         lc.*,
         u.username
@@ -1870,7 +1886,7 @@ export const customListService = {
 
   // Obtener cantidad de comentarios de una lista
   async getListCommentsCount(listId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT COUNT(*) as count FROM list_comments WHERE list_id = ?',
       [listId]
     );
@@ -1887,7 +1903,7 @@ export const customListService = {
       throw new Error('El comentario no puede exceder 500 caracteres');
     }
 
-    const result = await db.runAsync(
+    const result = await runAsync(
       'UPDATE list_comments SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
       [newContent.trim(), commentId, userId]
     );
@@ -1896,7 +1912,7 @@ export const customListService = {
       throw new Error('Comentario no encontrado o no tienes permisos');
     }
 
-    return await db.getAsync(`
+    return await getAsync(`
       SELECT 
         lc.*,
         u.username
@@ -1909,7 +1925,7 @@ export const customListService = {
   // Eliminar comentario (solo el autor o propietario de la lista pueden)
   async deleteComment(commentId, userId) {
     // Verificar permisos: autor del comentario o propietario de la lista
-    const comment = await db.getAsync(`
+    const comment = await getAsync(`
       SELECT 
         lc.*,
         cl.user_id as list_owner_id
@@ -1926,7 +1942,7 @@ export const customListService = {
       throw new Error('No tienes permisos para eliminar este comentario');
     }
 
-    const result = await db.runAsync(
+    const result = await runAsync(
       'DELETE FROM list_comments WHERE id = ?',
       [commentId]
     );
@@ -2008,7 +2024,7 @@ export const notificationService = {
       'WHERE n.user_id = ? AND n.is_read = FALSE' : 
       'WHERE n.user_id = ?';
 
-    return await db.allAsync(`
+    return await allAsync(`
       SELECT 
         n.*,
         u.username as from_username,
@@ -2060,7 +2076,7 @@ export const notificationService = {
 
   // Obtener cantidad de notificaciones no leídas
   async getUnreadCount(userId) {
-    const result = await db.getAsync(
+    const result = await getAsync(
       'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = FALSE',
       [userId]
     );
@@ -2123,7 +2139,7 @@ export const notificationService = {
 
   // Funciones específicas para crear notificaciones por tipo
   async notifyFollow(followedUserId, followerUserId) {
-    const follower = await db.getAsync(
+    const follower = await getAsync(
       'SELECT username FROM users WHERE id = ?',
       [followerUserId]
     );
@@ -2142,8 +2158,8 @@ export const notificationService = {
   async notifyListLike(listId, likerUserId) {
     // Obtener información de la lista y el usuario que dio like
     const [list, liker] = await Promise.all([
-      db.getAsync('SELECT * FROM custom_lists WHERE id = ?', [listId]),
-      db.getAsync('SELECT username FROM users WHERE id = ?', [likerUserId])
+      getAsync('SELECT * FROM custom_lists WHERE id = ?', [listId]),
+      getAsync('SELECT username FROM users WHERE id = ?', [likerUserId])
     ]);
 
     if (list && liker && list.user_id !== likerUserId) {
@@ -2161,8 +2177,8 @@ export const notificationService = {
   async notifyListComment(listId, commenterUserId) {
     // Obtener información de la lista y el usuario que comentó
     const [list, commenter] = await Promise.all([
-      db.getAsync('SELECT * FROM custom_lists WHERE id = ?', [listId]),
-      db.getAsync('SELECT username FROM users WHERE id = ?', [commenterUserId])
+      getAsync('SELECT * FROM custom_lists WHERE id = ?', [listId]),
+      getAsync('SELECT username FROM users WHERE id = ?', [commenterUserId])
     ]);
 
     if (list && commenter && list.user_id !== commenterUserId) {
@@ -2180,8 +2196,8 @@ export const notificationService = {
   async notifyThreadComment(threadId, commenterUserId) {
     // Obtener información del thread y el usuario que comentó
     const [thread, commenter] = await Promise.all([
-      db.getAsync('SELECT * FROM forum_threads WHERE id = ?', [threadId]),
-      db.getAsync('SELECT username FROM users WHERE id = ?', [commenterUserId])
+      getAsync('SELECT * FROM forum_threads WHERE id = ?', [threadId]),
+      getAsync('SELECT username FROM users WHERE id = ?', [commenterUserId])
     ]);
 
     if (thread && commenter && thread.user_id !== commenterUserId) {
@@ -2198,3 +2214,4 @@ export const notificationService = {
 };
 
 export default db;
+export { runAsync, getAsync, allAsync };
