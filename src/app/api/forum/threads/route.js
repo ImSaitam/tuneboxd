@@ -11,6 +11,7 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit')) || 20;
     const offset = parseInt(searchParams.get('offset')) || 0;
     const category = searchParams.get('category');
+    const language = searchParams.get('language');
     const search = searchParams.get('search');
 
     let threads;
@@ -18,7 +19,7 @@ export async function GET(request) {
     if (search) {
       threads = await forumService.searchThreads(search, limit, offset);
     } else {
-      threads = await forumService.getThreads(limit, offset, category);
+      threads = await forumService.getThreads(limit, offset, category, language);
     }
 
     return NextResponse.json({
@@ -38,7 +39,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { title, content, category = 'general' } = body;
+    const { title, content, category = 'general', language = 'es' } = body;
 
     // Verificar autenticación
     const authHeader = request.headers.get('authorization');
@@ -86,7 +87,8 @@ export async function POST(request) {
       decoded.userId,
       title.trim(),
       content ? content.trim() : '',
-      category
+      category,
+      language
     );
 
     return NextResponse.json({

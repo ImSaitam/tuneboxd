@@ -89,7 +89,7 @@ export default function NotificationsPage() {
           <p className="text-theme-secondary mb-6">Necesitas iniciar sesión para ver tus notificaciones</p>
           <Link 
             href="/login"
-            className="bg-theme-accent text-theme-primary px-6 py-3 rounded-lg transition-colors hover:opacity-90"
+            className="bg-theme-accent text-theme-button px-6 py-3 rounded-lg transition-colors hover:opacity-90"
           >
             Iniciar Sesión
           </Link>
@@ -133,7 +133,7 @@ export default function NotificationsPage() {
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="bg-theme-accent text-theme-primary px-4 py-2 rounded-lg transition-colors hover:opacity-90 flex items-center gap-2"
+                className="bg-theme-accent text-theme-button px-4 py-2 rounded-lg transition-colors hover:opacity-90 flex items-center gap-2"
               >
                 <Check size={16} />
                 Marcar todas como leídas
@@ -155,7 +155,7 @@ export default function NotificationsPage() {
                 onClick={() => setFilterType(type)}
                 className={`px-3 py-1 rounded-full text-sm transition-colors ${
                   filterType === type
-                    ? 'bg-theme-accent text-theme-primary'
+                    ? 'bg-theme-accent text-theme-button'
                     : 'bg-theme-card-hover text-theme-secondary hover:bg-theme-card-hover'
                 }`}
               >

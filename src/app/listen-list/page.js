@@ -82,14 +82,14 @@ export default function ListenListPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="text-center">
-          <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-4">Acceso Requerido</h1>
-          <p className="text-gray-300 mb-6">Necesitas iniciar sesión para ver tu lista de escucha</p>
+          <Heart className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-theme-primary mb-4">Acceso Requerido</h1>
+          <p className="text-theme-secondary mb-6">Necesitas iniciar sesión para ver tu lista de escucha</p>
           <Link 
             href="/login"
-            className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+            className="bg-theme-accent hover:bg-theme-hover text-theme-button font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
           >
             Iniciar Sesión
           </Link>
@@ -100,18 +100,18 @@ export default function ListenListPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      <div className="min-h-screen bg-theme-primary">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-700 rounded w-1/3"></div>
+            <div className="h-8 bg-theme-card rounded w-1/3"></div>
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="bg-white/10 rounded-lg p-6">
+              <div key={i} className="bg-theme-card rounded-lg p-6 border border-theme-border">
                 <div className="flex gap-4">
-                  <div className="w-20 h-20 bg-gray-700 rounded-lg"></div>
+                  <div className="w-20 h-20 bg-theme-hover rounded-lg"></div>
                   <div className="flex-1 space-y-3">
-                    <div className="h-6 bg-gray-700 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-                    <div className="h-4 bg-gray-700 rounded"></div>
+                    <div className="h-6 bg-theme-hover rounded w-3/4"></div>
+                    <div className="h-4 bg-theme-hover rounded w-1/2"></div>
+                    <div className="h-4 bg-theme-hover rounded"></div>
                   </div>
                 </div>
               </div>
@@ -123,24 +123,24 @@ export default function ListenListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-theme-primary">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-white hover:text-gray-300 transition-colors">
+            <Link href="/" className="text-theme-primary hover:text-theme-accent transition-colors">
               <ArrowLeft size={24} />
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-white">Mi Lista de Escucha</h1>
-              <p className="text-gray-300 mt-1">Álbumes que quieres escuchar más tarde</p>
+              <h1 className="text-3xl font-bold text-theme-primary">Mi Lista de Escucha</h1>
+              <p className="text-theme-secondary mt-1">Álbumes que quieres escuchar más tarde</p>
             </div>
           </div>
           
           {isAuthenticated && (
             <div className="text-right">
-              <p className="text-white">¡Hola, {user?.username}!</p>
-              <p className="text-gray-300 text-sm">{listenList.length} álbum{listenList.length !== 1 ? 'es' : ''} guardado{listenList.length !== 1 ? 's' : ''}</p>
+              <p className="text-theme-primary">¡Hola, {user?.username}!</p>
+              <p className="text-theme-secondary text-sm">{listenList.length} álbum{listenList.length !== 1 ? 'es' : ''} guardado{listenList.length !== 1 ? 's' : ''}</p>
             </div>
           )}
         </div>
@@ -151,7 +151,7 @@ export default function ListenListPage() {
             <p className="text-red-200">{error}</p>
             <button 
               onClick={loadListenList}
-              className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+              className="mt-4 bg-red-500 hover:bg-red-600 text-theme-button px-4 py-2 rounded-lg transition-colors"
             >
               Reintentar
             </button>
@@ -173,12 +173,12 @@ export default function ListenListPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <Heart size={64} className="text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">Tu lista de escucha está vacía</h3>
-            <p className="text-gray-300 mb-6">Comienza a añadir álbumes que quieras escuchar más tarde</p>
+            <Heart size={64} className="text-theme-muted mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-theme-primary mb-2">Tu lista de escucha está vacía</h3>
+            <p className="text-theme-secondary mb-6">Comienza a añadir álbumes que quieras escuchar más tarde</p>
             <Link 
               href="/"
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+              className="bg-theme-accent hover:bg-theme-hover text-theme-button font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
             >
               Explorar Música
             </Link>
@@ -192,7 +192,7 @@ export default function ListenListPage() {
 // Componente para cada álbum en la lista de escucha
 function ListenListCard({ item, onAlbumClick, onRemove, isRemoving }) {
   return (
-    <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
+    <div className="bg-theme-card backdrop-blur-md rounded-lg p-6 border border-theme-border hover:bg-theme-hover transition-all duration-300">
       <div className="flex flex-col md:flex-row gap-6 items-start">
         {/* Album Cover */}
         <div className="flex-shrink-0">
@@ -207,21 +207,21 @@ function ListenListCard({ item, onAlbumClick, onRemove, isRemoving }) {
         {/* Album Info */}
         <div className="flex-1 min-w-0">
           <h3 
-            className="text-xl font-bold text-white mb-1 cursor-pointer hover:text-blue-300 transition-colors"
+            className="text-xl font-bold text-theme-primary mb-1 cursor-pointer hover:text-theme-accent transition-colors"
             onClick={() => onAlbumClick(item)}
           >
             {item.album_name}
           </h3>
-          <p className="text-gray-300 mb-2">{item.artist}</p>
+          <p className="text-theme-secondary mb-2">{item.artist}</p>
           
           {item.release_date && (
-            <div className="flex items-center gap-2 text-gray-400 text-sm mb-3">
+            <div className="flex items-center gap-2 text-theme-muted text-sm mb-3">
               <Calendar size={16} />
               {new Date(item.release_date).getFullYear()}
             </div>
           )}
 
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+          <div className="flex items-center gap-2 text-theme-muted text-sm">
             <Plus size={16} />
             Añadido el {new Date(item.created_at).toLocaleDateString('es')}
           </div>
@@ -231,7 +231,7 @@ function ListenListCard({ item, onAlbumClick, onRemove, isRemoving }) {
         <div className="flex flex-col gap-2">
           <button
             onClick={() => onAlbumClick(item)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg transition-colors"
           >
             <Music size={16} />
             Ver Álbum
@@ -242,7 +242,7 @@ function ListenListCard({ item, onAlbumClick, onRemove, isRemoving }) {
               href={item.spotify_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-theme-button rounded-lg transition-colors"
             >
               <ExternalLink size={16} />
               Spotify
@@ -252,7 +252,7 @@ function ListenListCard({ item, onAlbumClick, onRemove, isRemoving }) {
           <button
             onClick={() => onRemove(item.album_id)}
             disabled={isRemoving}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-theme-button rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Trash2 size={16} />
             {isRemoving ? 'Removiendo...' : 'Remover'}

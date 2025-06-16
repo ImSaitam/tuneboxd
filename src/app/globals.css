@@ -82,6 +82,10 @@ body {
   background: linear-gradient(135deg, var(--secondary-start), var(--secondary-end));
 }
 
+.bg-theme-hover {
+  background: var(--card-hover);
+}
+
 .text-theme-primary {
   color: var(--text-primary);
 }
@@ -94,7 +98,16 @@ body {
   color: var(--text-muted);
 }
 
+/* Texto blanco para botones - siempre blanco en ambos temas */
+.text-theme-button {
+  color: #ffffff;
+}
+
 .border-theme {
+  border-color: var(--border-color);
+}
+
+.border-theme-border {
   border-color: var(--border-color);
 }
 
@@ -113,4 +126,9 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* Placeholders con colores de tema */
+.placeholder-theme-muted::placeholder {
+  color: var(--text-muted);
 }

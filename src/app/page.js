@@ -577,7 +577,7 @@ const TuneboxdApp = () => {
                     onClick={() => setSearchType(type.key)}
                     className={`px-3 py-1 rounded-full text-sm transition-all duration-300 ${
                       searchType === type.key
-                        ? "bg-theme-accent text-theme-primary font-semibold"
+                        ? "bg-theme-accent text-theme-button font-semibold"
                         : "bg-theme-card text-theme-secondary hover:bg-theme-card-hover"
                     }`}
                   >
@@ -635,7 +635,7 @@ const TuneboxdApp = () => {
               <>
                 <button
                   onClick={() => scrollToSection("#features")}
-                  className="relative bg-theme-accent text-theme-primary px-8 py-4 rounded-full text-lg font-semibold hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden group"
+                  className="relative bg-theme-accent text-theme-button px-8 py-4 rounded-full text-lg font-semibold hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden group"
                 >
                   <span className="relative z-10">Explorar música</span>
                   <div className="absolute inset-0 bg-theme-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -771,6 +771,24 @@ const TuneboxdApp = () => {
               </button>
             ))}
           </div>
+          
+          {/* Enlaces legales */}
+          <div className="flex justify-center space-x-6 mb-6">
+            <Link 
+              href="/terms"
+              className="text-theme-secondary hover:text-theme-primary transition-colors text-sm"
+            >
+              Términos y Condiciones
+            </Link>
+            <span className="text-theme-muted">•</span>
+            <Link 
+              href="/privacy"
+              className="text-theme-secondary hover:text-theme-primary transition-colors text-sm"
+            >
+              Política de Privacidad
+            </Link>
+          </div>
+          
           <p className="text-theme-secondary">
             © 2025 Tuneboxd. Donde la música encuentra su voz.
           </p>

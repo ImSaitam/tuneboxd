@@ -211,10 +211,10 @@ const ThreadDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="w-12 h-12 text-white animate-spin" />
-          <p className="text-white text-lg">Cargando hilo...</p>
+          <Loader2 className="w-12 h-12 text-theme-primary animate-spin" />
+          <p className="text-theme-primary text-lg">Cargando hilo...</p>
         </div>
       </div>
     );
@@ -222,16 +222,16 @@ const ThreadDetailPage = () => {
 
   if (!thread) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="text-center">
-          <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-white mb-4">Hilo no encontrado</h1>
-          <p className="text-gray-300 mb-6">
+          <MessageCircle className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-theme-primary mb-4">Hilo no encontrado</h1>
+          <p className="text-theme-secondary mb-6">
             El hilo que buscas no existe o ha sido eliminado
           </p>
           <Link 
-            href="/social"
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            href="/community"
+            className="inline-flex items-center px-6 py-3 bg-theme-accent text-theme-button rounded-lg hover:bg-theme-hover transition-colors"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Volver al foro
@@ -242,21 +242,21 @@ const ThreadDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-theme-primary">
       {/* Header */}
-      <div className="bg-black/20 backdrop-blur-sm border-b border-white/10">
+      <div className="bg-theme-card backdrop-blur-sm border-b border-theme-border">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link 
               href="/community"
-              className="flex items-center space-x-2 text-white hover:text-blue-300 transition-colors"
+              className="flex items-center space-x-2 text-theme-primary hover:text-theme-accent transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Volver a la comunidad</span>
             </Link>
             
             <div className="flex items-center space-x-4">
-              <span className="bg-blue-600/30 px-3 py-1 rounded-lg text-blue-300 text-sm">
+              <span className="bg-theme-accent/30 px-3 py-1 rounded-lg text-theme-accent text-sm">
                 #{thread.category}
               </span>
             </div>
@@ -267,7 +267,7 @@ const ThreadDetailPage = () => {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Thread Header */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 mb-8">
+        <div className="bg-theme-card backdrop-blur-sm rounded-2xl p-8 border border-theme-border mb-8">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-3 flex-1">
               {thread.is_pinned && (
@@ -276,16 +276,16 @@ const ThreadDetailPage = () => {
               {thread.is_locked && (
                 <Lock className="w-5 h-5 text-red-400 flex-shrink-0" />
               )}
-              <h1 className="text-3xl font-bold text-white flex-1">
+              <h1 className="text-3xl font-bold text-theme-primary flex-1">
                 {thread.title}
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4 text-sm text-gray-400 mb-6">
+          <div className="flex items-center space-x-4 text-sm text-theme-muted mb-6">
             <Link 
               href={`/profile/${thread.author_username}`}
-              className="flex items-center space-x-2 hover:text-white transition-colors"
+              className="flex items-center space-x-2 hover:text-theme-primary transition-colors"
             >
               <User className="w-4 h-4" />
               <span>@{thread.author_username}</span>
@@ -303,27 +303,27 @@ const ThreadDetailPage = () => {
           </div>
 
           {thread.content && (
-            <div className="text-gray-300 leading-relaxed mb-6 whitespace-pre-wrap">
+            <div className="text-theme-secondary leading-relaxed mb-6 whitespace-pre-wrap">
               {thread.content}
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-4 border-t border-white/10">
+          <div className="flex items-center justify-between pt-4 border-t border-theme-border">
             <div className="flex items-center space-x-6">
               <button
                 onClick={handleLikeThread}
                 disabled={!isAuthenticated}
                 className={`flex items-center space-x-2 transition-colors ${
                   userLikes?.thread 
-                    ? 'text-blue-400 hover:text-blue-300' 
-                    : 'text-gray-400 hover:text-blue-400'
+                    ? 'text-theme-accent hover:text-theme-accent/80' 
+                    : 'text-theme-muted hover:text-theme-accent'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <ThumbsUp className="w-5 h-5" />
                 <span>{thread.likes_count}</span>
               </button>
               
-              <div className="flex items-center space-x-2 text-gray-400">
+              <div className="flex items-center space-x-2 text-theme-muted">
                 <MessageCircle className="w-5 h-5" />
                 <span>{replies.length} respuestas</span>
               </div>
@@ -331,11 +331,11 @@ const ThreadDetailPage = () => {
 
             {isAuthenticated && user?.id === thread.author_id && (
               <div className="flex items-center space-x-2">
-                <button className="flex items-center space-x-1 text-gray-400 hover:text-blue-400 transition-colors">
+                <button className="flex items-center space-x-1 text-theme-muted hover:text-theme-accent transition-colors">
                   <Edit3 className="w-4 h-4" />
                   <span>Editar</span>
                 </button>
-                <button className="flex items-center space-x-1 text-gray-400 hover:text-red-400 transition-colors">
+                <button className="flex items-center space-x-1 text-theme-muted hover:text-red-400 transition-colors">
                   <Trash2 className="w-4 h-4" />
                   <span>Eliminar</span>
                 </button>
@@ -346,24 +346,24 @@ const ThreadDetailPage = () => {
 
         {/* New Reply Form */}
         {isAuthenticated && !thread.is_locked ? (
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-8">
-            <h3 className="text-lg font-bold text-white mb-4">Escribir respuesta</h3>
+          <div className="bg-theme-card backdrop-blur-sm rounded-2xl p-6 border border-theme-border mb-8">
+            <h3 className="text-lg font-bold text-theme-primary mb-4">Escribir respuesta</h3>
             <textarea
               value={newReply}
               onChange={(e) => setNewReply(e.target.value)}
               placeholder="Escribe tu respuesta..."
               rows={4}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none mb-4"
+              className="w-full px-4 py-3 bg-theme-primary border border-theme-border rounded-lg text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent resize-none mb-4"
               maxLength={2000}
             />
             <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-xs">
+              <span className="text-theme-muted text-xs">
                 {newReply.length}/2000
               </span>
               <button
                 onClick={handleSubmitReply}
                 disabled={isSubmitting || !newReply.trim()}
-                className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center space-x-2 px-6 py-3 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>
@@ -380,16 +380,16 @@ const ThreadDetailPage = () => {
             </div>
           </div>
         ) : !isAuthenticated ? (
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-8 text-center">
-            <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-white mb-2">¿Quieres participar?</h3>
-            <p className="text-gray-300 mb-4">
+          <div className="bg-theme-card backdrop-blur-sm rounded-2xl p-6 border border-theme-border mb-8 text-center">
+            <MessageCircle className="w-12 h-12 text-theme-muted mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-theme-primary mb-2">¿Quieres participar?</h3>
+            <p className="text-theme-secondary mb-4">
               Inicia sesión para escribir respuestas y dar likes
             </p>
             <div className="space-x-4">
               <Link 
                 href="/login"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-theme-accent text-theme-button rounded-lg hover:bg-theme-hover transition-colors"
               >
                 Iniciar Sesión
               </Link>
@@ -402,10 +402,10 @@ const ThreadDetailPage = () => {
             </div>
           </div>
         ) : thread.is_locked && (
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 mb-8 text-center">
+          <div className="bg-theme-card backdrop-blur-sm rounded-2xl p-6 border border-theme-border mb-8 text-center">
             <Lock className="w-12 h-12 text-red-400 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-white mb-2">Hilo Bloqueado</h3>
-            <p className="text-gray-300">
+            <h3 className="text-lg font-bold text-theme-primary mb-2">Hilo Bloqueado</h3>
+            <p className="text-theme-secondary">
               Este hilo está bloqueado y no acepta nuevas respuestas
             </p>
           </div>
@@ -413,7 +413,7 @@ const ThreadDetailPage = () => {
 
         {/* Replies */}
         <div className="space-y-4">
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-xl font-bold text-theme-primary">
             Respuestas ({replies.length})
           </h2>
 
@@ -421,7 +421,7 @@ const ThreadDetailPage = () => {
             replies.map((reply) => (
               <div 
                 key={reply.id}
-                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
+                className="bg-theme-card backdrop-blur-sm rounded-2xl p-6 border border-theme-border hover:bg-theme-hover transition-all duration-300"
               >
                 <div className="flex items-start space-x-4">
                   <Link href={`/profile/${reply.author_username}`}>
@@ -434,16 +434,16 @@ const ThreadDetailPage = () => {
                     <div className="flex items-center space-x-3 mb-3">
                       <Link 
                         href={`/profile/${reply.author_username}`}
-                        className="font-semibold text-white hover:text-blue-300 transition-colors"
+                        className="font-semibold text-theme-primary hover:text-theme-accent transition-colors"
                       >
                         @{reply.author_username}
                       </Link>
-                      <span className="text-gray-400 text-sm">
+                      <span className="text-theme-muted text-sm">
                         {formatTimeAgo(reply.created_at)}
                       </span>
                     </div>
 
-                    <div className="text-gray-300 leading-relaxed mb-4 whitespace-pre-wrap">
+                    <div className="text-theme-secondary leading-relaxed mb-4 whitespace-pre-wrap">
                       {reply.content}
                     </div>
 
@@ -453,8 +453,8 @@ const ThreadDetailPage = () => {
                         disabled={!isAuthenticated}
                         className={`flex items-center space-x-1 transition-colors ${
                           userLikes?.replies?.[reply.id] 
-                            ? 'text-blue-400 hover:text-blue-300' 
-                            : 'text-gray-400 hover:text-blue-400'
+                            ? 'text-theme-accent hover:text-theme-accent/80' 
+                            : 'text-theme-muted hover:text-theme-accent'
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         <ThumbsUp className="w-4 h-4" />
@@ -463,7 +463,7 @@ const ThreadDetailPage = () => {
 
                       {isAuthenticated && user?.id === reply.author_id && (
                         <div className="flex items-center space-x-2">
-                          <button className="flex items-center space-x-1 text-gray-400 hover:text-red-400 transition-colors text-sm">
+                          <button className="flex items-center space-x-1 text-theme-muted hover:text-red-400 transition-colors text-sm">
                             <Trash2 className="w-3 h-3" />
                             <span>Eliminar</span>
                           </button>
@@ -476,11 +476,11 @@ const ThreadDetailPage = () => {
             ))
           ) : (
             <div className="text-center py-12">
-              <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">
+              <MessageCircle className="w-12 h-12 text-theme-muted mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-theme-primary mb-2">
                 No hay respuestas aún
               </h3>
-              <p className="text-gray-400">
+              <p className="text-theme-muted">
                 ¡Sé el primero en responder a este hilo!
               </p>
             </div>

@@ -98,7 +98,7 @@ const ResetPasswordPage = () => {
 
   const ValidationItem = ({ isValid, text }) => (
     <div className={`flex items-center text-sm transition-colors duration-300 ${
-      isValid ? 'text-green-400' : 'text-white/60'
+      isValid ? 'text-green-400' : 'text-theme-muted'
     }`}>
       {isValid ? (
         <Check className="w-4 h-4 mr-2" />
@@ -111,21 +111,22 @@ const ResetPasswordPage = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-400 to-teal-400 rounded-full mb-6">
-              <Check className="w-10 h-10 text-white" />
+          <div className="bg-theme-card backdrop-blur-md rounded-3xl p-8 border border-theme shadow-2xl text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-theme-accent rounded-full mb-6">
+              <Check className="w-10 h-10 text-theme-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-4">
-              ¡Contraseña restablecida!
+            <h1 className="text-3xl font-bold text-theme-primary mb-4">
+              ¡Contraseña actualizada!
             </h1>
-            <p className="text-white/70 mb-8">
-              Tu contraseña ha sido actualizada exitosamente. Ahora puedes iniciar sesión con tu nueva contraseña.
+            <p className="text-theme-secondary mb-8">
+              Tu contraseña ha sido restablecida exitosamente. 
+              Ya puedes iniciar sesión con tu nueva contraseña.
             </p>
             <Link
               href="/login"
-              className="block w-full bg-gradient-to-r from-red-400 to-teal-400 text-white py-3 rounded-2xl font-semibold hover:from-red-500 hover:to-teal-500 transition-all duration-300 transform hover:-translate-y-1 text-center"
+              className="block w-full bg-theme-accent text-theme-button py-3 rounded-2xl font-semibold transition-all duration-300 transform hover:-translate-y-1 text-center hover:opacity-90"
             >
               Ir al inicio de sesión
             </Link>
@@ -136,13 +137,13 @@ const ResetPasswordPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-theme-primary flex items-center justify-center p-4">
       {/* Floating Music Notes Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {Array.from({ length: 15 }, (_, i) => (
           <div
             key={i}
-            className="absolute text-white/5 text-4xl animate-pulse"
+            className="absolute text-theme-muted text-4xl animate-pulse"
             style={{
               left: `${10 + (i * 6)}%`,
               top: `${10 + (i * 5)}%`,
@@ -159,24 +160,24 @@ const ResetPasswordPage = () => {
         {/* Botón de regreso */}
         <Link
           href="/login"
-          className="inline-flex items-center text-white/80 hover:text-white mb-8 transition-colors duration-300 group"
+          className="inline-flex items-center text-theme-secondary hover:text-theme-primary mb-8 transition-colors duration-300 group"
         >
           <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
           Volver al inicio de sesión
         </Link>
 
         {/* Formulario */}
-        <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl">
+        <div className="bg-theme-card backdrop-blur-md rounded-3xl p-8 border border-theme shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-red-400 to-teal-400 rounded-full mb-4">
-              <Music className="w-8 h-8 text-white" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-theme-accent rounded-full mb-4">
+              <Music className="w-8 h-8 text-theme-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Restablecer contraseña
+            <h1 className="text-3xl font-bold text-theme-primary mb-2">
+              Nueva contraseña
             </h1>
-            <p className="text-white/70">
-              Ingresa tu nueva contraseña
+            <p className="text-theme-secondary">
+              Ingresa tu nueva contraseña segura
             </p>
           </div>
 
@@ -191,11 +192,11 @@ const ResetPasswordPage = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-white/80 text-sm font-medium mb-2">
+              <label htmlFor="password" className="block text-theme-secondary text-sm font-medium mb-2">
                 Nueva contraseña
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-muted w-5 h-5" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
@@ -203,13 +204,13 @@ const ResetPasswordPage = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-11 pr-12 py-3 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:border-teal-400 focus:bg-white/20 transition-all duration-300"
+                  className="w-full pl-11 pr-12 py-3 bg-theme-card border border-theme rounded-2xl text-theme-primary placeholder-theme-muted focus:outline-none focus:border-theme-accent focus:bg-theme-card-hover transition-all duration-300"
                   placeholder="Tu nueva contraseña"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors duration-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-theme-muted hover:text-theme-secondary transition-colors duration-300"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -229,11 +230,11 @@ const ResetPasswordPage = () => {
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-white/80 text-sm font-medium mb-2">
+              <label htmlFor="confirmPassword" className="block text-theme-secondary text-sm font-medium mb-2">
                 Confirmar nueva contraseña
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-muted w-5 h-5" />
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   id="confirmPassword"
@@ -241,17 +242,17 @@ const ResetPasswordPage = () => {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required
-                  className={`w-full pl-11 pr-12 py-3 bg-white/10 border rounded-2xl text-white placeholder-white/50 focus:outline-none focus:bg-white/20 transition-all duration-300 ${
+                  className={`w-full pl-11 pr-12 py-3 bg-theme-card border rounded-2xl text-theme-primary placeholder-theme-muted focus:outline-none focus:bg-theme-card-hover transition-all duration-300 ${
                     formData.confirmPassword && !passwordsMatch 
                       ? 'border-red-400 focus:border-red-400' 
-                      : 'border-white/20 focus:border-teal-400'
+                      : 'border-theme focus:border-theme-accent'
                   }`}
                   placeholder="Confirma tu nueva contraseña"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors duration-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-theme-muted hover:text-theme-secondary transition-colors duration-300"
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -265,18 +266,31 @@ const ResetPasswordPage = () => {
             <button
               type="submit"
               disabled={loading || !isPasswordValid || !passwordsMatch || !token}
-              className="w-full bg-gradient-to-r from-red-400 to-teal-400 text-white py-3 rounded-2xl font-semibold hover:from-red-500 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg disabled:opacity-70 disabled:transform-none disabled:shadow-none"
+              className="w-full bg-theme-accent text-theme-button py-3 rounded-2xl font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg disabled:opacity-70 disabled:transform-none disabled:shadow-none"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                  Restableciendo...
+                  <div className="w-5 h-5 border-2 border-theme-primary/30 border-t-theme-primary rounded-full animate-spin mr-2"></div>
+                  Actualizando...
                 </div>
               ) : (
                 'Restablecer contraseña'
               )}
             </button>
           </form>
+
+          {/* Additional Info */}
+          <div className="mt-8 p-4 bg-theme-card-hover rounded-2xl border border-theme">
+            <p className="text-theme-muted text-sm text-center">
+              ¿Recordaste tu contraseña?{' '}
+              <Link
+                href="/login"
+                className="text-theme-accent hover:opacity-80 font-semibold transition-colors duration-300"
+              >
+                Inicia sesión aquí
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

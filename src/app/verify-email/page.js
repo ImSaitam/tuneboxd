@@ -46,56 +46,59 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-theme-primary flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl">
+        <div className="bg-theme-card backdrop-blur-md rounded-3xl p-8 border border-theme shadow-2xl">
           
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full mb-4">
-              <Mail className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Verificación de Email
-            </h1>
+          {/* Botón de regreso */}
+          <div className="mb-6">
+            <Link
+              href="/"
+              className="inline-flex items-center text-theme-secondary hover:text-theme-primary transition-colors duration-300 group"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
+              Volver al inicio
+            </Link>
           </div>
 
-          {/* Content */}
           <div className="text-center">
             {status === 'loading' && (
               <>
-                <div className="flex justify-center mb-6">
-                  <Loader2 className="w-12 h-12 text-blue-400 animate-spin" />
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-theme-accent rounded-full mb-6">
+                  <Loader2 className="w-10 h-10 text-theme-primary animate-spin" />
                 </div>
-                <p className="text-white/70 text-lg">
-                  Verificando tu cuenta...
+                <h1 className="text-3xl font-bold text-theme-primary mb-4">
+                  Verificando email
+                </h1>
+                <p className="text-theme-secondary">
+                  Por favor espera mientras verificamos tu cuenta...
                 </p>
               </>
             )}
 
             {status === 'success' && (
               <>
-                <div className="flex justify-center mb-6">
-                  <CheckCircle className="w-16 h-16 text-green-400" />
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full mb-6">
+                  <CheckCircle className="w-10 h-10 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-4">
-                  ✅ ¡Verificación Exitosa!
-                </h2>
-                <p className="text-white/80 mb-8 leading-relaxed">
-                  {message}
+                <h1 className="text-3xl font-bold text-theme-primary mb-4">
+                  ¡Email verificado!
+                </h1>
+                <p className="text-theme-secondary mb-8">
+                  {message || 'Tu cuenta ha sido verificada exitosamente. Ya puedes iniciar sesión.'}
                 </p>
                 <div className="space-y-4">
                   <button
                     onClick={handleGoToLogin}
-                    className="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold rounded-2xl hover:from-green-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-400/50"
+                    className="w-full bg-theme-accent text-theme-button py-3 rounded-2xl font-semibold hover:opacity-90 transition-all duration-300 transform hover:-translate-y-1"
                   >
-                    Iniciar Sesión
+                    Iniciar sesión
                   </button>
                   <Link
                     href="/"
-                    className="block w-full py-3 px-6 bg-white/10 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 text-center border border-white/20"
+                    className="block w-full bg-theme-card hover:bg-theme-card-hover border border-theme text-theme-primary py-3 rounded-2xl font-medium transition-all duration-300 transform hover:-translate-y-1 text-center"
                   >
-                    Explorar Tuneboxd
+                    Ir al inicio
                   </Link>
                 </div>
               </>
@@ -103,53 +106,45 @@ export default function VerifyEmailPage() {
 
             {status === 'error' && (
               <>
-                <div className="flex justify-center mb-6">
-                  <XCircle className="w-16 h-16 text-red-400" />
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-red-500 rounded-full mb-6">
+                  <XCircle className="w-10 h-10 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-4">
-                  ❌ Error de Verificación
-                </h2>
-                <p className="text-red-200 mb-8 leading-relaxed">
-                  {message}
+                <h1 className="text-3xl font-bold text-theme-primary mb-4">
+                  Error de verificación
+                </h1>
+                <p className="text-theme-secondary mb-8">
+                  {message || 'Hubo un problema al verificar tu email. El enlace puede haber expirado.'}
                 </p>
-                <div className="bg-red-500/20 border border-red-400/30 rounded-2xl p-4 mb-6">
-                  <p className="text-red-200 text-sm">
-                    <strong>Posibles causas:</strong>
-                  </p>
-                  <ul className="text-red-200 text-sm mt-2 space-y-1 text-left">
-                    <li>• El enlace ha expirado (válido por 24 horas)</li>
-                    <li>• El enlace ya fue usado</li>
-                    <li>• El enlace está dañado o es inválido</li>
-                  </ul>
-                </div>
                 <div className="space-y-4">
                   <Link
                     href="/register"
-                    className="block w-full py-3 px-6 bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold rounded-2xl hover:from-red-600 hover:to-pink-600 transition-all duration-300 text-center"
+                    className="block w-full bg-theme-accent text-theme-button py-3 rounded-2xl font-semibold hover:opacity-90 transition-all duration-300 transform hover:-translate-y-1 text-center"
                   >
-                    Crear Nueva Cuenta
+                    Registrarse de nuevo
                   </Link>
                   <Link
                     href="/login"
-                    className="block w-full py-3 px-6 bg-white/10 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 text-center border border-white/20"
+                    className="block w-full bg-theme-card hover:bg-theme-card-hover border border-theme text-theme-primary py-3 rounded-2xl font-medium transition-all duration-300 transform hover:-translate-y-1 text-center"
                   >
-                    Intentar Iniciar Sesión
+                    Iniciar sesión
                   </Link>
                 </div>
               </>
             )}
           </div>
 
-          {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-white/10 text-center">
-            <Link
-              href="/"
-              className="inline-flex items-center text-white/60 hover:text-white transition-colors duration-300"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Volver al inicio
-            </Link>
-          </div>
+          {/* Información adicional */}
+          {status === 'error' && (
+            <div className="mt-8 p-4 bg-theme-card-hover rounded-2xl border border-theme">
+              <div className="flex items-center justify-center mb-3">
+                <Mail className="w-5 h-5 text-theme-accent mr-2" />
+                <span className="text-theme-primary font-medium">¿Necesitas ayuda?</span>
+              </div>
+              <p className="text-theme-muted text-sm text-center">
+                Si sigues teniendo problemas, ponte en contacto con nuestro equipo de soporte o intenta registrarte nuevamente.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

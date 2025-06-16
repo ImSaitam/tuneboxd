@@ -19,6 +19,36 @@ const nextConfig = {
     // Para GIFs animados, usar el loader sin optimización
     loader: 'default',
   },
+  
+  // Configuración de compresión y rendimiento
+  compress: true, // Habilitar compresión gzip
+  
+  // Configuración experimental para mejorar rendimiento
+  experimental: {
+    optimizeCss: true, // Optimizar CSS
+    serverActions: {
+      bodySizeLimit: '2mb' // Límite de tamaño del cuerpo de las acciones del servidor
+    }
+  },
+  
+  // Configuración de headers para cache y seguridad
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=300, stale-while-revalidate=600'
+          },
+          {
+            key: 'Content-Encoding',
+            value: 'gzip'
+          }
+        ]
+      }
+    ];
+  },
 };
 
 export default nextConfig;

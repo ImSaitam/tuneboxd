@@ -1,13 +1,11 @@
-import sqlite3 from 'sqlite3';
 import { promisify } from 'util';
-
-// Crear la base de datos
-const db = new sqlite3.Database('./users.db');
+import { forumCache } from './cache.js';
+import { dbPool } from './database-pool.js';
 
 // Promisificar los métodos de la base de datos para usar async/await
-db.runAsync = promisify(db.run.bind(db));
-db.getAsync = promisify(db.get.bind(db));
-db.allAsync = promisify(db.all.bind(db));
+const runAsync = promisify(dbPool.run.bind(dbPool));
+const getAsync = promisify(dbPool.get.bind(dbPool));
+const allAsync = promisify(dbPool.all.bind(dbPool));
 
 // Usar una variable global para controlar la inicialización en modo desarrollo
 const GLOBAL_KEY = Symbol.for('tuneboxd.database.initialized');
@@ -24,7 +22,7 @@ const initializeDatabase = () => {
   }
 
   try {
-    db.exec(`
+    dbPool.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
@@ -764,7 +762,7 @@ export const reviewService = {
   async findByUserAndAlbum(userId, albumId) {
     return await db.getAsync(
       'SELECT * FROM reviews WHERE user_id = ? AND album_id = ?',
-      [userId, albumId]
+      [UserId, albumId]
     );
   },
 
@@ -1145,15 +1143,17 @@ export const userFollowService = {
 // Servicios para el sistema de foro/comunidad
 export const forumService = {
   // Crear un nuevo hilo
-  async createThread(userId, title, content, category = 'general') {
+  async createThread(userId, title, content, category = 'general', language = 'es') {
     return new Promise((resolve, reject) => {
       db.run(
-        'INSERT INTO forum_threads (user_id, title, content, category) VALUES (?, ?, ?, ?)',
-        [userId, title, content, category],
+        'INSERT INTO forum_threads (user_id, title, content, category, language) VALUES (?, ?, ?, ?, ?)',
+        [userId, title, content, category, language],
         function(err) {
           if (err) {
             reject(err);
           } else {
+            // Invalidar cache del foro cuando se crea un nuevo hilo
+            forumCache.invalidate('forum-data');
             resolve(this.lastID);
           }
         }
@@ -1162,13 +1162,14 @@ export const forumService = {
   },
 
   // Obtener lista de hilos con paginación
-  async getThreads(limit = 20, offset = 0, category = null) {
+  async getThreads(limit = 20, offset = 0, category = null, language = null) {
     let query = `
       SELECT 
         ft.id,
         ft.title,
         ft.content,
         ft.category,
+        ft.language,
         ft.is_pinned,
         ft.is_locked,
         ft.views_count,
@@ -1183,16 +1184,85 @@ export const forumService = {
     `;
     
     const params = [];
+    const conditions = [];
     
     if (category) {
-      query += ' WHERE ft.category = ?';
+      conditions.push('ft.category = ?');
       params.push(category);
+    }
+    
+    if (language) {
+      conditions.push('ft.language = ?');
+      params.push(language);
+    }
+    
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
     }
     
     query += ` ORDER BY ft.is_pinned DESC, ft.last_activity DESC LIMIT ? OFFSET ?`;
     params.push(limit, offset);
     
     return await db.allAsync(query, params);
+  },
+
+  // Versión optimizada de getThreads usando pool de conexiones
+  async getThreadsOptimized(limit = 20, offset = 0, category = null, language = null) {
+    const cacheKey = `threads-${category || 'all'}-${language || 'all'}-${limit}-${offset}`;
+    
+    // Intentar obtener del cache primero
+    const cached = forumCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    let query = `
+      SELECT 
+        ft.id,
+        ft.title,
+        ft.content,
+        ft.category,
+        ft.language,
+        ft.is_pinned,
+        ft.is_locked,
+        ft.views_count,
+        ft.replies_count,
+        ft.last_activity,
+        ft.created_at,
+        u.username as author_username,
+        u.id as author_id,
+        (SELECT COUNT(*) FROM forum_likes fl WHERE fl.thread_id = ft.id) as likes_count
+      FROM forum_threads ft
+      JOIN users u ON ft.user_id = u.id
+    `;
+    
+    const params = [];
+    const conditions = [];
+    
+    if (category) {
+      conditions.push('ft.category = ?');
+      params.push(category);
+    }
+    
+    if (language) {
+      conditions.push('ft.language = ?');
+      params.push(language);
+    }
+    
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    query += ` ORDER BY ft.is_pinned DESC, ft.last_activity DESC LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
+    
+    // Usar pool de conexiones para la consulta
+    const result = await dbPool.executeQuery(query, params);
+    
+    // Guardar en cache por 5 minutos
+    forumCache.set(cacheKey, result, 300000);
+    
+    return result;
   },
 
   // Obtener un hilo específico con sus datos
@@ -1203,6 +1273,7 @@ export const forumService = {
         ft.title,
         ft.content,
         ft.category,
+        ft.language,
         ft.is_pinned,
         ft.is_locked,
         ft.views_count,
@@ -1341,6 +1412,18 @@ export const forumService = {
     `);
   },
 
+  // Obtener idiomas disponibles
+  async getLanguages() {
+    return await db.allAsync(`
+      SELECT 
+        language,
+        COUNT(*) as thread_count
+      FROM forum_threads 
+      GROUP BY language
+      ORDER BY thread_count DESC
+    `);
+  },
+
   // Buscar hilos
   async searchThreads(query, limit = 20, offset = 0) {
     return await db.allAsync(`
@@ -1349,6 +1432,7 @@ export const forumService = {
         ft.title,
         ft.content,
         ft.category,
+        ft.language,
         ft.is_pinned,
         ft.is_locked,
         ft.views_count,

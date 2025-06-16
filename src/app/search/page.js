@@ -243,7 +243,7 @@ const GlobalSearchPage = () => {
     <Link
       key={album.id}
       href={`/album/${album.id}`}
-      className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300 group"
+      className="bg-theme-card rounded-xl p-4 border border-theme-border hover:bg-theme-card-hover transition-all duration-300 group"
     >
       <div className="flex items-center space-x-4">
         <div className="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500 to-pink-600">
@@ -257,18 +257,18 @@ const GlobalSearchPage = () => {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Album className="w-8 h-8 text-white" />
+              <Album className="w-8 h-8 text-theme-primary" />
             </div>
           )}
         </div>
         <div className="flex-1">
-          <h3 className="font-bold text-white group-hover:text-blue-300 transition-colors line-clamp-1">
+          <h3 className="font-bold text-theme-primary group-hover:text-theme-accent transition-colors line-clamp-1">
             {album.name}
           </h3>
-          <p className="text-gray-400 text-sm">
+          <p className="text-theme-secondary text-sm">
             {album.artists?.[0]?.name}
           </p>
-          <p className="text-gray-500 text-xs mt-1">
+          <p className="text-theme-muted text-xs mt-1">
             {album.release_date ? new Date(album.release_date).getFullYear() : ''} • {album.total_tracks} canciones
           </p>
         </div>
@@ -279,7 +279,7 @@ const GlobalSearchPage = () => {
   const renderTrackCard = (track) => (
     <div
       key={track.id}
-      className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300 group"
+      className="bg-theme-card rounded-xl p-4 border border-theme-border hover:bg-theme-card-hover transition-all duration-300 group"
     >
       <div className="flex items-center space-x-4">
         <div className="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-green-500 to-blue-600">
@@ -293,18 +293,18 @@ const GlobalSearchPage = () => {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Headphones className="w-8 h-8 text-white" />
+              <Headphones className="w-8 h-8 text-theme-primary" />
             </div>
           )}
         </div>
         <div className="flex-1">
-          <h3 className="font-bold text-white group-hover:text-blue-300 transition-colors line-clamp-1">
+          <h3 className="font-bold text-theme-primary group-hover:text-theme-accent transition-colors line-clamp-1">
             {track.name}
           </h3>
-          <p className="text-gray-400 text-sm">
+          <p className="text-theme-secondary text-sm">
             {track.artists?.[0]?.name}
           </p>
-          <p className="text-gray-500 text-xs mt-1">
+          <p className="text-theme-muted text-xs mt-1">
             {track.album?.name} • {Math.floor(track.duration_ms / 60000)}:{((track.duration_ms % 60000) / 1000).toFixed(0).padStart(2, '0')}
           </p>
         </div>
@@ -316,7 +316,7 @@ const GlobalSearchPage = () => {
     <Link
       key={user.id}
       href={`/profile/${user.username}`}
-      className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300 group"
+      className="bg-theme-card rounded-xl p-4 border border-theme-border hover:bg-theme-card-hover transition-all duration-300 group"
     >
       <div className="flex items-center space-x-4">
         <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-yellow-500 to-orange-600">
@@ -330,19 +330,19 @@ const GlobalSearchPage = () => {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <User className="w-8 h-8 text-white" />
+              <User className="w-8 h-8 text-theme-primary" />
             </div>
           )}
         </div>
         <div className="flex-1">
-          <h3 className="font-bold text-white group-hover:text-blue-300 transition-colors">
+          <h3 className="font-bold text-theme-primary group-hover:text-theme-accent transition-colors">
             {user.username}
           </h3>
-          <p className="text-gray-400 text-sm">
+          <p className="text-theme-secondary text-sm">
             {user.total_reviews} reseñas • {user.followers_count} seguidores
           </p>
           {user.bio && (
-            <p className="text-gray-500 text-xs mt-1 line-clamp-1">
+            <p className="text-theme-muted text-xs mt-1 line-clamp-1">
               {user.bio}
             </p>
           )}
@@ -366,7 +366,7 @@ const GlobalSearchPage = () => {
   return (
     <div className="min-h-screen bg-theme-primary">
       {/* Header */}
-      <div className="bg-black/20 backdrop-blur-sm border-b border-white/10">
+      <div className="bg-theme-card-hover border-b border-theme-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -397,7 +397,7 @@ const GlobalSearchPage = () => {
               />
               <button
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-theme-accent text-theme-primary px-6 py-2 rounded-xl transition-colors hover:opacity-90"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-theme-accent text-theme-button px-6 py-2 rounded-xl transition-colors hover:opacity-90"
               >
                 Buscar
               </button>
@@ -423,7 +423,7 @@ const GlobalSearchPage = () => {
                 }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
                   activeFilter === filter.id
-                    ? 'bg-theme-accent text-theme-primary shadow-lg'
+                    ? 'bg-theme-accent text-theme-button shadow-lg'
                     : 'bg-theme-card text-theme-secondary hover:bg-theme-card-hover hover:text-theme-primary'
                 }`}
               >
@@ -443,17 +443,17 @@ const GlobalSearchPage = () => {
         {loading && !results.artists.length && !results.albums.length && !results.tracks.length && !results.users.length ? (
           <div className="flex items-center justify-center py-16">
             <div className="flex flex-col items-center space-y-4">
-              <Loader2 className="w-12 h-12 text-white animate-spin" />
-              <p className="text-white text-lg">Buscando...</p>
+              <Loader2 className="w-12 h-12 text-theme-accent animate-spin" />
+              <p className="text-theme-primary text-lg">Buscando...</p>
             </div>
           </div>
         ) : hasSearched && query && totalResults === 0 && !loading ? (
           <div className="text-center py-16">
-            <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">
+            <Search className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-theme-primary mb-2">
               No se encontraron resultados
             </h3>
-            <p className="text-gray-400">
+            <p className="text-theme-secondary">
               Intenta con otros términos de búsqueda
             </p>
           </div>
@@ -464,7 +464,7 @@ const GlobalSearchPage = () => {
               <>
                 {results.artists.length > 0 && (
                   <div>
-                    <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-theme-primary mb-4 flex items-center gap-2">
                       <User className="w-5 h-5" />
                       Artistas ({results.artists.length})
                     </h2>
@@ -474,7 +474,7 @@ const GlobalSearchPage = () => {
                     {results.artists.length > 4 && (
                       <button
                         onClick={() => setActiveFilter('artists')}
-                        className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+                        className="text-theme-accent hover:text-theme-accent/80 text-sm font-medium"
                       >
                         Ver todos los artistas →
                       </button>
@@ -484,7 +484,7 @@ const GlobalSearchPage = () => {
 
                 {results.albums.length > 0 && (
                   <div>
-                    <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-theme-primary mb-4 flex items-center gap-2">
                       <Album className="w-5 h-5" />
                       Álbumes ({results.albums.length})
                     </h2>
@@ -494,7 +494,7 @@ const GlobalSearchPage = () => {
                     {results.albums.length > 4 && (
                       <button
                         onClick={() => setActiveFilter('albums')}
-                        className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+                        className="text-theme-accent hover:text-theme-accent/80 text-sm font-medium"
                       >
                         Ver todos los álbumes →
                       </button>
@@ -504,7 +504,7 @@ const GlobalSearchPage = () => {
 
                 {results.tracks.length > 0 && (
                   <div>
-                    <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-theme-primary mb-4 flex items-center gap-2">
                       <Headphones className="w-5 h-5" />
                       Canciones ({results.tracks.length})
                     </h2>
@@ -514,7 +514,7 @@ const GlobalSearchPage = () => {
                     {results.tracks.length > 4 && (
                       <button
                         onClick={() => setActiveFilter('tracks')}
-                        className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+                        className="text-theme-accent hover:text-theme-accent/80 text-sm font-medium"
                       >
                         Ver todas las canciones →
                       </button>
@@ -524,7 +524,7 @@ const GlobalSearchPage = () => {
 
                 {results.users.length > 0 && (
                   <div>
-                    <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-theme-primary mb-4 flex items-center gap-2">
                       <User className="w-5 h-5" />
                       Usuarios ({results.users.length})
                     </h2>
@@ -534,7 +534,7 @@ const GlobalSearchPage = () => {
                     {results.users.length > 4 && (
                       <button
                         onClick={() => setActiveFilter('users')}
-                        className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+                        className="text-theme-accent hover:text-theme-accent/80 text-sm font-medium"
                       >
                         Ver todos los usuarios →
                       </button>
@@ -545,7 +545,7 @@ const GlobalSearchPage = () => {
             ) : (
               // Vista filtrada
               <div>
-                <h2 className="text-xl font-bold text-white mb-6">
+                <h2 className="text-xl font-bold text-theme-primary mb-6">
                   {filters.find(f => f.id === activeFilter)?.label} ({getFilteredResults().length})
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -561,7 +561,7 @@ const GlobalSearchPage = () => {
                     <button
                       onClick={() => loadMore(activeFilter)}
                       disabled={loading}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto"
+                      className="bg-theme-accent hover:bg-theme-accent/90 text-theme-button px-6 py-3 rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto"
                     >
                       {loading ? (
                         <>
@@ -579,11 +579,11 @@ const GlobalSearchPage = () => {
           </div>
         ) : !query ? (
           <div className="text-center py-16">
-            <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">
+            <Search className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-theme-primary mb-2">
               Búsqueda
             </h3>
-            <p className="text-gray-400">
+            <p className="text-theme-secondary">
               Busca artistas, álbumes, canciones y usuarios en toda la plataforma
             </p>
           </div>

@@ -105,7 +105,7 @@ export default function CustomListsPage() {
           <p className="text-theme-secondary mb-6">Necesitas iniciar sesión para ver tus listas personalizadas</p>
           <Link 
             href="/login"
-            className="bg-theme-accent text-theme-primary font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:opacity-90"
+            className="bg-theme-accent text-theme-button font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:opacity-90"
           >
             Iniciar Sesión
           </Link>

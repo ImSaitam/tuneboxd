@@ -79,7 +79,7 @@ export default function NotificationBell() {
       {/* Campana de notificaciones */}
       <button
         onClick={handleBellClick}
-        className="relative p-2 text-gray-300 hover:text-white transition-colors"
+        className="relative p-2 text-theme-secondary hover:text-theme-primary transition-colors"
       >
         <Bell size={24} />
         {unreadCount > 0 && (
@@ -91,10 +91,10 @@ export default function NotificationBell() {
 
       {/* Dropdown de notificaciones */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-96 bg-theme-card border border-theme-border rounded-lg shadow-xl z-50 max-h-96 overflow-hidden backdrop-blur-sm">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-700">
-            <h3 className="text-lg font-semibold text-white">Notificaciones</h3>
+          <div className="flex items-center justify-between p-4 border-b border-theme-border">
+            <h3 className="text-lg font-semibold text-theme-primary">Notificaciones</h3>
             <div className="flex items-center gap-2">
               {notifications.length > 0 && (
                 <button
@@ -106,7 +106,7 @@ export default function NotificationBell() {
                 </button>
               )}
               {unreadCount > 0 && notifications.length > 0 && (
-                <span className="text-gray-600">|</span>
+                <span className="text-theme-muted">|</span>
               )}
               {unreadCount > 0 && (
                 <button
@@ -119,7 +119,7 @@ export default function NotificationBell() {
               )}
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-theme-secondary hover:text-theme-primary transition-colors"
               >
                 <X size={18} />
               </button>
@@ -129,11 +129,11 @@ export default function NotificationBell() {
           {/* Lista de notificaciones */}
           <div className="max-h-80 overflow-y-auto">
             {loading && notifications.length === 0 ? (
-              <div className="p-4 text-center text-gray-400">
+              <div className="p-4 text-center text-theme-secondary">
                 <div className="animate-pulse">Cargando notificaciones...</div>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="p-8 text-center text-gray-400">
+              <div className="p-8 text-center text-theme-secondary">
                 <Bell size={48} className="mx-auto mb-4 opacity-50" />
                 <p>No tienes notificaciones</p>
               </div>
@@ -141,7 +141,7 @@ export default function NotificationBell() {
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`relative border-b border-gray-700 hover:bg-gray-700/50 transition-colors group ${
+                  className={`relative border-b border-theme-border hover:bg-theme-card-hover transition-colors group ${
                     !notification.is_read ? 'bg-blue-500/10' : ''
                   }`}
                 >
@@ -159,14 +159,14 @@ export default function NotificationBell() {
                       {/* Contenido */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <h4 className="text-sm font-semibold text-white truncate">
+                          <h4 className="text-sm font-semibold text-theme-primary truncate">
                             {notification.title}
                           </h4>
-                          <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
+                          <span className="text-xs text-theme-muted flex-shrink-0 ml-2">
                             {formatTimeAgo(notification.created_at)}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-300 line-clamp-2">
+                        <p className="text-sm text-theme-secondary line-clamp-2">
                           {notification.message}
                         </p>
                       </div>
@@ -183,7 +183,7 @@ export default function NotificationBell() {
                     {!notification.is_read && (
                       <button
                         onClick={(e) => handleMarkAsRead(notification.id, e)}
-                        className="p-1 text-gray-400 hover:text-green-400 transition-colors"
+                        className="p-1 text-theme-muted hover:text-green-400 transition-colors"
                         title="Marcar como leída"
                       >
                         <Check size={14} />
@@ -191,7 +191,7 @@ export default function NotificationBell() {
                     )}
                     <button
                       onClick={(e) => handleDelete(notification.id, e)}
-                      className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+                      className="p-1 text-theme-muted hover:text-red-400 transition-colors"
                       title="Eliminar"
                     >
                       <Trash2 size={14} />
@@ -204,7 +204,7 @@ export default function NotificationBell() {
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="p-3 border-t border-gray-700 bg-gray-800/50">
+            <div className="p-3 border-t border-theme-border bg-theme-card-hover">
               <Link
                 href="/notifications"
                 onClick={() => setIsOpen(false)}

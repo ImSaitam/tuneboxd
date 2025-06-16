@@ -112,7 +112,7 @@ const RegisterPage = () => {
 
   const ValidationItem = ({ isValid, text }) => (
     <div className={`flex items-center text-sm transition-colors duration-300 ${
-      isValid ? 'text-green-400' : 'text-white/60'
+      isValid ? 'text-green-400' : 'text-theme-muted'
     }`}>
       {isValid ? (
         <Check className="w-4 h-4 mr-2" />
@@ -125,16 +125,16 @@ const RegisterPage = () => {
 
   if (step === 2) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-400 to-teal-400 rounded-full mb-6">
-              <Check className="w-10 h-10 text-white" />
+          <div className="bg-theme-card backdrop-blur-md rounded-3xl p-8 border border-theme shadow-2xl text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-theme-accent rounded-full mb-6">
+              <Check className="w-10 h-10 text-theme-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-4">
+            <h1 className="text-3xl font-bold text-theme-primary mb-4">
               ¡Cuenta creada!
             </h1>
-            <p className="text-white/70 mb-8">
+            <p className="text-theme-secondary mb-8">
               Te hemos enviado un correo de verificación a <strong>{formData.email}</strong>.
               Por favor, revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.
             </p>
@@ -183,13 +183,13 @@ const RegisterPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-theme-primary flex items-center justify-center p-4">
       {/* Floating Music Notes Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {Array.from({ length: 15 }, (_, i) => (
           <div
             key={i}
-            className="absolute text-white/5 text-4xl animate-pulse"
+            className="absolute text-theme-muted text-4xl animate-pulse"
             style={{
               left: `${10 + (i * 6)}%`,
               top: `${10 + (i * 5)}%`,
@@ -206,23 +206,23 @@ const RegisterPage = () => {
         {/* Botón de regreso */}
         <Link
           href="/"
-          className="inline-flex items-center text-white/80 hover:text-white mb-8 transition-colors duration-300 group"
+          className="inline-flex items-center text-theme-secondary hover:text-theme-primary mb-8 transition-colors duration-300 group"
         >
           <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
           Volver al inicio
         </Link>
 
         {/* Formulario de Registro */}
-        <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl">
+        <div className="bg-theme-card backdrop-blur-md rounded-3xl p-8 border border-theme shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-red-400 to-teal-400 rounded-full mb-4">
-              <Music className="w-8 h-8 text-white" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-theme-accent rounded-full mb-4">
+              <Music className="w-8 h-8 text-theme-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-3xl font-bold text-theme-primary mb-2">
               Únete a Tuneboxd
             </h1>
-            <p className="text-white/70">
+            <p className="text-theme-secondary">
               Crea tu cuenta y comienza tu viaje musical
             </p>
           </div>
@@ -238,11 +238,11 @@ const RegisterPage = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Username */}
             <div>
-              <label htmlFor="username" className="block text-white/80 text-sm font-medium mb-2">
+              <label htmlFor="username" className="block text-theme-secondary text-sm font-medium mb-2">
                 Nombre de usuario
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-muted w-5 h-5" />
                 <input
                   type="text"
                   id="username"
@@ -250,19 +250,19 @@ const RegisterPage = () => {
                   value={formData.username}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:border-teal-400 focus:bg-white/20 transition-all duration-300"
-                  placeholder="tu_nombre_usuario"
+                  className="w-full pl-11 pr-4 py-3 bg-theme-card border border-theme rounded-2xl text-theme-primary placeholder-theme-muted focus:outline-none focus:border-theme-accent focus:bg-theme-card-hover transition-all duration-300"
+                  placeholder="Nombre de usuario"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-white/80 text-sm font-medium mb-2">
+              <label htmlFor="email" className="block text-theme-secondary text-sm font-medium mb-2">
                 Correo electrónico
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-muted w-5 h-5" />
                 <input
                   type="email"
                   id="email"
@@ -270,7 +270,7 @@ const RegisterPage = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:border-teal-400 focus:bg-white/20 transition-all duration-300"
+                  className="w-full pl-11 pr-4 py-3 bg-theme-card border border-theme rounded-2xl text-theme-primary placeholder-theme-muted focus:outline-none focus:border-theme-accent focus:bg-theme-card-hover transition-all duration-300"
                   placeholder="tu@email.com"
                 />
               </div>
@@ -278,11 +278,11 @@ const RegisterPage = () => {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-white/80 text-sm font-medium mb-2">
+              <label htmlFor="password" className="block text-theme-secondary text-sm font-medium mb-2">
                 Contraseña
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-muted w-5 h-5" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
@@ -290,13 +290,13 @@ const RegisterPage = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-11 pr-12 py-3 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:border-teal-400 focus:bg-white/20 transition-all duration-300"
+                  className="w-full pl-11 pr-12 py-3 bg-theme-card border border-theme rounded-2xl text-theme-primary placeholder-theme-muted focus:outline-none focus:border-theme-accent focus:bg-theme-card-hover transition-all duration-300"
                   placeholder="Tu contraseña"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors duration-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-theme-muted hover:text-theme-secondary transition-colors duration-300"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -384,23 +384,6 @@ const RegisterPage = () => {
               )}
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="my-8 flex items-center">
-            <div className="flex-1 border-t border-white/20"></div>
-            <span className="px-4 text-white/50 text-sm">o</span>
-            <div className="flex-1 border-t border-white/20"></div>
-          </div>
-
-          {/* Social Registration */}
-          <div className="space-y-3">
-            <button className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white py-3 rounded-2xl font-medium transition-all duration-300 transform hover:-translate-y-1">
-              Registrarse con Google
-            </button>
-            <button className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white py-3 rounded-2xl font-medium transition-all duration-300 transform hover:-translate-y-1">
-              Registrarse con Spotify
-            </button>
-          </div>
 
           {/* Login Link */}
           <div className="text-center mt-8">

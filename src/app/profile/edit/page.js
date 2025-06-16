@@ -137,10 +137,10 @@ const EditProfilePage = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="w-12 h-12 text-white animate-spin" />
-          <p className="text-white text-lg">Cargando...</p>
+          <Loader2 className="w-12 h-12 text-theme-primary animate-spin" />
+          <p className="text-theme-primary text-lg">Cargando...</p>
         </div>
       </div>
     );
@@ -151,19 +151,19 @@ const EditProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-theme-primary">
       {/* Header */}
-      <div className="bg-black/20 backdrop-blur-sm border-b border-white/10">
+      <div className="bg-theme-card backdrop-blur-sm border-b border-theme-border">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link 
               href={`/profile/${user?.username}`}
-              className="flex items-center space-x-2 text-white hover:text-blue-300 transition-colors"
+              className="flex items-center space-x-2 text-theme-primary hover:text-theme-accent transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Volver al perfil</span>
             </Link>
-            <h1 className="text-xl font-bold text-white">Editar Perfil</h1>
+            <h1 className="text-xl font-bold text-theme-primary">Editar Perfil</h1>
             <div className="w-20"></div> {/* Spacer para centrar el título */}
           </div>
         </div>
@@ -171,12 +171,12 @@ const EditProfilePage = () => {
 
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-2xl">
+        <div className="bg-theme-card backdrop-blur-sm rounded-3xl p-8 border border-theme-border shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-8">
             
             {/* Profile Picture Section */}
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-white mb-6">Foto de Perfil</h2>
+              <h2 className="text-2xl font-bold text-theme-primary mb-6">Foto de Perfil</h2>
               
               <div className="relative inline-block mb-6">
                 {previewImage ? (
@@ -184,7 +184,7 @@ const EditProfilePage = () => {
                     <img
                       src={previewImage}
                       alt="Preview"
-                      className="w-32 h-32 rounded-full object-cover border-4 border-white/20"
+                      className="w-32 h-32 rounded-full object-cover border-4 border-theme-border"
                       onError={() => {
                         setPreviewImage(null);
                         showError('Error al cargar la imagen. Verifica que la URL sea válida.');
@@ -199,25 +199,25 @@ const EditProfilePage = () => {
                     </button>
                   </div>
                 ) : (
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center border-4 border-white/20">
-                    <User className="w-16 h-16 text-white" />
+                  <div className="w-32 h-32 rounded-full bg-theme-accent flex items-center justify-center border-4 border-theme-border">
+                    <User className="w-16 h-16 text-theme-primary" />
                   </div>
                 )}
               </div>
 
               <div className="space-y-3">
-                <label className="block text-white font-medium text-left">
+                <label className="block text-theme-primary font-medium text-left">
                   URL de la imagen
                 </label>
                 <input
                   type="url"
                   value={formData.profilePicture}
                   onChange={handleImageUrlChange}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full px-4 py-3 bg-theme-card border border-theme-border rounded-lg text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent transition-all"
                   placeholder="https://ejemplo.com/mi-foto.jpg"
                 />
                 
-                <p className="text-gray-400 text-sm">
+                <p className="text-theme-secondary text-sm">
                   Ingresa la URL de tu imagen de perfil. Formatos soportados: JPG, PNG, WebP, GIF.
                 </p>
               </div>
@@ -225,7 +225,7 @@ const EditProfilePage = () => {
 
             {/* Username Section */}
             <div>
-              <label className="block text-white font-medium mb-2">
+              <label className="block text-theme-primary font-medium mb-2">
                 Nombre de Usuario
               </label>
               <div className="space-y-3">
@@ -235,7 +235,7 @@ const EditProfilePage = () => {
                   value={formData.username}
                   onChange={handleInputChange}
                   disabled={!canChangeUsername}
-                  className={`w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                  className={`w-full px-4 py-3 bg-theme-card border border-theme-border rounded-lg text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent transition-all ${
                     !canChangeUsername ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                   placeholder="Tu nombre de usuario"
@@ -253,7 +253,7 @@ const EditProfilePage = () => {
                   </div>
                 )}
 
-                <div className="text-right text-gray-400 text-xs">
+                <div className="text-right text-theme-secondary text-xs">
                   {formData.username.length}/20
                 </div>
               </div>
@@ -261,7 +261,7 @@ const EditProfilePage = () => {
 
             {/* Bio Section */}
             <div>
-              <label className="block text-white font-medium mb-2">
+              <label className="block text-theme-primary font-medium mb-2">
                 Biografía
               </label>
               <div className="space-y-3">
@@ -269,13 +269,13 @@ const EditProfilePage = () => {
                   name="bio"
                   value={formData.bio}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-all"
+                  className="w-full px-4 py-3 bg-theme-card border border-theme-border rounded-lg text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent resize-none transition-all"
                   placeholder="Cuéntanos algo sobre ti y tus gustos musicales..."
                   rows={4}
                   maxLength={500}
                 />
                 
-                <div className="text-right text-gray-400 text-xs">
+                <div className="text-right text-theme-secondary text-xs">
                   {formData.bio.length}/500
                 </div>
               </div>
@@ -304,7 +304,7 @@ const EditProfilePage = () => {
             <div className="flex space-x-4 pt-6">
               <Link
                 href={`/profile/${user?.username}`}
-                className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors text-center"
+                className="flex-1 px-6 py-3 bg-theme-secondary hover:bg-theme-card text-theme-primary rounded-lg font-medium transition-colors text-center"
               >
                 Cancelar
               </Link>
@@ -312,7 +312,7 @@ const EditProfilePage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="flex-1 px-6 py-3 bg-theme-accent hover:opacity-90 text-theme-button rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 {loading ? (
                   <>

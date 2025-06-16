@@ -85,13 +85,13 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-theme-primary flex items-center justify-center p-4">
       {/* Floating Music Notes Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {Array.from({ length: 15 }, (_, i) => (
           <div
             key={i}
-            className="absolute text-white/5 text-4xl animate-pulse"
+            className="absolute text-theme-muted text-4xl animate-pulse"
             style={{
               left: `${10 + (i * 6)}%`,
               top: `${10 + (i * 5)}%`,
@@ -108,23 +108,23 @@ const LoginPage = () => {
         {/* Botón de regreso */}
         <Link
           href="/"
-          className="inline-flex items-center text-white/80 hover:text-white mb-8 transition-colors duration-300 group"
+          className="inline-flex items-center text-theme-secondary hover:text-theme-primary mb-8 transition-colors duration-300 group"
         >
           <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
           Volver al inicio
         </Link>
 
         {/* Formulario de Login */}
-        <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl">
+        <div className="bg-theme-card backdrop-blur-md rounded-3xl p-8 border border-theme shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-red-400 to-teal-400 rounded-full mb-4">
-              <Music className="w-8 h-8 text-white" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-theme-accent rounded-full mb-4">
+              <Music className="w-8 h-8 text-theme-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-3xl font-bold text-theme-primary mb-2">
               Bienvenido de vuelta
             </h1>
-            <p className="text-white/70">
+            <p className="text-theme-secondary">
               Inicia sesión para continuar tu viaje musical
             </p>
           </div>
@@ -137,7 +137,7 @@ const LoginPage = () => {
                 <div className="mt-4 pt-4 border-t border-red-400/20">
                   <button
                     onClick={handleResendVerification}
-                    className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                    className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-theme-button rounded-lg font-medium transition-colors"
                   >
                     Reenviar email de verificación
                   </button>
@@ -150,11 +150,11 @@ const LoginPage = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-white/80 text-sm font-medium mb-2">
+              <label htmlFor="email" className="block text-theme-secondary text-sm font-medium mb-2">
                 Correo electrónico
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-muted w-5 h-5" />
                 <input
                   type="email"
                   id="email"
@@ -162,7 +162,7 @@ const LoginPage = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:border-teal-400 focus:bg-white/20 transition-all duration-300"
+                  className="w-full pl-11 pr-4 py-3 bg-theme-card border border-theme rounded-2xl text-theme-primary placeholder-theme-muted focus:outline-none focus:border-theme-accent focus:bg-theme-card-hover transition-all duration-300"
                   placeholder="tu@email.com"
                 />
               </div>
@@ -170,11 +170,11 @@ const LoginPage = () => {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-white/80 text-sm font-medium mb-2">
+              <label htmlFor="password" className="block text-theme-secondary text-sm font-medium mb-2">
                 Contraseña
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-muted w-5 h-5" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
@@ -182,13 +182,13 @@ const LoginPage = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-11 pr-12 py-3 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:border-teal-400 focus:bg-white/20 transition-all duration-300"
+                  className="w-full pl-11 pr-12 py-3 bg-theme-card border border-theme rounded-2xl text-theme-primary placeholder-theme-muted focus:outline-none focus:border-theme-accent focus:bg-theme-card-hover transition-all duration-300"
                   placeholder="Tu contraseña"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors duration-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-theme-muted hover:text-theme-secondary transition-colors duration-300"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -203,13 +203,13 @@ const LoginPage = () => {
                   className="sr-only"
                 />
                 <div className="relative">
-                  <div className="w-4 h-4 bg-white/20 border border-white/30 rounded"></div>
+                  <div className="w-4 h-4 bg-theme-card border border-theme rounded"></div>
                 </div>
-                <span className="ml-2 text-white/70 text-sm">Recordarme</span>
+                <span className="ml-2 text-theme-secondary text-sm">Recordarme</span>
               </label>
               <Link
                 href="/forgot-password"
-                className="text-teal-400 hover:text-teal-300 text-sm transition-colors duration-300"
+                className="text-theme-accent hover:opacity-80 text-sm transition-colors duration-300"
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -219,7 +219,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-red-400 to-teal-400 text-white py-3 rounded-2xl font-semibold hover:from-red-500 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg disabled:opacity-70 disabled:transform-none disabled:shadow-none"
+              className="w-full bg-theme-accent text-theme-button py-3 rounded-2xl font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg disabled:opacity-70 disabled:transform-none disabled:shadow-none"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
@@ -232,30 +232,13 @@ const LoginPage = () => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="my-8 flex items-center">
-            <div className="flex-1 border-t border-white/20"></div>
-            <span className="px-4 text-white/50 text-sm">o</span>
-            <div className="flex-1 border-t border-white/20"></div>
-          </div>
-
-          {/* Social Login */}
-          <div className="space-y-3">
-            <button className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white py-3 rounded-2xl font-medium transition-all duration-300 transform hover:-translate-y-1">
-              Continuar con Google
-            </button>
-            <button className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white py-3 rounded-2xl font-medium transition-all duration-300 transform hover:-translate-y-1">
-              Continuar con Spotify
-            </button>
-          </div>
-
           {/* Sign Up Link */}
           <div className="text-center mt-8">
-            <p className="text-white/70">
+            <p className="text-theme-secondary">
               ¿No tienes una cuenta?{' '}
               <Link
                 href="/register"
-                className="text-teal-400 hover:text-teal-300 font-semibold transition-colors duration-300"
+                className="text-theme-accent hover:opacity-80 font-semibold transition-colors duration-300"
               >
                 Regístrate aquí
               </Link>
