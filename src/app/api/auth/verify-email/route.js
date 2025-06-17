@@ -14,27 +14,17 @@ export async function GET(request) {
     }
 
     // Buscar el token de verificación
-    const verification = await userService.findVerificationToken(token);
+    const user = await userService.findVerificationToken(token);
     
-    if (!verification) {
+    if (!user) {
       return Response.json(
         { success: false, message: 'Token de verificación inválido o expirado' },
         { status: 400 }
       );
     }
 
-    // Obtener el usuario
-    const user = await userService.findById(verification.user_id);
-    
-    if (!user) {
-      return Response.json(
-        { success: false, message: 'Usuario no encontrado' },
-        { status: 404 }
-      );
-    }
-
     // Verificar si el usuario ya está verificado
-    if (user.verified) {
+    if (user.email_verified) {
       return Response.json(
         { success: true, message: 'Tu cuenta ya estaba verificada' }
       );

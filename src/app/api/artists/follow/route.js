@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db, { runAsync, getAsync } from "../../../../lib/database-adapter.js";
+import { query, get, run } from "../../../../lib/database-adapter.js";
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -29,10 +29,8 @@ export async function POST(request) {
       }, { status: 401 });
     }
 
-    const db_instance = db;
-    
-    // Verificar if ya sigue al artista
-    const existingFollow = await getAsync(
+    // Verificar si ya sigue al artista
+    const existingFollow = await get(
       `SELECT * FROM artist_follows WHERE user_id = ? AND artist_id = ?`,
       [decoded.userId, artist_id]
     );
@@ -44,27 +42,8 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    // Crear tabla si no existe
-    await new Promise((resolve, reject) => {
-      db.exec(`
-        CREATE TABLE IF NOT EXISTS artist_follows (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          artist_id TEXT NOT NULL,
-          artist_name TEXT NOT NULL,
-          artist_image TEXT,
-          followed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE(user_id, artist_id),
-          FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-      `, (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
-
-    // Insertar seguimiento
-    await runAsync(
+    // Insertar seguimiento (la tabla ya existe)
+    await run(
       `INSERT INTO artist_follows (user_id, artist_id, artist_name, artist_image) 
        VALUES (?, ?, ?, ?)`,
       [decoded.userId, artist_id, artist_name, artist_image]
@@ -117,20 +96,11 @@ export async function DELETE(request) {
       }, { status: 401 });
     }
 
-    const db_instance = db;
-    
     // Eliminar seguimiento
-    const result = await runAsync(
+    const result = await run(
       `DELETE FROM artist_follows WHERE user_id = ? AND artist_id = ?`,
       [decoded.userId, artist_id]
     );
-
-    if (result.changes === 0) {
-      return NextResponse.json({
-        success: false,
-        message: 'No sigues a este artista'
-      }, { status: 400 });
-    }
 
     return NextResponse.json({
       success: true,
@@ -179,10 +149,8 @@ export async function GET(request) {
       });
     }
 
-    const db_instance = db;
-    
     // Verificar si sigue al artista
-    const follow = await getAsync(
+    const follow = await get(
       `SELECT * FROM artist_follows WHERE user_id = ? AND artist_id = ?`,
       [decoded.userId, artist_id]
     );

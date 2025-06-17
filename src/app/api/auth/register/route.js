@@ -49,27 +49,22 @@ export async function POST(request) {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Crear nuevo usuario en la base de datos
-    const userId = await userService.createUser({
-      username,
-      email: email.toLowerCase(),
-      password: hashedPassword
-    });
-
-    // Obtener el usuario creado
-    const newUser = await userService.findById(userId);
-
     // Generar token de verificación
     const verificationToken = generateVerificationToken();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
-    // Guardar token en la base de datos
-    await userService.createEmailVerification(userId, verificationToken, expiresAt.toISOString());
+    // Crear nuevo usuario en la base de datos
+    const result = await userService.create({
+      username,
+      email: email.toLowerCase(),
+      password_hash: hashedPassword,
+      verification_token: verificationToken
+    });
 
     // Enviar email de verificación
     const emailResult = await sendVerificationEmail(email.toLowerCase(), username, verificationToken);
     
     if (emailResult.success) {
+      console.log(`✅ Email de verificación enviado a ${email}`);
     } else {
       console.error(`❌ Error enviando email de verificación: ${emailResult.error}`);
       // Continuar con el registro aunque falle el email
@@ -79,11 +74,9 @@ export async function POST(request) {
       success: true,
       message: 'Cuenta creada exitosamente. Te hemos enviado un correo de verificación. Por favor, revisa tu bandeja de entrada.',
       user: {
-        id: newUser.id,
-        username: newUser.username,
-        email: newUser.email,
-        verified: newUser.verified,
-        createdAt: newUser.created_at
+        username,
+        email: email.toLowerCase(),
+        verified: false
       }
     });
 

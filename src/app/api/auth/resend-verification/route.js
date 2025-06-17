@@ -33,7 +33,7 @@ export async function POST(request) {
     }
 
     // Si el usuario ya está verificado
-    if (user.verified) {
+    if (user.email_verified) {
       return Response.json({
         success: true,
         message: 'Tu cuenta ya está verificada. Puedes iniciar sesión normalmente.'
@@ -45,10 +45,9 @@ export async function POST(request) {
 
     // Generar nuevo token de verificación
     const verificationToken = generateVerificationToken();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
-    // Guardar token en la base de datos
-    await userService.createEmailVerification(user.id, verificationToken, expiresAt.toISOString());
+    // Actualizar token en la base de datos
+    await userService.updateVerificationToken(user.id, verificationToken);
 
     // Enviar email de verificación
     const emailResult = await sendVerificationEmail(user.email, user.username, verificationToken);

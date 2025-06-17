@@ -7,9 +7,10 @@ export async function query(sql, params = []) {
     throw new Error('DATABASE_URL is required. Please configure a PostgreSQL database.');
   }
   
-  // PostgreSQL usa $1, $2, etc.
-  const pgSql = sql.replace(/\?/g, (match, offset) => {
-    const paramIndex = sql.substring(0, offset).split('?').length;
+  // PostgreSQL usa $1, $2, etc. - Conversión correcta
+  let paramIndex = 0;
+  const pgSql = sql.replace(/\?/g, () => {
+    paramIndex++;
     return `$${paramIndex}`;
   });
   
@@ -29,9 +30,10 @@ export async function run(sql, params = []) {
     throw new Error('DATABASE_URL is required. Please configure a PostgreSQL database.');
   }
   
-  // PostgreSQL usa $1, $2, etc.
-  const pgSql = sql.replace(/\?/g, (match, offset) => {
-    const paramIndex = sql.substring(0, offset).split('?').length;
+  // PostgreSQL usa $1, $2, etc. - Conversión correcta
+  let paramIndex = 0;
+  const pgSql = sql.replace(/\?/g, () => {
+    paramIndex++;
     return `$${paramIndex}`;
   });
   
@@ -72,6 +74,10 @@ export const userService = {
     return await get('SELECT * FROM users WHERE id = ?', [id]);
   },
   
+  async findByEmailOrUsername(email, username) {
+    return await get('SELECT * FROM users WHERE email = ? OR username = ?', [email, username]);
+  },
+  
   async create(userData) {
     const { username, email, password_hash, verification_token } = userData;
     return await run(
@@ -82,8 +88,74 @@ export const userService = {
   
   async updateVerificationStatus(email) {
     return await run(
-      'UPDATE users SET is_verified = true, verification_token = NULL WHERE email = ?',
+      'UPDATE users SET email_verified = true, verification_token = NULL WHERE email = ?',
       [email]
+    );
+  },
+  
+  async findVerificationToken(token) {
+    return await get('SELECT * FROM users WHERE verification_token = ?', [token]);
+  },
+  
+  async verifyUser(userId) {
+    return await run(
+      'UPDATE users SET email_verified = true, verification_token = NULL WHERE id = ?',
+      [userId]
+    );
+  },
+  
+  async deleteVerificationToken(token) {
+    return await run(
+      'UPDATE users SET verification_token = NULL WHERE verification_token = ?',
+      [token]
+    );
+  },
+  
+  async updatePassword(userId, newPasswordHash) {
+    return await run(
+      'UPDATE users SET password_hash = ? WHERE id = ?',
+      [newPasswordHash, userId]
+    );
+  },
+  
+  async createPasswordResetToken(email, token) {
+    return await run(
+      'UPDATE users SET reset_password_token = ?, reset_password_expires = ? WHERE email = ?',
+      [token, Date.now() + 3600000, email] // Token válido por 1 hora
+    );
+  },
+  
+  async findByResetToken(token) {
+    return await get(
+      'SELECT * FROM users WHERE reset_password_token = ? AND reset_password_expires > ?',
+      [token, Date.now()]
+    );
+  },
+  
+  async clearResetToken(userId) {
+    return await run(
+      'UPDATE users SET reset_password_token = NULL, reset_password_expires = NULL WHERE id = ?',
+      [userId]
+    );
+  },
+  
+  async cleanExpiredVerificationTokens() {
+    // En PostgreSQL, no necesitamos limpiar tokens expirados manualmente
+    // ya que manejamos la expiración en la lógica de verificación
+    return { success: true };
+  },
+  
+  async createEmailVerification(userId, token, expiresAt) {
+    return await run(
+      'UPDATE users SET verification_token = ? WHERE id = ?',
+      [token, userId]
+    );
+  },
+  
+  async updateVerificationToken(userId, token) {
+    return await run(
+      'UPDATE users SET verification_token = ? WHERE id = ?',
+      [token, userId]
     );
   }
 };

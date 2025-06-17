@@ -40,7 +40,7 @@ export async function POST(request) {
     }
 
     // Verificar contraseña
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user.password_hash);
     
     if (!passwordMatch) {
       return Response.json(
@@ -56,7 +56,7 @@ export async function POST(request) {
     }
 
     // Verificar si el usuario está verificado
-    if (!user.verified) {
+    if (!user.email_verified) {
       return Response.json(
         { 
           success: false, 
@@ -86,7 +86,7 @@ export async function POST(request) {
     );
 
     // Remover contraseña de la respuesta
-    const { password: _, ...userWithoutPassword } = user;
+    const { password_hash: _, ...userWithoutPassword } = user;
 
     const responseData = {
       success: true,

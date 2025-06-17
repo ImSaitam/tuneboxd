@@ -76,7 +76,7 @@ export async function GET(request) {
         NULL as rating,
         NULL as review_title,
         NULL as review_content,
-        af.followed_at as created_at,
+        af.created_at as created_at,
         af.artist_name as album_name,
         NULL as artist,
         af.artist_image as image_url,

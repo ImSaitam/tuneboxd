@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { allAsync } from "../../../../lib/database-adapter.js";
+import { query } from "../../../../lib/database-adapter.js";
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -28,11 +28,11 @@ export async function GET(request) {
     }
 
     // Obtener artistas seguidos
-    const followedArtists = await allAsync(
-      `SELECT artist_id, artist_name, artist_image, followed_at 
+    const followedArtists = await query(
+      `SELECT artist_id, artist_name, artist_image, created_at 
        FROM artist_follows 
        WHERE user_id = ? 
-       ORDER BY followed_at DESC`,
+       ORDER BY created_at DESC`,
       [decoded.userId]
     );
 
