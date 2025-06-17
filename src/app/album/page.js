@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Star, ArrowLeft, User, Calendar, ExternalLink, Heart, HeartOff } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import Link from 'next/link';
 
-export default function AlbumPage() {
+function AlbumPageContent() {
   const searchParams = useSearchParams();
   const { user, isAuthenticated } = useAuth();
   const [album, setAlbum] = useState(null);
@@ -32,7 +32,6 @@ export default function AlbumPage() {
       if (!albumData?.id || hasLoadedRef.current) return;
       
       hasLoadedRef.current = true;
-      console.log('Inicializando álbum por primera vez');
       
       if (!mounted) return;
       
@@ -598,5 +597,17 @@ function ReviewCard({ review }) {
         {new Date(review.created_at).toLocaleDateString()}
       </div>
     </div>
+  );
+}
+
+export default function AlbumPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Cargando...</div>
+      </div>
+    }>
+      <AlbumPageContent />
+    </Suspense>
   );
 }

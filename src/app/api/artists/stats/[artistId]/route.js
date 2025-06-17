@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { artistService } from '../../../../../lib/database.js';
+import { artistService } from "../../../../../lib/database-adapter.js";
 
 export async function GET(request, { params }) {
   try {

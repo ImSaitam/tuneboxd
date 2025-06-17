@@ -1,4 +1,4 @@
-import { albumService, reviewService } from '../../../../lib/database.js';
+import { albumService, reviewService } from "../../../../lib/database-adapter.js";
 
 export async function GET(request, { params }) {
   try {

@@ -28,7 +28,6 @@ const runQuery = (query) => {
         console.error(`Error ejecutando: ${query}`, err.message);
         reject(err);
       } else {
-        console.log(`✅ Ejecutado: ${query}`);
         resolve(this);
       }
     });
@@ -36,7 +35,6 @@ const runQuery = (query) => {
 };
 
 async function addDatabaseIndexes() {
-  console.log('🚀 Agregando índices para optimización de rendimiento...\n');
 
   try {
     // Verificar qué tablas existen
@@ -49,10 +47,8 @@ async function addDatabaseIndexes() {
     const existingTables = {};
     for (const table of tables) {
       existingTables[table] = await tableExists(table);
-      console.log(`📋 Tabla ${table}: ${existingTables[table] ? '✅ Existe' : '❌ No existe'}`);
     }
     
-    console.log('\n🔧 Agregando índices...\n');
 
     // Índices para forum_threads (mejora filtros por categoría, idioma y búsqueda)
     if (existingTables.forum_threads) {
@@ -116,8 +112,6 @@ async function addDatabaseIndexes() {
       await runQuery('CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at DESC)');
     }
 
-    console.log('\n🎉 ¡Todos los índices se agregaron correctamente!');
-    console.log('📈 Esto debería mejorar significativamente el rendimiento de las consultas.');
 
   } catch (error) {
     console.error('❌ Error agregando índices:', error);
@@ -126,7 +120,6 @@ async function addDatabaseIndexes() {
       if (err) {
         console.error('Error cerrando la base de datos:', err.message);
       } else {
-        console.log('🔒 Conexión a la base de datos cerrada.');
         process.exit(0);
       }
     });

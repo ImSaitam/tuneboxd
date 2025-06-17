@@ -1,4 +1,4 @@
-import { userService } from '../../../../lib/database.js';
+import { userService } from "../../../../lib/database-adapter.js";
 import bcrypt from 'bcryptjs';
 
 export async function POST(request) {

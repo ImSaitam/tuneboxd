@@ -702,7 +702,11 @@ export default function AlbumPage() {
                 ) : albumTracks.length > 0 ? (
                   <div className="space-y-2">
                     {albumTracks.map((track, index) => (
-                      <div key={track.id} className={`grid grid-cols-12 items-center gap-4 p-3 rounded-lg ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-100'} transition-colors`}>
+                      <Link 
+                        key={track.id} 
+                        href={`/track/${track.id}`}
+                        className={`grid grid-cols-12 items-center gap-4 p-3 rounded-lg ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-100'} transition-colors cursor-pointer`}
+                      >
                         <div className="col-span-1 text-center">
                           <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm font-medium`}>{index + 1}</span>
                         </div>
@@ -723,7 +727,7 @@ export default function AlbumPage() {
                             {formatDuration(track.duration_ms)}
                           </span>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (

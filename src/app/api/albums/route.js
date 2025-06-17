@@ -1,4 +1,4 @@
-import { albumService } from '../../../lib/database.js';
+import { albumService } from "../../../lib/database-adapter.js";
 
 export async function POST(request) {
   try {

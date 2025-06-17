@@ -58,10 +58,64 @@ export const useSpotify = () => {
     }
   }, []);
 
+  // Función para obtener un track por ID
+  const getTrackById = useCallback(async (trackId) => {
+    if (!trackId) {
+      throw new Error('Track ID es requerido');
+    }
+
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`/api/spotify/track/${trackId}`);
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error);
+      }
+      
+      return data.track;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Función para obtener top tracks de un artista
+  const getArtistTopTracks = useCallback(async (artistId, market = 'US') => {
+    if (!artistId) {
+      throw new Error('Artist ID es requerido');
+    }
+
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`/api/spotify/artist/${artistId}/top-tracks?market=${market}`);
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error);
+      }
+      
+      return data.tracks;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     loading,
     error,
     getAccessToken,
-    searchMusic
+    searchMusic,
+    getTrackById,
+    getArtistTopTracks
   };
 };

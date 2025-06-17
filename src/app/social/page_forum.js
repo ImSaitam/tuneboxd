@@ -317,7 +317,7 @@ const ForumPage = () => {
         {searchQuery && searchResults.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-bold text-white mb-4">
-              Resultados de búsqueda para "{searchQuery}"
+              Resultados de búsqueda para &quot;{searchQuery}&quot;
             </h2>
             <div className="space-y-4">
               {searchResults.map((thread) => (

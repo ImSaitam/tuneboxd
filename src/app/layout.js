@@ -4,6 +4,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { NotificationProvider } from "@/hooks/useNotifications";
 import { UserNotificationProvider } from "@/hooks/useUserNotifications";
 import { ThemeProvider } from "@/hooks/useTheme";
+import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,15 +23,18 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es">
+    <html lang="es" className="overflow-x-hidden">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden`}
       >
         <ThemeProvider>
           <AuthProvider>
             <NotificationProvider>
               <UserNotificationProvider>
-                {children}
+                <Navbar />
+                <main className="pt-20 overflow-x-hidden">
+                  {children}
+                </main>
               </UserNotificationProvider>
             </NotificationProvider>
           </AuthProvider>

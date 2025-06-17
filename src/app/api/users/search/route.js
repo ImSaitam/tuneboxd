@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { userService } from '../../../../lib/database.js';
+import { userService } from "../../../../lib/database-adapter.js";
 import jwt from 'jsonwebtoken';
 
 export async function GET(request) {
@@ -38,7 +38,6 @@ export async function GET(request) {
         currentUserId = decoded.userId;
       } catch (error) {
         // Token inválido, pero permitimos búsquedas sin autenticación
-        console.log('Token inválido en búsqueda, continuando sin autenticación');
       }
     }
 

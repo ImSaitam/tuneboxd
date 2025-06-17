@@ -33,7 +33,6 @@ const ForgotPasswordPage = () => {
       
       // Mostrar información de desarrollo si está disponible
       if (process.env.NODE_ENV === 'development' && data.resetLink) {
-        console.log('Enlace de recuperación (desarrollo):', data.resetLink);
       }
       
       setSubmitted(true);

@@ -28,7 +28,6 @@ const SocialPage = () => {
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    console.log('Social page: Auth status changed', { isAuthenticated, authLoading, user: user?.username });
     
     if (isAuthenticated && !authLoading) {
       fetchSocialData();
@@ -312,27 +311,19 @@ const SocialPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
+    <div className="min-h-screen bg-theme-primary overflow-x-hidden">
       {/* Header */}
       <div className="bg-theme-card backdrop-blur-sm border-b border-theme-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link 
-                href="/"
-                className="flex items-center space-x-2 text-theme-primary hover:text-theme-accent transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span>Volver al inicio</span>
-              </Link>
-            </div>
-
-            <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-2">
                 <Users className="w-6 h-6" />
                 Timeline Social
               </h1>
-              
+            </div>
+
+            <div className="flex items-center space-x-4">
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
@@ -351,7 +342,7 @@ const SocialPage = () => {
         <div className="flex space-x-1 mb-8">
           <button
             onClick={() => setActiveTab('timeline')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 cursor-pointer ${
               activeTab === 'timeline'
                 ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
                 : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
@@ -363,7 +354,7 @@ const SocialPage = () => {
           
           <button
             onClick={() => setActiveTab('following')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 cursor-pointer ${
               activeTab === 'following'
                 ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
                 : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
@@ -521,7 +512,7 @@ const SocialPage = () => {
                   <button
                     onClick={handleSearchUsers}
                     disabled={isSearching}
-                    className="px-4 py-2 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg transition-colors disabled:opacity-50"
+                    className="px-4 py-2 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                   </button>

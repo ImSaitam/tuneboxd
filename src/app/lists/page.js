@@ -5,7 +5,6 @@ import { useAuth } from '../../hooks/useAuth';
 import Link from 'next/link';
 import { 
   Plus, 
-  ArrowLeft, 
   Edit3, 
   Trash2, 
   Music, 
@@ -139,35 +138,34 @@ export default function CustomListsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
+    <div className="min-h-screen bg-theme-primary overflow-x-hidden">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-theme-primary hover:text-theme-secondary transition-colors">
-              <ArrowLeft size={24} />
-            </Link>
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-theme-primary">Mis Listas Personalizadas</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary">Mis Listas Personalizadas</h1>
               <p className="text-gray-300 mt-1">Organiza tus álbumes favoritos en listas temáticas</p>
             </div>
           </div>
           
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
-          >
-            <Plus size={20} />
-            Nueva Lista
-          </button>
-          
-          <Link 
-            href="/lists/public"
-            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
-          >
-            <Eye size={20} />
-            Explorar Públicas
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 justify-center"
+            >
+              <Plus size={20} />
+              Nueva Lista
+            </button>
+            
+            <Link 
+              href="/lists/public"
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 justify-center"
+            >
+              <Eye size={20} />
+              Explorar Públicas
+            </Link>
+          </div>
         </div>
 
         {/* User Info */}

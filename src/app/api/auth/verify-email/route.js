@@ -1,5 +1,5 @@
-import { userService } from '../../../../lib/database.js';
-import { sendWelcomeEmail } from '../../../../lib/email.js';
+import { userService } from "../../../../lib/database-adapter.js";
+import { sendWelcomeEmail } from '../../../../lib/email-resend.js';
 
 export async function GET(request) {
   try {
@@ -50,7 +50,6 @@ export async function GET(request) {
     const welcomeResult = await sendWelcomeEmail(user.email, user.username);
     
     if (welcomeResult.success) {
-      console.log(`✅ Email de bienvenida enviado a ${user.email}`);
     } else {
       console.error(`❌ Error enviando email de bienvenida: ${welcomeResult.error}`);
     }

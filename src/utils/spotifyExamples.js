@@ -11,15 +11,12 @@ export const SpotifySearchExample = () => {
     try {
       // Buscar álbumes
       const albums = await searchMusic('Pink Floyd', 'album', 5);
-      console.log('Álbumes encontrados:', albums);
 
       // Buscar artistas
       const artists = await searchMusic('The Beatles', 'artist', 5);
-      console.log('Artistas encontrados:', artists);
 
       // Buscar canciones
       const tracks = await searchMusic('Bohemian Rhapsody', 'track', 5);
-      console.log('Canciones encontradas:', tracks);
     } catch (error) {
       console.error('Error en búsqueda:', error);
     }
@@ -41,12 +38,10 @@ export const directApiExample = async () => {
     // Obtener token directamente
     const tokenResponse = await fetch('/api/spotify/token');
     const tokenData = await tokenResponse.json();
-    console.log('Token obtenido:', tokenData.data.access_token);
 
     // Buscar música directamente
     const searchResponse = await fetch('/api/spotify/search?q=coldplay&type=album&limit=10');
     const searchData = await searchResponse.json();
-    console.log('Resultados de búsqueda:', searchData.data.items);
 
   } catch (error) {
     console.error('Error en API directa:', error);

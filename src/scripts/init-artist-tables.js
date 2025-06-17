@@ -3,7 +3,6 @@ import db from '../lib/database.js';
 
 async function initArtistTables() {
   try {
-    console.log('Iniciando creación de tablas de artistas...');
     
     // Crear tabla artist_follows
     await db.exec(`
@@ -18,7 +17,6 @@ async function initArtistTables() {
         FOREIGN KEY (user_id) REFERENCES users (id)
       )
     `);
-    console.log('✅ Tabla artist_follows creada');
 
     // Crear tabla artist_tags
     await db.exec(`
@@ -32,7 +30,6 @@ async function initArtistTables() {
         FOREIGN KEY (user_id) REFERENCES users (id)
       )
     `);
-    console.log('✅ Tabla artist_tags creada');
 
     // Verificar que las tablas fueron creadas
     const tables = await db.allAsync(`
@@ -40,12 +37,9 @@ async function initArtistTables() {
       WHERE type='table' AND name IN ('artist_follows', 'artist_tags')
     `);
     
-    console.log('📋 Tablas encontradas:', tables.map(t => t.name));
     
     if (tables.length === 2) {
-      console.log('🎉 Todas las tablas de artistas han sido creadas exitosamente!');
     } else {
-      console.log('⚠️ Algunas tablas no se pudieron crear');
     }
     
   } catch (error) {

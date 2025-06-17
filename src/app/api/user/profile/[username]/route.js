@@ -1,4 +1,4 @@
-import { userService } from '../../../../../lib/database.js';
+import { userService } from "../../../../../lib/database-adapter.js";
 
 export async function GET(request, { params }) {
   try {

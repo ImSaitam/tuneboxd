@@ -12,7 +12,6 @@ if (!fs.existsSync(emailsDir)) {
 // Simular el transportador de email
 const devTransporter = {
   verify: async () => {
-    console.log('✅ Configuración de email de desarrollo verificada');
     return true;
   },
   
@@ -43,19 +42,10 @@ const devTransporter = {
     const verificationUrlMatch = mailOptions.html.match(/href="([^"]*verify-email[^"]*)"/);
     const verificationUrl = verificationUrlMatch ? verificationUrlMatch[1] : null;
     
-    console.log('\n📧 EMAIL DE DESARROLLO ENVIADO:');
-    console.log('────────────────────────────────────────');
-    console.log(`📬 Para: ${mailOptions.to}`);
-    console.log(`📝 Asunto: ${mailOptions.subject}`);
-    console.log(`📁 Guardado en: ${filepath}`);
     
     if (verificationUrl) {
-      console.log(`🔗 URL de verificación: ${verificationUrl}`);
-      console.log('\n🚀 PARA VERIFICAR MANUALMENTE:');
-      console.log(`curl "${verificationUrl}"`);
     }
     
-    console.log('────────────────────────────────────────\n');
     
     return { messageId };
   }

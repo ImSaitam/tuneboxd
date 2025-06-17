@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
-import { userService } from '../../../../lib/database.js';
+import { userService } from "../../../../lib/database-adapter.js";
+import { sendPasswordResetEmail } from '../../../../lib/email-resend.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(request) {
   try {
@@ -46,18 +47,22 @@ export async function POST(request) {
       { expiresIn: '1h' }
     );
 
-    // En un proyecto real, aquí enviarías el email con el enlace de reset
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
-    
-    console.log(`Email de recuperación para ${email}:`);
-    console.log(`Enlace de recuperación: ${resetLink}`);
-    console.log(`Token: ${resetToken}`);
+    // Enviar email de recuperación con Resend
+    try {
+      const emailResult = await sendPasswordResetEmail(user.email, user.username, resetToken);
+      
+      if (emailResult.success) {
+      } else {
+        console.error(`❌ Error enviando email de recuperación: ${emailResult.error}`);
+      }
+    } catch (emailError) {
+      console.error('❌ Error en servicio de email:', emailError);
+      // Continuar con la respuesta aunque falle el email
+    }
 
     return Response.json({
       success: true,
-      message: 'Si el email existe en nuestro sistema, recibirás un enlace de recuperación',
-      // En desarrollo, devolvemos el token para testing
-      ...(process.env.NODE_ENV === 'development' && { resetToken, resetLink })
+      message: 'Si el email existe en nuestro sistema, recibirás un enlace de recuperación'
     });
 
   } catch (error) {

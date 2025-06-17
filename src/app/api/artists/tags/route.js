@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import db, { runAsync, getAsync, allAsync } from '../../../../lib/database.js';
+import db, { runAsync, getAsync, allAsync } from "../../../../lib/database-adapter.js";
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(request) {
   try {

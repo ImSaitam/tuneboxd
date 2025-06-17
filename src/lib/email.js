@@ -1,22 +1,17 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import crypto from 'crypto';
 
-// Configuración del transportador de email
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  secure: false, // true para 465, false para otros puertos
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+// Configuración de Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Configuración de variables de entorno
+const FROM_EMAIL = process.env.FROM_EMAIL || 'TuneBoxd <noreply@tuneboxd.xyz>';
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@tuneboxd.xyz';
 
 // Verificar la configuración del transportador
 export const verifyEmailConfig = async () => {
   try {
     await transporter.verify();
-    console.log('✅ Configuración de email verificada');
     return true;
   } catch (error) {
     console.error('❌ Error en configuración de email:', error);
@@ -122,7 +117,6 @@ El equipo de Tuneboxd
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email de verificación enviado:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('❌ Error enviando email:', error);
@@ -196,7 +190,6 @@ export const sendWelcomeEmail = async (email, username) => {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email de bienvenida enviado:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('❌ Error enviando email de bienvenida:', error);

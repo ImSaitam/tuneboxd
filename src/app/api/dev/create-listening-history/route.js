@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { albumService, listeningHistoryService } from '../../../../lib/database.js';
+import { albumService, listeningHistoryService } from "../../../../lib/database-adapter.js";
 
 export async function POST() {
   try {
@@ -80,7 +80,7 @@ export async function POST() {
     }
 
     // Actualizar las fechas manualmente en la base de datos para simular diferentes días
-    const { default: db, allAsync, runAsync } = await import('../../../../lib/database.js');
+    const { allAsync, runAsync } = await import('../../../../lib/database-adapter.js');
     
     // Obtener las últimas entradas y actualizarlas con fechas pasadas
     const recentEntries = await allAsync(`

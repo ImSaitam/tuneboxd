@@ -1,4 +1,4 @@
-import { customListService } from '../../../../lib/database.js';
+import { customListService } from "../../../../lib/database-adapter.js";
 
 // GET: Obtener listas públicas
 export async function GET(request) {

@@ -132,17 +132,17 @@ export default function PublicListsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      <div className="min-h-screen bg-theme-primary overflow-x-hidden">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-700 rounded w-1/3"></div>
-            <div className="h-12 bg-gray-700 rounded w-full"></div>
+            <div className="h-8 bg-theme-card-hover rounded w-1/3"></div>
+            <div className="h-12 bg-theme-card-hover rounded w-full"></div>
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white/10 rounded-lg p-6">
+              <div key={i} className="bg-theme-card rounded-lg p-6 border border-theme-border">
                 <div className="space-y-4">
-                  <div className="h-6 bg-gray-700 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-                  <div className="h-4 bg-gray-700 rounded w-1/4"></div>
+                  <div className="h-6 bg-theme-card-hover rounded w-3/4"></div>
+                  <div className="h-4 bg-theme-card-hover rounded w-1/2"></div>
+                  <div className="h-4 bg-theme-card-hover rounded w-1/4"></div>
                 </div>
               </div>
             ))}
@@ -153,17 +153,17 @@ export default function PublicListsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-theme-primary overflow-x-hidden">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-white hover:text-gray-300 transition-colors">
+            <Link href="/lists" className="text-theme-primary hover:text-theme-accent transition-colors">
               <ArrowLeft size={24} />
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-white">Listas Públicas</h1>
-              <p className="text-gray-300 mt-1">Descubre listas creadas por otros usuarios</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary">Listas Públicas</h1>
+              <p className="text-theme-secondary mt-1">Descubre listas creadas por otros usuarios</p>
             </div>
           </div>
         </div>
@@ -171,24 +171,24 @@ export default function PublicListsPage() {
         {/* Search Bar */}
         <div className="mb-8">
           <div className="relative max-w-md">
-            <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-muted" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar listas por nombre, autor o descripción..."
-              className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 bg-theme-card border border-theme-border rounded-lg text-theme-primary placeholder-theme-muted focus:ring-2 focus:ring-theme-accent focus:border-transparent"
             />
           </div>
         </div>
 
         {/* Stats */}
-        <div className="bg-white/10 rounded-lg p-4 mb-6">
+        <div className="bg-theme-card border border-theme-border rounded-lg p-4 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <Album size={20} className="text-purple-400" />
-                <span className="text-white font-medium">
+                <Album size={20} className="text-theme-accent" />
+                <span className="text-theme-primary font-medium">
                   {searchTerm ? filteredLists.length : lists.length} lista{(searchTerm ? filteredLists.length : lists.length) !== 1 ? 's' : ''}
                   {searchTerm && ` encontrada${filteredLists.length !== 1 ? 's' : ''}`}
                 </span>
@@ -197,7 +197,7 @@ export default function PublicListsPage() {
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="text-gray-400 hover:text-white transition-colors text-sm"
+                className="text-theme-muted hover:text-theme-primary transition-colors text-sm"
               >
                 Limpiar búsqueda
               </button>
@@ -238,7 +238,7 @@ export default function PublicListsPage() {
                 <button
                   onClick={handleLoadMore}
                   disabled={loadingMore}
-                  className="flex items-center gap-2 mx-auto px-6 py-3 bg-purple-600/50 hover:bg-purple-600/70 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 mx-auto px-6 py-3 bg-theme-accent/70 hover:bg-theme-accent text-theme-button rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loadingMore && <Loader2 size={18} className="animate-spin" />}
                   {loadingMore ? 'Cargando...' : 'Cargar más listas'}
@@ -248,11 +248,11 @@ export default function PublicListsPage() {
           </>
         ) : (
           <div className="text-center py-12">
-            <Album size={64} className="text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">
+            <Album size={64} className="text-theme-muted mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-theme-primary mb-2">
               {searchTerm ? 'No se encontraron listas' : 'No hay listas públicas'}
             </h3>
-            <p className="text-gray-300 mb-6">
+            <p className="text-theme-secondary mb-6">
               {searchTerm 
                 ? 'Intenta con otros términos de búsqueda'
                 : 'Aún no hay listas públicas disponibles'
@@ -261,7 +261,7 @@ export default function PublicListsPage() {
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                className="bg-theme-accent hover:bg-theme-hover text-theme-button font-semibold py-3 px-6 rounded-lg transition-colors"
               >
                 Ver todas las listas
               </button>
@@ -276,26 +276,26 @@ export default function PublicListsPage() {
 // Componente para cada lista pública
 function PublicListCard({ list, onListClick, stats }) {
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/15 transition-all duration-300 border border-white/10 cursor-pointer"
+    <div className="bg-theme-card backdrop-blur-sm rounded-lg p-6 hover:bg-theme-card-hover transition-all duration-300 border border-theme-border cursor-pointer"
          onClick={() => onListClick(list)}>
       {/* Header */}
       <div className="mb-4">
-        <h3 className="text-xl font-bold text-white mb-2 hover:text-purple-300 transition-colors">
+        <h3 className="text-xl font-bold text-theme-primary mb-2 hover:text-theme-accent transition-colors">
           {list.name}
         </h3>
         {list.description && (
-          <p className="text-gray-300 text-sm mb-3 line-clamp-2">{list.description}</p>
+          <p className="text-theme-secondary text-sm mb-3 line-clamp-2">{list.description}</p>
         )}
       </div>
 
       {/* Creator Info */}
-      <div className="flex items-center gap-2 mb-4 text-sm text-gray-400">
+      <div className="flex items-center gap-2 mb-4 text-sm text-theme-muted">
         <User size={14} />
         <span>Por {list.username}</span>
       </div>
 
       {/* Stats */}
-      <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
+      <div className="flex items-center justify-between text-sm text-theme-muted mb-4">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <Music size={14} />
@@ -314,7 +314,7 @@ function PublicListCard({ list, onListClick, stats }) {
 
       {/* Likes and Comments Stats */}
       {stats && (
-        <div className="flex items-center gap-4 mb-4 text-sm text-gray-400">
+        <div className="flex items-center gap-4 mb-4 text-sm text-theme-muted">
           <div className="flex items-center gap-1">
             <Heart size={14} className="text-red-400" />
             <span>{stats.likes} like{stats.likes !== 1 ? 's' : ''}</span>
@@ -328,7 +328,7 @@ function PublicListCard({ list, onListClick, stats }) {
 
       {/* Action Hint */}
       <div className="text-center">
-        <div className="inline-block px-4 py-2 bg-purple-600/30 text-purple-300 rounded-lg text-sm font-medium">
+        <div className="inline-block px-4 py-2 bg-theme-accent/30 text-theme-accent rounded-lg text-sm font-medium">
           Click para ver lista
         </div>
       </div>

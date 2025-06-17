@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -10,7 +10,7 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const GlobalSearchPage = () => {
+const GlobalSearchContent = () => {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -277,9 +277,10 @@ const GlobalSearchPage = () => {
   );
 
   const renderTrackCard = (track) => (
-    <div
+    <Link
       key={track.id}
-      className="bg-theme-card rounded-xl p-4 border border-theme-border hover:bg-theme-card-hover transition-all duration-300 group"
+      href={`/track/${track.id}`}
+      className="bg-theme-card rounded-xl p-4 border border-theme-border hover:bg-theme-card-hover transition-all duration-300 group block"
     >
       <div className="flex items-center space-x-4">
         <div className="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-green-500 to-blue-600">
@@ -309,7 +310,7 @@ const GlobalSearchPage = () => {
           </p>
         </div>
       </div>
-    </div>
+    </Link>
   );
 
   const renderUserCard = (user) => (
@@ -364,7 +365,7 @@ const GlobalSearchPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-theme-primary">
+    <div className="min-h-screen bg-theme-primary overflow-x-hidden">
       {/* Header */}
       <div className="bg-theme-card-hover border-b border-theme-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -590,6 +591,18 @@ const GlobalSearchPage = () => {
         ) : null}
       </div>
     </div>
+  );
+};
+
+const GlobalSearchPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Cargando búsqueda...</div>
+      </div>
+    }>
+      <GlobalSearchContent />
+    </Suspense>
   );
 };
 

@@ -1,6 +1,6 @@
 // /src/app/api/forum/data/route.js - API unificada optimizada con tracking
 import { NextResponse } from 'next/server';
-import { forumService } from '../../../../lib/database.js';
+import { forumService } from "../../../../lib/database-adapter.js";
 import { forumCache } from '../../../../lib/cache.js';
 import { trackRequest, trackCacheHit, trackCacheMiss } from '../stats/route.js';
 
@@ -43,11 +43,34 @@ export async function GET(request) {
       forumService.getLanguages()
     ]);
 
+    // Mapear códigos de idioma a nombres legibles
+    const languageNames = {
+      'es': 'Español',
+      'en': 'English',
+      'fr': 'Français',
+      'de': 'Deutsch',
+      'it': 'Italiano',
+      'pt': 'Português',
+      'ru': 'Русский',
+      'ja': '日本語',
+      'ko': '한국어',
+      'zh': '中文',
+      'ar': 'العربية',
+      'hi': 'हिन्दी',
+      'other': 'Otro'
+    };
+
+    const languagesWithNames = languages.map(lang => ({
+      code: lang.language,
+      name: languageNames[lang.language] || lang.language,
+      thread_count: lang.thread_count
+    }));
+
     const result = {
       success: true,
       threads: threads || [],
       categories: categories || [],
-      languages: languages || [],
+      languages: languagesWithNames || [],
       pagination: {
         limit,
         offset,

@@ -1,11 +1,47 @@
-// Middleware optimizado para cache y seguridad admin
+// Middleware optimizado para cache, seguridad admin y producción
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
 
+// Headers de seguridad para producción
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY', 
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin'
+};
+
+// Rate limiting simple
+const rateLimit = new Map();
+
 export async function middleware(request) {
   const response = NextResponse.next();
+  
+  // Aplicar headers de seguridad en producción
+  if (process.env.NODE_ENV === 'production') {
+    Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+    
+    // Rate limiting básico
+    const ip = request.ip || 'unknown';
+    const now = Date.now();
+    const current = rateLimit.get(ip) || { count: 0, resetTime: now + 60000 };
+    
+    if (now > current.resetTime) {
+      current.count = 1;
+      current.resetTime = now + 60000;
+    } else {
+      current.count++;
+    }
+    
+    rateLimit.set(ip, current);
+    
+    if (current.count > 100) { // 100 requests por minuto
+      return new NextResponse('Too Many Requests', { status: 429 });
+    }
+  }
   
   // Protección de rutas admin
   if (request.nextUrl.pathname.startsWith('/admin')) {

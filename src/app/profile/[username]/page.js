@@ -71,9 +71,6 @@ const UserProfilePage = () => {
       setLoading(true);
       setError(null);
       
-      console.log(`Cargando perfil de usuario: ${username}`);
-      console.log(`Usuario autenticado: ${isAuthenticated}`);
-      console.log(`Usuario actual: ${currentUser?.username}`);
       
       // Obtener datos del usuario por username
       const userResponse = await fetch(`/api/user/profile/${username}`, { signal });
@@ -164,7 +161,6 @@ const UserProfilePage = () => {
       // Si no es su propio perfil, verificar si lo sigue
       if (isAuthenticated && currentUser?.username !== username) {
         setFollowStateLoading(true);
-        console.log(`Verificando estado de seguimiento para ${username}...`);
         
         // Crear una promesa separada para la verificación de seguimiento
         const followVerification = fetch(`/api/users/follow?user_id=${userData.user.id}`, {
@@ -174,11 +170,9 @@ const UserProfilePage = () => {
           }
         })
           .then(res => {
-            console.log(`Estado de respuesta para verificación de seguimiento: ${res.status}`);
             return res.ok ? res.json() : { isFollowing: false };
           })
           .then(data => {
-            console.log(`Estado de seguimiento obtenido: ${data.isFollowing}`);
             setIsFollowing(data.isFollowing || false);
             setFollowStateLoading(false);
           })
@@ -192,7 +186,6 @@ const UserProfilePage = () => {
         requests.push(followVerification);
       } else {
         // Si es su propio perfil o no está autenticado, no está siguiendo
-        console.log('No verificando seguimiento - es propio perfil o no autenticado');
         setIsFollowing(false);
         setFollowStateLoading(false);
       }
@@ -202,7 +195,6 @@ const UserProfilePage = () => {
 
     } catch (error) {
       if (error.name === 'AbortError') {
-        console.log('Petición cancelada');
         return;
       }
       console.error('Error cargando perfil del usuario:', error);
@@ -322,7 +314,6 @@ const UserProfilePage = () => {
 
     try {
       setFollowStateLoading(true);
-      console.log(`Verificando independientemente el estado de seguimiento para ${profileUser.username}...`);
       
       const response = await fetch(`/api/users/follow?user_id=${profileUser.id}`, {
         headers: {
@@ -332,10 +323,8 @@ const UserProfilePage = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(`Estado de seguimiento verificado: ${data.isFollowing}`);
         setIsFollowing(data.isFollowing || false);
       } else {
-        console.log('Error en respuesta, estableciendo como no siguiendo');
         setIsFollowing(false);
       }
     } catch (error) {
@@ -351,12 +340,9 @@ const UserProfilePage = () => {
     // Verificar si es una recarga de página directa
     const isPageReload = performance.getEntriesByType('navigation')[0]?.type === 'reload';
     
-    console.log(`Tipo de navegación: ${performance.getEntriesByType('navigation')[0]?.type}`);
-    console.log(`Es recarga de página: ${isPageReload}`);
     
     // Si es una recarga y tenemos los datos necesarios, verificar el estado de seguimiento
     if (isPageReload && profileUser && isAuthenticated && currentUser?.username !== profileUser.username) {
-      console.log('Recarga de página detectada - verificando estado de seguimiento...');
       // Esperar un poco para asegurar que todo esté inicializado
       setTimeout(() => {
         verifyFollowState();
@@ -586,7 +572,7 @@ const UserProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
+    <div className="min-h-screen bg-theme-primary overflow-x-hidden">
       {/* Header */}
       <div className="bg-theme-card border-b border-theme-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -644,22 +630,22 @@ const UserProfilePage = () => {
 
             {/* Quick Stats and Actions */}
             <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
-              <div className="flex space-x-6">
+              <div className="grid grid-cols-2 sm:flex sm:space-x-6 gap-4 sm:gap-0 w-full sm:w-auto">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-white">{userStats?.totalReviews || 0}</div>
-                  <div className="text-sm text-gray-300">Reseñas</div>
+                  <div className="text-xl sm:text-2xl font-bold text-white">{userStats?.totalReviews || 0}</div>
+                  <div className="text-xs sm:text-sm text-gray-300">Reseñas</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-white">{userStats?.averageRating || '0.0'}</div>
-                  <div className="text-sm text-gray-300">Promedio</div>
+                  <div className="text-xl sm:text-2xl font-bold text-white">{userStats?.averageRating || '0.0'}</div>
+                  <div className="text-xs sm:text-sm text-gray-300">Promedio</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-white">{userStats?.followers || 0}</div>
-                  <div className="text-sm text-gray-300">Seguidores</div>
+                  <div className="text-xl sm:text-2xl font-bold text-white">{userStats?.followers || 0}</div>
+                  <div className="text-xs sm:text-sm text-gray-300">Seguidores</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-white">{userStats?.following || 0}</div>
-                  <div className="text-sm text-gray-300">Siguiendo</div>
+                  <div className="text-xl sm:text-2xl font-bold text-white">{userStats?.following || 0}</div>
+                  <div className="text-xs sm:text-sm text-gray-300">Siguiendo</div>
                 </div>
               </div>
 
@@ -722,74 +708,80 @@ const UserProfilePage = () => {
 
       {/* Tab Navigation */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex space-x-1 mb-8">
+        <div className="flex flex-wrap gap-2 mb-8 overflow-x-auto">
           <button
             onClick={() => setActiveTab('reviews')}
-            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
               activeTab === 'reviews'
                 ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
                 : 'text-gray-300 hover:text-white hover:bg-white/10'
             }`}
           >
-            <BookOpen className="w-5 h-5 inline mr-2" />
-            Reseñas
+            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
+            <span className="hidden sm:inline">Reseñas</span>
+            <span className="sm:hidden">Reviews</span>
           </button>
           <button
             onClick={() => setActiveTab('registro')}
-            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
               activeTab === 'registro'
                 ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
                 : 'text-gray-300 hover:text-white hover:bg-white/10'
             }`}
           >
-            <Clock className="w-5 h-5 inline mr-2" />
-            Registro
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
+            <span className="hidden sm:inline">Registro</span>
+            <span className="sm:hidden">Log</span>
           </button>
           {isOwnProfile && (
             <button
               onClick={() => setActiveTab('artists')}
-              className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+              className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
                 activeTab === 'artists'
                   ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
                   : 'text-gray-300 hover:text-white hover:bg-white/10'
               }`}
             >
-              <Music className="w-5 h-5 inline mr-2" />
-              Mis Artistas
+              <Music className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
+              <span className="hidden sm:inline">Mis Artistas</span>
+              <span className="sm:hidden">Artists</span>
             </button>
           )}
           <button
             onClick={() => setActiveTab('stats')}
-            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
               activeTab === 'stats'
                 ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
                 : 'text-gray-300 hover:text-white hover:bg-white/10'
             }`}
           >
-            <BarChart3 className="w-5 h-5 inline mr-2" />
-            Estadísticas
+            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
+            <span className="hidden sm:inline">Estadísticas</span>
+            <span className="sm:hidden">Stats</span>
           </button>
           <button
             onClick={() => setActiveTab('followers')}
-            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
               activeTab === 'followers'
                 ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
                 : 'text-gray-300 hover:text-white hover:bg-white/10'
             }`}
           >
-            <Users className="w-5 h-5 inline mr-2" />
-            Seguidores ({userStats?.followers || 0})
+            <Users className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
+            <span className="hidden sm:inline">Seguidores ({userStats?.followers || 0})</span>
+            <span className="sm:hidden">Followers</span>
           </button>
           <button
             onClick={() => setActiveTab('following')}
-            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
               activeTab === 'following'
                 ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
                 : 'text-gray-300 hover:text-white hover:bg-white/10'
             }`}
           >
-            <UserCheck className="w-5 h-5 inline mr-2" />
-            Siguiendo ({userStats?.following || 0})
+            <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
+            <span className="hidden sm:inline">Siguiendo ({userStats?.following || 0})</span>
+            <span className="sm:hidden">Following</span>
           </button>
         </div>
       </div>

@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Music, Eye, EyeOff, Lock, ArrowLeft, Check, X } from 'lucide-react';
 
-const ResetPasswordPage = () => {
+const ResetPasswordContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -290,10 +290,21 @@ const ResetPasswordPage = () => {
                 Inicia sesión aquí
               </Link>
             </p>
-          </div>
-        </div>
-      </div>
+          </div>      </div>
     </div>
+  </div>
+  );
+};
+
+const ResetPasswordPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Cargando...</div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 };
 

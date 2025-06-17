@@ -191,12 +191,15 @@ const TuneboxdApp = () => {
     setSearchQuery(item.name);
     setShowResults(false);
     
-    // Si es un álbum, navegar a la página de detalles del álbum
+    // Navegar según el tipo de búsqueda
     if (searchType === 'album') {
       window.location.href = `/album/${item.id}`;
+    } else if (searchType === 'artist') {
+      window.location.href = `/artist/${item.id}`;
+    } else if (searchType === 'track') {
+      window.location.href = `/track/${item.id}`;
     } else {
-      // Para otros tipos (artistas, canciones), solo mostrar en consola por ahora
-      console.log('Item seleccionado:', item);
+      // Para otros tipos, mostrar en consola
     }
   };
 

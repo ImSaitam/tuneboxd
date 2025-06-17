@@ -87,7 +87,6 @@ const ForumPage = () => {
         
         // Log si viene del cache para debugging
         if (data.fromCache) {
-          console.log('📋 Datos cargados desde cache');
         }
       }
 
@@ -103,7 +102,7 @@ const ForumPage = () => {
     if (!fetchingRef.current) {
       fetchForumData();
     }
-  }, [selectedCategory, fetchForumData]);
+  }, [selectedCategory, selectedLanguage, fetchForumData]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -207,31 +206,21 @@ const ForumPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
+    <div className="min-h-screen bg-theme-primary overflow-x-hidden">
       {/* Header */}
       <div className="bg-theme-card backdrop-blur-sm border-b border-theme-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center space-x-4">
-              <Link 
-                href="/"
-                className="flex items-center space-x-2 text-theme-primary hover:text-theme-accent transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span>Volver al inicio</span>
-              </Link>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-theme-primary flex items-center space-x-2">
-                <MessageCircle className="w-8 h-8" />
+              <h1 className="text-xl sm:text-2xl font-bold text-theme-primary flex items-center space-x-2">
+                <MessageCircle className="w-6 h-6 sm:w-8 sm:h-8" />
                 <span>Comunidad</span>
               </h1>
             </div>
 
             <button
               onClick={() => setShowCreateThread(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg font-medium transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg font-medium transition-colors w-full sm:w-auto justify-center"
             >
               <Plus className="w-4 h-4" />
               <span>Nuevo Hilo</span>
@@ -245,7 +234,7 @@ const ForumPage = () => {
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
           {/* Search Bar */}
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-muted w-5 h-5" />
               <input
@@ -260,7 +249,7 @@ const ForumPage = () => {
             <button
               onClick={handleSearch}
               disabled={isSearching}
-              className="px-6 py-3 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-xl font-medium transition-colors disabled:opacity-50"
+              className="px-6 py-3 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-xl font-medium transition-colors disabled:opacity-50 w-full sm:w-auto"
             >
               {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Buscar'}
             </button>
@@ -313,9 +302,9 @@ const ForumPage = () => {
                   onChange={(e) => setSelectedLanguage(e.target.value)}
                   className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-theme-border rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-theme-accent hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <option value="">Todos los idiomas</option>
-                  {languages.map((lang) => (
-                    <option key={lang.code} value={lang.code}>
+                  <option key="lang-all" value="">Todos los idiomas</option>
+                  {languages.map((lang, index) => (
+                    <option key={`lang-${lang.code}-${index}`} value={lang.code}>
                       {lang.name} ({lang.thread_count})
                     </option>
                   ))}
@@ -414,11 +403,11 @@ const ForumPage = () => {
                   onChange={(e) => setNewThread(prev => ({ ...prev, category: e.target.value }))}
                   className="w-full px-4 py-3 bg-theme-card border border-theme-border rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-theme-accent"
                 >
-                  <option value="general">General</option>
-                  <option value="música">Música</option>
-                  <option value="recomendaciones">Recomendaciones</option>
-                  <option value="discusión">Discusión</option>
-                  <option value="ayuda">Ayuda</option>
+                  <option key="cat-general" value="general">General</option>
+                  <option key="cat-música" value="música">Música</option>
+                  <option key="cat-recomendaciones" value="recomendaciones">Recomendaciones</option>
+                  <option key="cat-discusión" value="discusión">Discusión</option>
+                  <option key="cat-ayuda" value="ayuda">Ayuda</option>
                 </select>
               </div>
 
@@ -430,8 +419,8 @@ const ForumPage = () => {
                   onChange={(e) => setNewThread(prev => ({ ...prev, language: e.target.value }))}
                   className="w-full px-4 py-3 bg-theme-card border border-theme-border rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-theme-accent"
                 >
-                  {Object.entries(languageNames).map(([code, name]) => (
-                    <option key={code} value={code}>{name}</option>
+                  {Object.entries(languageNames).map(([code, name], index) => (
+                    <option key={`thread-lang-${code}-${index}`} value={code}>{name}</option>
                   ))}
                 </select>
               </div>

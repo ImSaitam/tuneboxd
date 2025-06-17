@@ -3,7 +3,6 @@ import db from '../lib/database.js';
 
 async function checkArtistTables() {
   try {
-    console.log('🔍 Verificando tablas de artistas...');
     
     // Listar todas las tablas
     const tables = await db.allAsync(`
@@ -12,9 +11,7 @@ async function checkArtistTables() {
       ORDER BY name
     `);
     
-    console.log('📋 Tablas en la base de datos:');
     tables.forEach(table => {
-      console.log(`  - ${table.name}`);
     });
     
     // Verificar estructura de artist_follows
@@ -22,9 +19,7 @@ async function checkArtistTables() {
       PRAGMA table_info(artist_follows)
     `);
     
-    console.log('\n🎯 Estructura de artist_follows:');
     followsSchema.forEach(col => {
-      console.log(`  - ${col.name}: ${col.type} ${col.notnull ? 'NOT NULL' : ''} ${col.pk ? 'PRIMARY KEY' : ''}`);
     });
     
     // Verificar estructura de artist_tags
@@ -32,12 +27,9 @@ async function checkArtistTables() {
       PRAGMA table_info(artist_tags)
     `);
     
-    console.log('\n🏷️ Estructura de artist_tags:');
     tagsSchema.forEach(col => {
-      console.log(`  - ${col.name}: ${col.type} ${col.notnull ? 'NOT NULL' : ''} ${col.pk ? 'PRIMARY KEY' : ''}`);
     });
     
-    console.log('\n✅ Verificación completada');
     
   } catch (error) {
     console.error('❌ Error al verificar tablas:', error);

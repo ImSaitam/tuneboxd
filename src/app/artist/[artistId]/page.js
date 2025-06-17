@@ -537,9 +537,10 @@ export default function ArtistPage() {
                       </div>
                     </div>
                     {albumTracks.map((track, index) => (
-                      <div
+                      <Link
                         key={track.id}
-                        className={`grid grid-cols-12 gap-4 px-4 py-3 ${theme === 'dark' ? 'hover:bg-gray-700/30' : 'hover:bg-gray-100'} rounded-lg transition-colors group`}
+                        href={`/track/${track.id}`}
+                        className={`grid grid-cols-12 gap-4 px-4 py-3 ${theme === 'dark' ? 'hover:bg-gray-700/30' : 'hover:bg-gray-100'} rounded-lg transition-colors group cursor-pointer`}
                       >
                         <div className="col-span-1 flex items-center">
                           <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} text-sm font-medium`}>
@@ -563,7 +564,7 @@ export default function ArtistPage() {
                             {formatDuration(track.duration_ms)}
                           </span>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (

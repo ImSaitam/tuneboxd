@@ -26,6 +26,45 @@ const AdminPerformancePage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
 
+  // Funciones auxiliares para mostrar estado del sistema
+  const getStatusColor = (value) => {
+    if (value < 50) return 'text-green-400';
+    if (value < 80) return 'text-yellow-400';
+    return 'text-red-400';
+  };
+
+  const getStatusBg = (value) => {
+    if (value < 50) return 'bg-green-500/20 text-green-400 border-green-500/30';
+    if (value < 80) return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+    return 'bg-red-500/20 text-red-400 border-red-500/30';
+  };
+
+  const formatUptime = (seconds) => {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${days}d ${hours}h ${minutes}m`;
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      // Simular datos del sistema (en producción vendría de una API)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSystemInfo({
+        uptime: Math.floor(Math.random() * 1000000),
+        memoryUsage: Math.random() * 100,
+        cpuUsage: Math.random() * 100,
+        diskUsage: Math.random() * 100
+      });
+      setLastRefresh(new Date());
+    } catch (error) {
+      console.error('Error refreshing system info:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   // Verificar permisos de administrador
   useEffect(() => {
     if (!authLoading) {
@@ -90,16 +129,6 @@ const AdminPerformancePage = () => {
       <div className="bg-theme-card backdrop-blur-sm border-b border-theme-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link 
-                href="/community"
-                className="flex items-center space-x-2 text-theme-primary hover:text-theme-accent transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span>Volver a Comunidad</span>
-              </Link>
-            </div>
-            
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-bold text-theme-primary flex items-center space-x-2">
                 <Shield className="w-8 h-8 text-yellow-400" />

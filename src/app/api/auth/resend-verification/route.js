@@ -1,5 +1,5 @@
-import { userService } from '../../../../lib/database.js';
-import { generateVerificationToken, sendVerificationEmail } from '../../../../lib/email.js';
+import { userService } from "../../../../lib/database-adapter.js";
+import { generateVerificationToken, sendVerificationEmail } from '../../../../lib/email-resend.js';
 
 export async function POST(request) {
   try {
@@ -54,7 +54,6 @@ export async function POST(request) {
     const emailResult = await sendVerificationEmail(user.email, user.username, verificationToken);
     
     if (emailResult.success) {
-      console.log(`✅ Email de verificación reenviado a ${user.email}`);
     } else {
       console.error(`❌ Error reenviando email de verificación: ${emailResult.error}`);
       return Response.json(

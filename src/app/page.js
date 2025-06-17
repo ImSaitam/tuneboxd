@@ -2,22 +2,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, Music, Edit3, Users, Target, BarChart3, Eye, Loader2, Menu, X, User, LogOut, Heart, List } from 'lucide-react';
+import { Search, Music, Edit3, Users, Target, BarChart3, Eye, Loader2 } from 'lucide-react';
 import { useSpotify } from '@/hooks/useSpotify';
 import { useAuth } from '@/hooks/useAuth';
-import NotificationBell from '@/components/NotificationBell';
-import ThemeToggle from '@/components/ThemeToggle';
 
 const TuneboxdApp = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [isScrolled, setIsScrolled] = useState(false);
   const [visibleStats, setVisibleStats] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [searchType, setSearchType] = useState('album');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [globalStats, setGlobalStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const statsRef = useRef(null);
@@ -79,9 +74,10 @@ const TuneboxdApp = () => {
       description: "Analiza tus hábitos musicales con estadísticas completas sobre géneros, años, artistas y mucho más."
     },
     {
-      icon: <Eye className="w-12 h-12" />,
+      icon: <div className="text-6xl">?</div>,
       title: "Descubrimiento Inteligente",
-      description: "Algoritmos que aprenden de tus gustos para sugerirte álbumes que realmente vas a amar."
+      description: "Algoritmos que aprenden de tus gustos para sugerirte álbumes que realmente vas a amar.",
+      comingSoon: true
     }
   ];
 
@@ -150,7 +146,6 @@ const TuneboxdApp = () => {
     const loadGlobalStats = async () => {
       try {
         setStatsLoading(true);
-        console.log('🔄 Cargando estadísticas globales...');
         
         const response = await fetch('/api/stats/global', {
           headers: {
@@ -159,7 +154,6 @@ const TuneboxdApp = () => {
           }
         });
         
-        console.log('📊 Respuesta de stats:', response.status, response.statusText);
         
         if (response.ok) {
           let data;
@@ -179,7 +173,6 @@ const TuneboxdApp = () => {
             }
           }
           
-          console.log('✅ Datos recibidos:', data);
           if (data && data.success) {
             setGlobalStats(data.stats);
           } else {
@@ -224,10 +217,6 @@ const TuneboxdApp = () => {
 
     loadGlobalStats();
 
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 100);
-    };
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -246,20 +235,15 @@ const TuneboxdApp = () => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowResults(false);
       }
-      if (userMenuOpen && !event.target.closest('.user-menu')) {
-        setUserMenuOpen(false);
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    window.addEventListener('scroll', handleScroll);
     
     return () => {
-      window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
       observer.disconnect();
     };
-  }, [userMenuOpen]);
+  }, []);
 
   // Efecto para buscar en Spotify cuando cambia la query
   useEffect(() => {
@@ -299,9 +283,10 @@ const TuneboxdApp = () => {
       window.location.href = `/album/${item.id}`;
     } else if (searchType === 'artist') {
       window.location.href = `/artist/${item.id}`;
+    } else if (searchType === 'track') {
+      window.location.href = `/track/${item.id}`;
     } else {
-      // Para otros tipos (canciones), solo mostrar en consola por ahora
-      console.log('Item seleccionado:', item);
+      // Para otros tipos, mostrar en consola
     }
   };
 
@@ -315,15 +300,6 @@ const TuneboxdApp = () => {
         return `${item.artists?.[0]?.name || 'Artista desconocido'} • ${item.album?.name || ''}`;
       default:
         return '';
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      // Opcional: mostrar un mensaje de éxito
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
     }
   };
 
@@ -369,208 +345,6 @@ const TuneboxdApp = () => {
 
   return (
     <div className="min-h-screen bg-theme-primary text-theme-primary overflow-x-hidden">
-      {/* Navbar */}
-      <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          isScrolled ? "bg-theme-card" : "bg-theme-card/80"
-        } backdrop-blur-md border-b border-theme`}
-      >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="text-2xl font-bold text-theme-accent">
-                Tuneboxd
-              </div>
-            </Link>
-            <div className="hidden md:flex space-x-8 items-center">
-              {getNavLinks().map((link) =>
-                link.isLink ? (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="text-theme-primary hover:bg-theme-card-hover px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-1"
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <button
-                    key={link.href}
-                    onClick={() => scrollToSection(link.href)}
-                    className="text-theme-primary hover:bg-theme-card-hover px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-1"
-                  >
-                    {link.label}
-                  </button>
-                )
-              )}
-
-              {/* Search Button */}
-              <Link
-                href="/search"
-                className="flex items-center space-x-2 text-theme-primary hover:bg-theme-card-hover px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-1"
-                title="Búsqueda Global"
-              >
-                <Search className="w-4 h-4" />
-                <span className="hidden lg:inline">Buscar</span>
-              </Link>
-
-              {/* Notification Bell - Solo si está autenticado */}
-              {isAuthenticated && <NotificationBell />}
-
-              {/* Theme Toggle */}
-              <ThemeToggle />
-
-              {/* User Menu */}
-              {isAuthenticated && (
-                <div className="relative user-menu">
-                  <button
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center space-x-2 text-theme-primary hover:bg-theme-card-hover px-4 py-2 rounded-full transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                  >
-                    <User className="w-4 h-4" />
-                    <span className="hidden sm:inline">{user?.username}</span>
-                  </button>
-
-                  {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-theme-card border border-theme rounded-xl shadow-lg py-2">
-                      <Link
-                        href={`/profile/${user?.username}`}
-                        className="block px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <User className="w-4 h-4 inline mr-2" />
-                        Mi Perfil
-                      </Link>
-                      <Link
-                        href="/listen-list"
-                        className="block px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Heart className="w-4 h-4 inline mr-2" />
-                        Mi Lista de Escucha
-                      </Link>
-                      <Link
-                        href="/lists"
-                        className="block px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <List className="w-4 h-4 inline mr-2" />
-                        Mis Listas
-                      </Link>
-                      <button
-                        onClick={() => {
-                          handleLogout();
-                          setUserMenuOpen(false);
-                        }}
-                        className="block w-full text-left px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
-                      >
-                        <LogOut className="w-4 h-4 inline mr-2" />
-                        Cerrar Sesión
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden text-theme-primary p-2"
-            >
-              {mobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </button>
-          </div>
-
-          {/* Mobile menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden bg-theme-card border border-theme rounded-2xl mt-4 p-4">
-              {getNavLinks().map((link) =>
-                link.isLink ? (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="block text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <button
-                    key={link.href}
-                    onClick={() => {
-                      scrollToSection(link.href);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-left text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
-                  >
-                    {link.label}
-                  </button>
-                )
-              )}
-
-              {/* Search Button in Mobile */}
-              <Link
-                href="/search"
-                className="flex items-center gap-3 text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Search className="w-4 h-4" />
-                Búsqueda Global
-              </Link>
-
-              {/* User section in mobile menu */}
-              {isAuthenticated && (
-                <div className="border-t border-theme mt-4 pt-4">
-                  <div className="text-theme-secondary px-4 py-2 mb-2">
-                    Hola,{" "}
-                    <span className="font-semibold text-theme-primary">
-                      {user?.username}
-                    </span>
-                  </div>
-                  <Link
-                    href={`/profile/${user?.username}`}
-                    className="block text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <User className="w-4 h-4 inline mr-2" />
-                    Mi Perfil
-                  </Link>
-                  <Link
-                    href="/listen-list"
-                    className="block text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Heart className="w-4 h-4 inline mr-2" />
-                    Mi Lista de Escucha
-                  </Link>
-                  <Link
-                    href="/lists"
-                    className="block text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300 mb-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <List className="w-4 h-4 inline mr-2" />
-                    Mis Listas
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-left text-theme-primary hover:bg-theme-card-hover px-4 py-3 rounded-xl transition-all duration-300"
-                  >
-                    <LogOut className="w-4 h-4 inline mr-2" />
-                    Cerrar Sesión
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </nav>
-
       {/* Floating Music Notes */}
       {isClient && (
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -597,7 +371,7 @@ const TuneboxdApp = () => {
         id="home"
         className="min-h-screen flex items-center justify-center text-center relative"
       >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 text-theme-accent animate-pulse">
             Tuneboxd
           </h1>
@@ -698,12 +472,6 @@ const TuneboxdApp = () => {
                   <div className="absolute inset-0 bg-theme-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:left-full transition-all duration-500"></div>
                 </button>
-                <button
-                  onClick={() => scrollToSection("#albums")}
-                  className="relative bg-theme-card backdrop-blur-md border border-theme text-theme-primary px-8 py-4 rounded-full text-lg font-semibold hover:bg-theme-card-hover hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 text-center"
-                >
-                  Ver álbumes populares
-                </button>
               </>
             ) : (
               <>
@@ -739,8 +507,17 @@ const TuneboxdApp = () => {
             {featuresData.map((feature, index) => (
               <div
                 key={index}
-                className="bg-theme-card p-8 rounded-3xl text-center border border-theme hover:-translate-y-4 hover:bg-theme-card-hover hover:shadow-2xl transition-all duration-300 group"
+                className={`bg-theme-card p-8 rounded-3xl text-center border border-theme transition-all duration-300 group relative ${
+                  feature.comingSoon 
+                    ? 'blur-sm hover:blur-none cursor-not-allowed opacity-75 hover:opacity-100' 
+                    : 'hover:-translate-y-4 hover:bg-theme-card-hover hover:shadow-2xl'
+                }`}
               >
+                {feature.comingSoon && (
+                  <div className="absolute top-4 right-4 bg-theme-accent text-theme-button px-3 py-1 rounded-full text-xs font-bold">
+                    Próximamente
+                  </div>
+                )}
                 <div className="text-theme-accent mb-6 flex justify-center transition-colors duration-300">
                   {feature.icon}
                 </div>

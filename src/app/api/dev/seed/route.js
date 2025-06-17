@@ -1,4 +1,4 @@
-import { userService, albumService, reviewService } from '../../../../lib/database.js';
+import { userService, albumService, reviewService } from "../../../../lib/database-adapter.js";
 import bcrypt from 'bcryptjs';
 
 export async function POST(request) {
@@ -16,21 +16,17 @@ export async function POST(request) {
     
     let testUserId;
     try {
-      console.log('Creando usuario de prueba...');
       testUserId = await userService.createUser({
         username: 'musiclover',
         email: 'test@tuneboxd.com',
         password: hashedPassword
       });
-      console.log('Usuario creado con ID:', testUserId);
     } catch (error) {
-      console.log('Error creando usuario:', error.message);
       // El usuario ya existe, obtenerlo por email O username
       let existingUser = await userService.findByEmail('test@tuneboxd.com');
       if (!existingUser) {
         existingUser = await userService.findByUsername('musiclover');
       }
-      console.log('Usuario existente encontrado:', existingUser);
       
       if (!existingUser) {
         throw new Error('No se pudo crear ni encontrar el usuario de prueba');
@@ -86,9 +82,7 @@ export async function POST(request) {
     // Crear álbumes y reseñas
     const createdAlbums = [];
     for (const albumData of sampleAlbums) {
-      console.log('Creando álbum:', albumData.name);
       const album = await albumService.findOrCreateAlbum(albumData);
-      console.log('Álbum creado/encontrado:', album);
       createdAlbums.push(album.id);
     }
 
@@ -136,7 +130,6 @@ export async function POST(request) {
         await reviewService.createReview(reviewData);
       } catch (error) {
         // La reseña ya existe, saltarla
-        console.log('Reseña ya existe, saltando...');
       }
     }
 

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { albumService, listeningHistoryService } from '../../../lib/database.js';
+import { albumService, listeningHistoryService } from "../../../lib/database-adapter.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Función para verificar autenticación (opcional)
 async function verifyAuth(request, required = true) {

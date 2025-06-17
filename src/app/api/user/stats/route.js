@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
-import { reviewService, userService, userFollowService, getAsync, allAsync } from '../../../../lib/database.js';
-import db from '../../../../lib/database.js';
+import { reviewService, userService, userFollowService, getAsync, allAsync } from "../../../../lib/database-adapter.js";
+import db from "../../../../lib/database-adapter.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function GET(request) {
   try {

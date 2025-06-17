@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { userService } from '../../../../lib/database.js';
-import { generateVerificationToken, sendVerificationEmail } from '../../../../lib/email.js';
+import { userService } from "../../../../lib/database-adapter.js";
+import { generateVerificationToken, sendVerificationEmail } from '../../../../lib/email-resend.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-key-muy-seguro';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(request) {
   try {
@@ -70,7 +70,6 @@ export async function POST(request) {
     const emailResult = await sendVerificationEmail(email.toLowerCase(), username, verificationToken);
     
     if (emailResult.success) {
-      console.log(`✅ Email de verificación enviado a ${email}`);
     } else {
       console.error(`❌ Error enviando email de verificación: ${emailResult.error}`);
       // Continuar con el registro aunque falle el email

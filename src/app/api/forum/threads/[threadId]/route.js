@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { forumService } from '../../../../../lib/database.js';
+import { forumService } from "../../../../../lib/database-adapter.js";
 import { shouldTrackView } from '../../../../../lib/viewTracker.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';

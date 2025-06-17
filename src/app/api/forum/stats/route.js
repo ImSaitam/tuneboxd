@@ -1,8 +1,7 @@
 // API para obtener estadísticas de rendimiento del sistema
 import { NextResponse } from 'next/server';
 import { forumCache } from '../../../../lib/cache.js';
-import { dbPool } from '../../../../lib/database-pool.js';
-import { forumService } from '../../../../lib/database.js';
+import { forumService } from '../../../../lib/database-adapter.js';
 
 // Estadísticas globales del sistema
 let globalStats = {

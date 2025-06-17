@@ -1,0 +1,22 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "next/core-web-vitals"
+  ],
+  "rules": {
+    "react-hooks/exhaustive-deps": "warn",
+    "@next/next/no-img-element": "warn",
+    "react/no-unescaped-entities": "warn",
+    "import/no-anonymous-default-export": "warn"
+  },
+  "ignorePatterns": [
+    "backup_files/**/*",
+    "**/*_old.js",
+    "**/*_backup.js",
+    "**/*_new.js"
+  ]
+}

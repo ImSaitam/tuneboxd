@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db, { getAsync } from '../../../../lib/database.js';
+import db, { getAsync } from "../../../../lib/database-adapter.js";
 
 export async function GET(request) {
   try {
