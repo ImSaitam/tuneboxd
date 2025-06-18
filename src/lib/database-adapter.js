@@ -221,25 +221,152 @@ export const reviewService = {
       'INSERT INTO reviews (user_id, album_id, rating, content, created_at) VALUES (?, ?, ?, ?, NOW())',
       [user_id, album_id, rating, content]
     );
+  },
+
+  // Obtener estadísticas de un álbum
+  async getAlbumStats(albumId) {
+    const stats = await get(`
+      SELECT 
+        COUNT(*) as total_reviews,
+        AVG(rating) as avg_rating,
+        SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as five_stars,
+        SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as four_stars,
+        SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) as three_stars,
+        SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as two_stars,
+        SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as one_star
+      FROM reviews 
+      WHERE album_id = ?
+    `, [albumId]);
+
+    return stats || {
+      total_reviews: 0,
+      avg_rating: 0,
+      five_stars: 0,
+      four_stars: 0,
+      three_stars: 0,
+      two_stars: 0,
+      one_star: 0
+    };
+  },
+
+  // Obtener reseñas de un álbum con información del usuario
+  async getAlbumReviews(albumId, limit = 10, offset = 0) {
+    return await query(`
+      SELECT 
+        r.*,
+        u.username,
+        u.profile_image_url
+      FROM reviews r
+      JOIN users u ON r.user_id = u.id
+      WHERE r.album_id = ?
+      ORDER BY r.created_at DESC
+      LIMIT ? OFFSET ?
+    `, [albumId, limit, offset]);
   }
 };
 
 // Servicio de notificaciones
 export const notificationService = {
+  // Crear una nueva notificación
+  async createNotification(notificationData) {
+    const { 
+      user_id, 
+      type, 
+      title, 
+      message, 
+      from_user_id = null, 
+      list_id = null, 
+      thread_id = null, 
+      comment_id = null 
+    } = notificationData;
+
+    return await run(
+      `INSERT INTO notifications 
+       (user_id, type, title, message, from_user_id, list_id, thread_id, comment_id, created_at) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [user_id, type, title, message, from_user_id, list_id, thread_id, comment_id]
+    );
+  },
+
+  // Obtener notificaciones de un usuario con JOIN para datos relacionados
+  async getUserNotifications(userId, limit = 20, offset = 0, unreadOnly = false) {
+    const whereClause = unreadOnly ? 
+      'WHERE n.user_id = ? AND n.is_read = FALSE' : 
+      'WHERE n.user_id = ?';
+
+    return await query(`
+      SELECT 
+        n.*,
+        u.username as from_username,
+        cl.name as list_name,
+        ft.title as thread_title
+      FROM notifications n
+      LEFT JOIN users u ON n.from_user_id = u.id
+      LEFT JOIN custom_lists cl ON n.list_id = cl.id
+      LEFT JOIN forum_threads ft ON n.thread_id = ft.id
+      ${whereClause}
+      ORDER BY n.created_at DESC
+      LIMIT ? OFFSET ?
+    `, unreadOnly ? [userId, limit, offset] : [userId, limit, offset]);
+  },
+
+  // Marcar notificación como leída
+  async markAsRead(notificationId, userId) {
+    const result = await run(
+      'UPDATE notifications SET is_read = TRUE WHERE id = ? AND user_id = ?',
+      [notificationId, userId]
+    );
+    return result.changes > 0;
+  },
+
+  // Marcar todas las notificaciones como leídas
+  async markAllAsRead(userId) {
+    const result = await run(
+      'UPDATE notifications SET is_read = TRUE WHERE user_id = ? AND is_read = FALSE',
+      [userId]
+    );
+    return result.changes;
+  },
+
+  // Obtener cantidad de notificaciones no leídas
+  async getUnreadCount(userId) {
+    const result = await get(
+      'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = FALSE',
+      [userId]
+    );
+    return result?.count || 0;
+  },
+
+  // Eliminar notificación
+  async deleteNotification(notificationId, userId) {
+    const result = await run(
+      'DELETE FROM notifications WHERE id = ? AND user_id = ?',
+      [notificationId, userId]
+    );
+    return result.changes > 0;
+  },
+
+  // Eliminar todas las notificaciones de un usuario
+  async deleteAllUserNotifications(userId) {
+    const result = await run(
+      'DELETE FROM notifications WHERE user_id = ?',
+      [userId]
+    );
+    return result.changes;
+  },
+
+  // Métodos de compatibilidad (legacy)
   async findByUserId(userId) {
-    return await query('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC', [userId]);
+    return this.getUserNotifications(userId);
   },
   
   async create(notificationData) {
-    const { user_id, type, message, related_id } = notificationData;
-    return await run(
-      'INSERT INTO notifications (user_id, type, message, related_id, created_at) VALUES (?, ?, ?, ?, NOW())',
-      [user_id, type, message, related_id]
-    );
+    return this.createNotification(notificationData);
   },
   
   async markAsRead(id) {
-    return await run('UPDATE notifications SET is_read = true WHERE id = ?', [id]);
+    const result = await run('UPDATE notifications SET is_read = true WHERE id = ?', [id]);
+    return result.changes > 0;
   }
 };
 
