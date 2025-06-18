@@ -212,19 +212,51 @@ export const albumService = {
 // Servicio de reseñas
 export const reviewService = {
   async findByAlbumId(albumId) {
-    return await query('SELECT * FROM reviews WHERE album_id = ? ORDER BY created_at DESC', [albumId]);
+    // Buscar por ID de álbum interno (cuando existe un álbum en la tabla albums)
+    return await query('SELECT * FROM reviews WHERE spotify_album_id IN (SELECT spotify_id FROM albums WHERE id = ?) ORDER BY created_at DESC', [albumId]);
+  },
+  
+  async findBySpotifyAlbumId(spotifyAlbumId) {
+    // Buscar directamente por spotify_album_id
+    return await query('SELECT * FROM reviews WHERE spotify_album_id = ? ORDER BY created_at DESC', [spotifyAlbumId]);
   },
   
   async create(reviewData) {
-    const { user_id, album_id, rating, content } = reviewData;
+    const { user_id, album_id, spotify_album_id, rating, content, review_text } = reviewData;
+    
+    // Usar spotify_album_id si se proporciona, sino intentar obtenerlo del álbum
+    let finalSpotifyAlbumId = spotify_album_id;
+    if (!finalSpotifyAlbumId && album_id) {
+      const album = await get('SELECT spotify_id FROM albums WHERE id = ?', [album_id]);
+      finalSpotifyAlbumId = album?.spotify_id;
+    }
+    
+    if (!finalSpotifyAlbumId) {
+      throw new Error('No se pudo determinar el spotify_album_id');
+    }
+    
     return await run(
-      'INSERT INTO reviews (user_id, album_id, rating, content, created_at) VALUES (?, ?, ?, ?, NOW())',
-      [user_id, album_id, rating, content]
+      'INSERT INTO reviews (user_id, spotify_album_id, rating, review_text, created_at) VALUES (?, ?, ?, ?, NOW())',
+      [user_id, finalSpotifyAlbumId, rating, content || review_text]
     );
   },
 
-  // Obtener estadísticas de un álbum
+  // Obtener estadísticas de un álbum usando spotify_album_id
   async getAlbumStats(albumId) {
+    // Primero obtener el spotify_id del álbum
+    const album = await get('SELECT spotify_id FROM albums WHERE id = ?', [albumId]);
+    if (!album?.spotify_id) {
+      return {
+        total_reviews: 0,
+        avg_rating: 0,
+        five_stars: 0,
+        four_stars: 0,
+        three_stars: 0,
+        two_stars: 0,
+        one_star: 0
+      };
+    }
+
     const stats = await get(`
       SELECT 
         COUNT(*) as total_reviews,
@@ -235,8 +267,8 @@ export const reviewService = {
         SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as two_stars,
         SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as one_star
       FROM reviews 
-      WHERE album_id = ?
-    `, [albumId]);
+      WHERE spotify_album_id = ?
+    `, [album.spotify_id]);
 
     return stats || {
       total_reviews: 0,
@@ -251,17 +283,24 @@ export const reviewService = {
 
   // Obtener reseñas de un álbum con información del usuario
   async getAlbumReviews(albumId, limit = 10, offset = 0) {
+    // Primero obtener el spotify_id del álbum
+    const album = await get('SELECT spotify_id FROM albums WHERE id = ?', [albumId]);
+    if (!album?.spotify_id) {
+      return [];
+    }
+
     return await query(`
       SELECT 
         r.*,
         u.username,
-        u.profile_image_url
+        u.profile_image_url,
+        r.review_text as content
       FROM reviews r
       JOIN users u ON r.user_id = u.id
-      WHERE r.album_id = ?
+      WHERE r.spotify_album_id = ?
       ORDER BY r.created_at DESC
       LIMIT ? OFFSET ?
-    `, [albumId, limit, offset]);
+    `, [album.spotify_id, limit, offset]);
   }
 };
 
@@ -297,13 +336,9 @@ export const notificationService = {
     return await query(`
       SELECT 
         n.*,
-        u.username as from_username,
-        cl.name as list_name,
-        ft.title as thread_title
+        u.username as from_username
       FROM notifications n
       LEFT JOIN users u ON n.from_user_id = u.id
-      LEFT JOIN custom_lists cl ON n.list_id = cl.id
-      LEFT JOIN forum_threads ft ON n.thread_id = ft.id
       ${whereClause}
       ORDER BY n.created_at DESC
       LIMIT ? OFFSET ?
