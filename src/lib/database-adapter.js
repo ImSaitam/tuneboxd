@@ -569,6 +569,46 @@ export const watchlistService = {
   
   async remove(userId, albumId) {
     return await run('DELETE FROM watchlist WHERE user_id = ? AND album_id = ?', [userId, albumId]);
+  },
+
+  // Métodos adicionales requeridos por los endpoints
+  async addToWatchlist(userId, albumId) {
+    return await run(
+      'INSERT INTO watchlist (user_id, album_id, added_at) VALUES (?, ?, NOW())',
+      [userId, albumId]
+    );
+  },
+
+  async removeFromWatchlist(userId, albumId) {
+    const result = await run('DELETE FROM watchlist WHERE user_id = ? AND album_id = ?', [userId, albumId]);
+    return result.changes || 0;
+  },
+
+  async isInWatchlist(userId, albumId) {
+    const result = await get(
+      'SELECT id FROM watchlist WHERE user_id = ? AND album_id = ?',
+      [userId, albumId]
+    );
+    return !!result;
+  },
+
+  async getUserWatchlist(userId, limit = 20, offset = 0) {
+    return await query(`
+      SELECT w.*, a.name as album_name, a.artist_name as artist, a.image_url, a.spotify_id, a.release_date, a.spotify_url
+      FROM watchlist w
+      JOIN albums a ON w.album_id = a.id
+      WHERE w.user_id = ?
+      ORDER BY w.added_at DESC
+      LIMIT ? OFFSET ?
+    `, [userId, limit, offset]);
+  },
+
+  async getWatchlistCount(userId) {
+    const result = await get(
+      'SELECT COUNT(*) as count FROM watchlist WHERE user_id = ?',
+      [userId]
+    );
+    return result ? parseInt(result.count) : 0;
   }
 };
 
