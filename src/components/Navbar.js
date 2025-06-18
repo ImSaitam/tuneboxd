@@ -65,7 +65,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 overflow-x-hidden ${
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         isScrolled ? "bg-theme-card" : "bg-theme-card/80"
       } backdrop-blur-md border-b border-theme`}
     >
@@ -138,10 +138,10 @@ const Navbar = () => {
                 </button>
 
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-theme-card border border-theme rounded-xl shadow-lg py-2">
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl py-2 z-[9999]">
                     <Link
                       href={`/profile/${user?.username}`}
-                      className="block px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
+                      className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <User className="w-4 h-4 inline mr-2" />
@@ -149,7 +149,7 @@ const Navbar = () => {
                     </Link>
                     <Link
                       href="/favorites"
-                      className="block px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
+                      className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <Heart className="w-4 h-4 inline mr-2" />
@@ -157,7 +157,7 @@ const Navbar = () => {
                     </Link>
                     <Link
                       href="/notifications"
-                      className="block px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
+                      className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <div className="flex items-center justify-between">
@@ -173,7 +173,7 @@ const Navbar = () => {
                           Notificaciones
                         </div>
                         {unreadCount > 0 && (
-                          <span className="text-xs text-theme-accent font-semibold">
+                          <span className="text-xs text-blue-500 font-semibold">
                             {unreadCount} nueva{unreadCount !== 1 ? 's' : ''}
                           </span>
                         )}
@@ -181,7 +181,7 @@ const Navbar = () => {
                     </Link>
                     <Link
                       href="/listen-list"
-                      className="block px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
+                      className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <PlayCircle className="w-4 h-4 inline mr-2" />
@@ -189,7 +189,7 @@ const Navbar = () => {
                     </Link>
                     <Link
                       href="/lists"
-                      className="block px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
+                      className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <List className="w-4 h-4 inline mr-2" />
@@ -200,7 +200,7 @@ const Navbar = () => {
                         handleLogout();
                         setUserMenuOpen(false);
                       }}
-                      className="block w-full text-left px-4 py-2 text-theme-primary hover:bg-theme-card-hover transition-colors"
+                      className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                       <LogOut className="w-4 h-4 inline mr-2" />
                       Cerrar Sesión

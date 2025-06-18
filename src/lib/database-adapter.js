@@ -38,6 +38,12 @@ export async function run(sql, params = []) {
   });
   
   const result = await pgQuery(pgSql, params);
+  
+  // Si la consulta tiene RETURNING, devolver los datos
+  if (sql.toUpperCase().includes('RETURNING')) {
+    return result.rows[0] || null;
+  }
+  
   return {
     changes: result.rowCount || 0,
     lastID: result.insertId || null
@@ -166,12 +172,40 @@ export const albumService = {
     return await get('SELECT * FROM albums WHERE spotify_id = ?', [id]);
   },
   
+  async findBySpotifyId(spotifyId) {
+    return await get('SELECT * FROM albums WHERE spotify_id = ?', [spotifyId]);
+  },
+  
   async create(albumData) {
     const { spotify_id, name, artist, image_url, release_date } = albumData;
     return await run(
-      'INSERT INTO albums (spotify_id, name, artist, image_url, release_date) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO albums (spotify_id, name, artist_id, image_url, release_date) VALUES (?, ?, ?, ?, ?)',
       [spotify_id, name, artist, image_url, release_date]
     );
+  },
+
+  async findOrCreateAlbum(albumData) {
+    const { spotify_id, name, artist, image_url, release_date, spotify_url } = albumData;
+    
+    // Primero buscar si el álbum ya existe
+    let album = await this.findBySpotifyId(spotify_id);
+    
+    if (album) {
+      return album;
+    }
+
+    // Si no existe, crear el álbum usando RETURNING para obtener los datos
+    album = await run(
+      'INSERT INTO albums (spotify_id, name, artist_name, image_url, release_date, total_tracks) VALUES (?, ?, ?, ?, ?, 0) RETURNING *',
+      [spotify_id, name, artist, image_url, release_date]
+    );
+
+    return album;
+  },
+
+  async getTotalAlbumsCount() {
+    const result = await get('SELECT COUNT(*) as count FROM albums');
+    return result ? parseInt(result.count) : 0;
   }
 };
 
@@ -257,6 +291,104 @@ export const listeningHistoryService = {
       'INSERT INTO listening_history (user_id, album_id, track_id, listened_at) VALUES (?, ?, ?, NOW())',
       [user_id, album_id, track_id]
     );
+  },
+
+  // Agregar álbum al historial de escucha
+  async addToHistory(userId, albumId) {
+    return await run(
+      'INSERT INTO listening_history (user_id, album_id, listened_at) VALUES (?, ?, NOW())',
+      [userId, albumId]
+    );
+  },
+
+  // Verificar si un álbum ya está en el historial del usuario (último día)
+  async isRecentlyInHistory(userId, albumId) {
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    
+    const result = await get(
+      'SELECT id FROM listening_history WHERE user_id = ? AND album_id = ? AND listened_at > ?',
+      [userId, albumId, oneDayAgo.toISOString()]
+    );
+    return !!result;
+  },
+
+  // Obtener historial de escucha del usuario agrupado por fecha
+  async getUserListeningHistory(userId, limit = 50, offset = 0) {
+    return await query(`
+      SELECT 
+        DATE(lh.listened_at) as listen_date,
+        lh.listened_at,
+        a.id as album_id,
+        a.name as album_name,
+        a.artist_name as artist,
+        a.image_url,
+        a.spotify_id,
+        a.release_date
+      FROM listening_history lh
+      JOIN albums a ON lh.album_id = a.id
+      WHERE lh.user_id = ?
+      ORDER BY lh.listened_at DESC
+      LIMIT ? OFFSET ?
+    `, [userId, limit, offset]);
+  },
+
+  // Obtener historial agrupado por fecha para mostrar en formato lista
+  async getUserListeningHistoryGrouped(userId, limit = 30) {
+    const history = await query(`
+      SELECT 
+        DATE(lh.listened_at) as listen_date,
+        lh.listened_at,
+        a.id as album_id,
+        a.name as album_name,
+        a.artist_name as artist,
+        a.image_url,
+        a.spotify_id,
+        a.release_date
+      FROM listening_history lh
+      JOIN albums a ON lh.album_id = a.id
+      WHERE lh.user_id = ?
+      ORDER BY lh.listened_at DESC
+      LIMIT ?
+    `, [userId, limit * 5]); // Aumentar el límite para asegurar que tenemos suficientes datos
+
+    // Agrupar los datos en JavaScript
+    const groupedData = {};
+    
+    history.forEach(entry => {
+      const date = entry.listen_date;
+      if (!groupedData[date]) {
+        groupedData[date] = {
+          date: date,
+          albumCount: 0,
+          albums: []
+        };
+      }
+      
+      groupedData[date].albumCount++;
+      groupedData[date].albums.push({
+        album_id: entry.album_id,
+        album_name: entry.album_name,
+        artist: entry.artist,
+        image_url: entry.image_url,
+        spotify_id: entry.spotify_id,
+        release_date: entry.release_date,
+        listened_at: entry.listened_at
+      });
+    });
+
+    // Convertir a array y ordenar por fecha
+    const result = Object.values(groupedData)
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, limit);
+
+    return result;
+  },
+
+  // Obtener total de entradas en el historial de un usuario
+  async getHistoryCount(userId) {
+    const result = await get('SELECT COUNT(*) as count FROM listening_history WHERE user_id = ?', [userId]);
+    return result ? parseInt(result.count) : 0;
   }
 };
 

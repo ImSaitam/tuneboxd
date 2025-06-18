@@ -1,21 +1,9 @@
-import { userService } from "../../../../lib/database-adapter.js";
-import { sendWelcomeEmail } from '../../../../lib/email-resend.js';
-import { NextResponse } from 'next/server';
+import { userService } from "../../../../../lib/database-adapter.js";
+import { sendWelcomeEmail } from '../../../../../lib/email-resend.js';
 
-export async function GET(request) {
+export async function POST(request) {
   try {
-    const url = new URL(request.url);
-    const token = url.searchParams.get('token');
-
-    // Si es una solicitud desde el navegador (link del email), redirigir a la página
-    const userAgent = request.headers.get('user-agent') || '';
-    const isFromBrowser = userAgent.includes('Mozilla') || userAgent.includes('Chrome') || userAgent.includes('Safari');
-    
-    if (isFromBrowser && token) {
-      // Redirigir a la página de verificación
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tuneboxd.xyz';
-      return NextResponse.redirect(`${baseUrl}/auth/verify-email?token=${token}`);
-    }
+    const { token } = await request.json();
 
     if (!token) {
       return Response.json(
@@ -51,13 +39,14 @@ export async function GET(request) {
     const welcomeResult = await sendWelcomeEmail(user.email, user.username);
     
     if (welcomeResult.success) {
+      console.log(`✅ Email de bienvenida enviado a ${user.email}`);
     } else {
       console.error(`❌ Error enviando email de bienvenida: ${welcomeResult.error}`);
     }
 
     return Response.json({
       success: true,
-      message: 'Cuenta verificada exitosamente. ¡Bienvenido a Tuneboxd!'
+      message: '¡Cuenta verificada exitosamente! Bienvenido a Tuneboxd.'
     });
 
   } catch (error) {
