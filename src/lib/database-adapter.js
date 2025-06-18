@@ -594,7 +594,7 @@ export const watchlistService = {
 
   async getUserWatchlist(userId, limit = 20, offset = 0) {
     return await query(`
-      SELECT w.*, a.name as album_name, a.artist_name as artist, a.image_url, a.spotify_id, a.release_date, a.spotify_url
+      SELECT w.*, a.name as album_name, a.artist_name as artist, a.image_url, a.spotify_id, a.release_date
       FROM watchlist w
       JOIN albums a ON w.album_id = a.id
       WHERE w.user_id = ?
