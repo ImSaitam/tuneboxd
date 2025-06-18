@@ -418,9 +418,145 @@ export const customListService = {
   async create(listData) {
     const { user_id, name, description, is_public } = listData;
     return await run(
-      'INSERT INTO lists (user_id, name, description, is_public, created_at) VALUES (?, ?, ?, ?, NOW())',
-      [user_id, name, description, is_public]
+      'INSERT INTO lists (user_id, name, description, is_private, created_at) VALUES (?, ?, ?, ?, NOW())',
+      [user_id, name, description, !is_public] // is_private es lo opuesto de is_public
     );
+  },
+
+  // Crear una nueva lista
+  async createList(userId, listData) {
+    const { name, description = null, is_public = true } = listData;
+    const result = await run(
+      'INSERT INTO lists (user_id, name, description, is_private, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
+      [userId, name, description, !is_public] // is_private es lo opuesto de is_public
+    );
+    
+    // Retornar la lista recién creada (usar RETURNING para PostgreSQL)
+    const newList = await get('SELECT * FROM lists WHERE id = ? AND user_id = ?', [result.lastInsertRowid || result.rows?.[0]?.id, userId]);
+    return newList;
+  },
+
+  // Obtener listas de un usuario - MÉTODO REQUERIDO AGREGADO
+  async getUserLists(userId, includePrivate = true) {
+    const queryStr = includePrivate 
+      ? `SELECT 
+          l.*,
+          COUNT(la.spotify_album_id) as album_count
+         FROM lists l
+         LEFT JOIN list_albums la ON l.id = la.list_id
+         WHERE l.user_id = ?
+         GROUP BY l.id, l.user_id, l.name, l.description, l.is_private, l.created_at, l.updated_at
+         ORDER BY l.created_at DESC`
+      : `SELECT 
+          l.*,
+          COUNT(la.spotify_album_id) as album_count
+         FROM lists l
+         LEFT JOIN list_albums la ON l.id = la.list_id
+         WHERE l.user_id = ? AND l.is_private = false
+         GROUP BY l.id, l.user_id, l.name, l.description, l.is_private, l.created_at, l.updated_at
+         ORDER BY l.created_at DESC`;
+    
+    return await query(queryStr, [userId]);
+  },
+
+  // Obtener listas públicas recientes
+  async getPublicLists(limit = 20, offset = 0) {
+    return await query(`
+      SELECT 
+        l.*,
+        u.username,
+        COUNT(la.spotify_album_id) as album_count
+      FROM lists l
+      JOIN users u ON l.user_id = u.id
+      LEFT JOIN list_albums la ON l.id = la.list_id
+      WHERE l.is_private = false
+      GROUP BY l.id, l.user_id, l.name, l.description, l.is_private, l.created_at, l.updated_at, u.username
+      ORDER BY l.created_at DESC
+      LIMIT ? OFFSET ?
+    `, [limit, offset]);
+  },
+
+  // Obtener una lista específica con sus álbumes
+  async getListWithAlbums(listId, userId = null) {
+    // Primero obtener la lista con información del usuario
+    const list = await get(`
+      SELECT l.*, u.username
+      FROM lists l
+      JOIN users u ON l.user_id = u.id
+      WHERE l.id = ?
+    `, [listId]);
+
+    if (!list) {
+      return null;
+    }
+
+    // Verificar permisos (si es privada, solo el propietario puede verla)
+    if (list.is_private && (!userId || list.user_id !== userId)) {
+      return null;
+    }
+
+    // Obtener los álbumes de la lista (necesitamos JOIN con albums usando spotify_album_id)
+    const albums = await query(`
+      SELECT 
+        la.*,
+        a.spotify_id,
+        a.name,
+        a.artist_name as artist,
+        a.release_date,
+        a.image_url
+      FROM list_albums la
+      JOIN albums a ON la.spotify_album_id = a.spotify_id
+      WHERE la.list_id = ?
+      ORDER BY la.order_index ASC, la.created_at DESC
+    `, [listId]);
+
+    return {
+      ...list,
+      albums
+    };
+  },
+
+  // Actualizar lista
+  async updateList(listId, userId, updates) {
+    const { name, description, is_public } = updates;
+    
+    // Verificar permisos
+    const list = await get(
+      'SELECT * FROM lists WHERE id = ? AND user_id = ?',
+      [listId, userId]
+    );
+
+    if (!list) {
+      throw new Error('Lista no encontrada o no tienes permisos');
+    }
+
+    await run(
+      'UPDATE lists SET name = ?, description = ?, is_private = ?, updated_at = NOW() WHERE id = ?',
+      [name, description, !is_public, listId] // is_private es lo opuesto de is_public
+    );
+
+    return await get('SELECT * FROM lists WHERE id = ?', [listId]);
+  },
+
+  // Eliminar lista
+  async deleteList(listId, userId) {
+    // Verificar permisos
+    const list = await get(
+      'SELECT * FROM lists WHERE id = ? AND user_id = ?',
+      [listId, userId]
+    );
+
+    if (!list) {
+      throw new Error('Lista no encontrada o no tienes permisos');
+    }
+
+    // Eliminar la lista (los álbumes se eliminan automáticamente por CASCADE)
+    const result = await run(
+      'DELETE FROM lists WHERE id = ?',
+      [listId]
+    );
+
+    return result.changes > 0;
   }
 };
 
