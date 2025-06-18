@@ -455,7 +455,7 @@ export const listeningHistoryService = {
     );
   },
 
-  // Agregar álbum al historial de escucha
+  // Agregar álbum al historial de escucha - FIXED: Exported correctly
   async addToHistory(userId, albumId) {
     return await run(
       'INSERT INTO listening_history (user_id, album_id, listened_at) VALUES (?, ?, NOW())',
