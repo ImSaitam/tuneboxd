@@ -45,7 +45,7 @@ export async function GET(request, { params }) {
     });
 
   } catch (error) {
-    console.error('Error obteniendo estadísticas del álbum:', error);
+    console.error('Error obteniendo álbum:', error);
     return Response.json(
       { success: false, message: 'Error interno del servidor' },
       { status: 500 }
