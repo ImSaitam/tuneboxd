@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { forumService } from "../../../../lib/database-adapter.js";
 
 // GET - Obtener categorías disponibles
-export async function GET() {
+export async function GET(request) {
   try {
     const categories = await forumService.getCategories();
 

@@ -1487,7 +1487,6 @@ export const forumService = {
         ft.*, 
         u.username as author_username,
         u.profile_image as author_profile_picture,
-        COALESCE(ft.views_count, 0) as views_count,
         COALESCE(ft.replies_count, 0) as replies_count,
         COALESCE(ft.likes_count, 0) as likes_count,
         ft.last_activity
@@ -1525,7 +1524,6 @@ export const forumService = {
         ft.*, 
         u.username as author_username,
         u.profile_image as author_profile_picture,
-        COALESCE(ft.views_count, 0) as views_count,
         COALESCE(ft.replies_count, 0) as replies_count,
         COALESCE(ft.likes_count, 0) as likes_count
       FROM forum_threads ft
@@ -1559,7 +1557,6 @@ export const forumService = {
         ft.*, 
         u.username as author_username,
         u.profile_image as author_profile_picture,
-        COALESCE(ft.views_count, 0) as views_count,
         COALESCE(ft.replies_count, 0) as replies_count,
         COALESCE(ft.likes_count, 0) as likes_count
       FROM forum_threads ft
@@ -1573,15 +1570,16 @@ export const forumService = {
     return await query(sql, [searchPattern, searchPattern, limit, offset]);
   },
 
-  async incrementViews(threadId) {
-    const sql = `
-      UPDATE forum_threads 
-      SET views_count = COALESCE(views_count, 0) + 1 
-      WHERE id = ?
-    `;
-    
-    return await run(sql, [threadId]);
-  },
+  // VIEWS FUNCTIONALITY REMOVED
+  // async incrementViews(threadId) {
+  //   const sql = `
+  //     UPDATE forum_threads 
+  //     SET views_count = COALESCE(views_count, 0) + 1 
+  //     WHERE id = ?
+  //   `;
+  //   
+  //   return await run(sql, [threadId]);
+  // },
 
   async hasLikedThread(userId, threadId) {
     const sql = `

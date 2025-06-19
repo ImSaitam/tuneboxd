@@ -145,12 +145,12 @@ const PerformanceStats = () => {
       <div className="mt-6 p-4 bg-theme-primary/50 rounded-lg">
         <h4 className="text-sm font-medium text-theme-primary mb-2">Optimizaciones Activas:</h4>
         <div className="flex flex-wrap gap-2 text-xs">
-          <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">✅ Cache en Memoria</span>
+          <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">✅ Cache Básico</span>
           <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">✅ API Unificada</span>
           <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">✅ Pool de Conexiones</span>
           <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">✅ Índices DB</span>
           <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">✅ React.memo</span>
-          <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">✅ Compresión</span>
+          <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded">🔄 Sistema Simplificado</span>
         </div>
       </div>
     </div>

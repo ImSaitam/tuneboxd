@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { forumService } from "../../../../../lib/database-adapter.js";
-import { shouldTrackView } from '../../../../../lib/viewTracker.js';
+// VIEWS TRACKING REMOVED - No longer using viewTracker
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -36,15 +36,7 @@ export async function GET(request, { params }) {
       }
     }
 
-    // Obtener IP del usuario
-    const forwardedFor = request.headers.get('x-forwarded-for');
-    const realIp = request.headers.get('x-real-ip');
-    const clientIp = forwardedFor?.split(',')[0] || realIp || 'unknown';
-
-    // Incrementar vistas solo si debe contarse
-    if (shouldTrackView(userId, threadId, clientIp)) {
-      await forumService.incrementViews(parseInt(threadId));
-    }
+    // VIEWS TRACKING REMOVED - No longer incrementing views
 
     // Obtener respuestas
     const replies = await forumService.getReplies(

@@ -1,23 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   MessageCircle, Users, Star, Music, Heart, ThumbsUp,
   ArrowLeft, Loader2, User, Calendar, Plus, Search,
-  Pin, Lock, Eye, Clock, Send, Filter, Hash, MessageSquare
+  Pin, Lock, Clock, Send, Filter, Hash, MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotifications } from '../../hooks/useNotifications';
+import { useForumData, useForumCategories } from '../../hooks/useCachedFetch';
 
 const ForumPage = () => {
   const { user, isAuthenticated } = useAuth();
   const { success, error } = useNotifications();
   
   // Estados principales
-  const [threads, setThreads] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('threads');
   
   // Estados para filtros y búsqueda
@@ -35,39 +33,20 @@ const ForumPage = () => {
   });
   const [isCreating, setIsCreating] = useState(false);
 
-  useEffect(() => {
-    fetchForumData();
-  }, [selectedCategory]);
+  // Usar hooks con cache para hilos y categorías del foro
+  const { 
+    data: threadsData, 
+    loading, 
+    refresh: refreshThreads 
+  } = useForumData(selectedCategory);
 
-  const fetchForumData = async () => {
-    try {
-      setLoading(true);
-      
-      // Obtener hilos
-      let threadsUrl = '/api/forum/threads?limit=20';
-      if (selectedCategory) {
-        threadsUrl += `&category=${selectedCategory}`;
-      }
-      
-      const threadsResponse = await fetch(threadsUrl);
-      if (threadsResponse.ok) {
-        const threadsData = await threadsResponse.json();
-        setThreads(threadsData.threads || []);
-      }
+  const { 
+    data: categoriesData, 
+    loading: categoriesLoading 
+  } = useForumCategories();
 
-      // Obtener categorías
-      const categoriesResponse = await fetch('/api/forum/categories');
-      if (categoriesResponse.ok) {
-        const categoriesData = await categoriesResponse.json();
-        setCategories(categoriesData.categories || []);
-      }
-
-    } catch (error) {
-      console.error('Error cargando datos del foro:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const threads = threadsData?.threads || [];
+  const categories = categoriesData?.categories || [];
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -112,7 +91,9 @@ const ForumPage = () => {
         success('Hilo creado exitosamente');
         setShowCreateThread(false);
         setNewThread({ title: '', content: '', category: 'general' });
-        fetchForumData(); // Recargar hilos
+        
+        // Refrescar datos con cache
+        refreshThreads();
       } else {
         const errorData = await response.json();
         error(errorData.message || 'Error al crear el hilo');
@@ -175,10 +156,6 @@ const ForumPage = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4 text-sm text-gray-400">
             <div className="flex items-center space-x-1">
-              <Eye className="w-4 h-4" />
-              <span>{thread.views_count}</span>
-            </div>
-            <div className="flex items-center space-x-1">
               <MessageSquare className="w-4 h-4" />
               <span>{thread.replies_count}</span>
             </div>
@@ -199,11 +176,11 @@ const ForumPage = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="text-center">
-          <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-white mb-4">Foro de la Comunidad</h1>
-          <p className="text-gray-300 mb-6">
+          <MessageCircle className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-theme-primary mb-4">Foro de la Comunidad</h1>
+          <p className="text-theme-secondary mb-6">
             Inicia sesión para participar en las discusiones de la comunidad
           </p>
           <div className="space-x-4">
@@ -215,7 +192,7 @@ const ForumPage = () => {
             </Link>
             <Link 
               href="/register"
-              className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-theme-accent text-theme-button rounded-lg hover:bg-theme-hover transition-colors"
             >
               Registrarse
             </Link>
@@ -226,7 +203,7 @@ const ForumPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-theme-primary">
       {/* Header */}
       <div className="bg-black/20 backdrop-blur-sm border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -279,7 +256,7 @@ const ForumPage = () => {
             <button
               onClick={handleSearch}
               disabled={isSearching}
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50"
+              className="px-6 py-3 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-xl font-medium transition-colors disabled:opacity-50"
             >
               {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Buscar'}
             </button>
@@ -372,12 +349,12 @@ const ForumPage = () => {
       {/* Create Thread Modal */}
       {showCreateThread && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl p-6 w-full max-w-2xl border border-white/20 shadow-2xl">
+          <div className="bg-theme-card rounded-2xl p-6 w-full max-w-2xl border border-theme-border shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-white">Crear Nuevo Hilo</h3>
+              <h3 className="text-2xl font-bold text-theme-primary">Crear Nuevo Hilo</h3>
               <button
                 onClick={() => setShowCreateThread(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-theme-muted hover:text-theme-primary transition-colors"
               >
                 ✕
               </button>

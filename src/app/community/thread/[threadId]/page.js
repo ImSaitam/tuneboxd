@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { 
   MessageCircle, Users, Star, Music, Heart, ThumbsUp,
   ArrowLeft, Loader2, User, Calendar, Plus, Search,
-  Pin, Lock, Eye, Clock, Send, Reply, Trash2, Edit3
+  Pin, Lock, Clock, Send, Reply, Trash2, Edit3
 } from 'lucide-react';
 import { useAuth } from '../../../../hooks/useAuth';
 import { useNotifications } from '../../../../hooks/useNotifications';
@@ -295,11 +295,6 @@ const ThreadDetailPage = () => {
             <div className="flex items-center space-x-1">
               <Clock className="w-4 h-4" />
               <span>{formatTimeAgo(thread.created_at)}</span>
-            </div>
-            <span>•</span>
-            <div className="flex items-center space-x-1">
-              <Eye className="w-4 h-4" />
-              <span>{thread.views_count} vistas</span>
             </div>
           </div>
 

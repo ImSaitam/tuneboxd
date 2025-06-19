@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   MessageCircle, Users, Star, Music, Heart, ThumbsUp,
   ArrowLeft, Loader2, User, Calendar, Plus, Search,
-  Pin, Lock, Eye, Clock, Send, Filter, Hash, MessageSquare, Globe
+  Pin, Lock, Clock, Send, Filter, Hash, MessageSquare, Globe
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotifications } from '../../hooks/useNotifications';
 import OptimizedThreadCard from '../../components/OptimizedThreadCard';
+import { useForumData, useForumCategories, useForumLanguages } from '../../hooks/useCachedFetch';
 
 const ForumPage = () => {
   const { user, isAuthenticated } = useAuth();
@@ -33,10 +34,6 @@ const ForumPage = () => {
   };
   
   // Estados principales
-  const [threads, setThreads] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [languages, setLanguages] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('threads');
   
   // Estados para filtros y búsqueda
@@ -56,62 +53,26 @@ const ForumPage = () => {
   });
   const [isCreating, setIsCreating] = useState(false);
 
-  // Prevenir llamadas duplicadas
-  const fetchingRef = useRef(false);
+  // Hooks con cache para hilos, categorías y lenguajes del foro
+  const { 
+    data: threadsData, 
+    loading, 
+    refresh: refreshThreads 
+  } = useForumData(selectedCategory ? `${selectedCategory}${selectedLanguage ? `&language=${selectedLanguage}` : ''}` : selectedLanguage ? `language=${selectedLanguage}` : '');
 
-  const fetchForumData = useCallback(async () => {
-    // Prevenir llamadas duplicadas
-    if (fetchingRef.current) {
-      return;
-    }
-    
-    try {
-      fetchingRef.current = true;
-      setLoading(true);
-      
-      // Usar API unificada (1 request en lugar de 3)
-      let dataUrl = '/api/forum/data?limit=20';
-      if (selectedCategory) {
-        dataUrl += `&category=${selectedCategory}`;
-      }
-      if (selectedLanguage) {
-        dataUrl += `&language=${selectedLanguage}`;
-      }
-      
-      const response = await fetch(dataUrl);
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Forum data received:', {
-          threads: data.threads?.length || 0,
-          categories: data.categories?.length || 0,
-          languages: data.languages?.length || 0,
-          categoriesData: data.categories,
-          languagesData: data.languages
-        });
-        setThreads(data.threads || []);
-        setCategories(data.categories || []);
-        setLanguages(data.languages || []);
-        
-        // Log si viene del cache para debugging
-        if (data.fromCache) {
-        }
-      } else {
-        console.error('Error response:', response.status, response.statusText);
-      }
+  const { 
+    data: categoriesData, 
+    loading: categoriesLoading 
+  } = useForumCategories();
 
-    } catch (error) {
-      console.error('Error cargando datos del foro:', error);
-    } finally {
-      setLoading(false);
-      fetchingRef.current = false;
-    }
-  }, [selectedCategory, selectedLanguage]);
+  const { 
+    data: languagesData, 
+    loading: languagesLoading 
+  } = useForumLanguages();
 
-  useEffect(() => {
-    if (!fetchingRef.current) {
-      fetchForumData();
-    }
-  }, [selectedCategory, selectedLanguage, fetchForumData]);
+  const threads = threadsData?.threads || [];
+  const categories = categoriesData?.categories || [];
+  const languages = languagesData?.languages || [];
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -309,7 +270,7 @@ const ForumPage = () => {
                 <select
                   value={selectedLanguage}
                   onChange={(e) => setSelectedLanguage(e.target.value)}
-                  className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-theme-border rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-theme-accent hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="w-full px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-theme-primary focus:outline-none focus:ring-2 focus:ring-theme-accent hover:bg-theme-hover transition-colors"
                 >
                   <option key="lang-all" value="">Todos los idiomas</option>
                   {languages.map((lang, index) => (

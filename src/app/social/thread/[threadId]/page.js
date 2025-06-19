@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { 
   MessageCircle, Users, Star, Music, Heart, ThumbsUp,
   ArrowLeft, Loader2, User, Calendar, Plus, Search,
-  Pin, Lock, Eye, Clock, Send, Reply, Trash2, Edit3
+  Pin, Lock, Clock, Send, Reply, Trash2, Edit3
 } from 'lucide-react';
 import { useAuth } from '../../../../hooks/useAuth';
 import { useNotifications } from '../../../../hooks/useNotifications';
@@ -211,10 +211,10 @@ const ThreadDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="w-12 h-12 text-white animate-spin" />
-          <p className="text-white text-lg">Cargando hilo...</p>
+          <Loader2 className="w-12 h-12 text-theme-accent animate-spin" />
+          <p className="text-theme-primary text-lg">Cargando hilo...</p>
         </div>
       </div>
     );
@@ -222,16 +222,16 @@ const ThreadDetailPage = () => {
 
   if (!thread) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="text-center">
-          <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-white mb-4">Hilo no encontrado</h1>
-          <p className="text-gray-300 mb-6">
+          <MessageCircle className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-theme-primary mb-4">Hilo no encontrado</h1>
+          <p className="text-theme-secondary mb-6">
             El hilo que buscas no existe o ha sido eliminado
           </p>
           <Link 
             href="/social"
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-theme-accent text-theme-button rounded-lg hover:bg-theme-hover transition-colors"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Volver al foro
@@ -242,7 +242,7 @@ const ThreadDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-theme-primary">
       {/* Header */}
       <div className="bg-black/20 backdrop-blur-sm border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -294,11 +294,6 @@ const ThreadDetailPage = () => {
             <div className="flex items-center space-x-1">
               <Clock className="w-4 h-4" />
               <span>{formatTimeAgo(thread.created_at)}</span>
-            </div>
-            <span>•</span>
-            <div className="flex items-center space-x-1">
-              <Eye className="w-4 h-4" />
-              <span>{thread.views_count} vistas</span>
             </div>
           </div>
 

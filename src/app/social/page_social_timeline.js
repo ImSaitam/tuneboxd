@@ -251,11 +251,11 @@ const SocialPage = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-6">
-          <Users className="w-16 h-16 text-white mx-auto mb-6" />
-          <h1 className="text-3xl font-bold text-white mb-4">Timeline Social</h1>
-          <p className="text-gray-300 mb-8">
+          <Users className="w-16 h-16 text-theme-primary mx-auto mb-6" />
+          <h1 className="text-3xl font-bold text-theme-primary mb-4">Timeline Social</h1>
+          <p className="text-theme-secondary mb-8">
             Inicia sesión para ver la actividad de otros usuarios y conectar con la comunidad musical.
           </p>
           <div className="space-x-4">
@@ -278,7 +278,7 @@ const SocialPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-theme-primary">
       {/* Header */}
       <div className="bg-black/20 backdrop-blur-sm border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

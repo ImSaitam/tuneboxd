@@ -8,14 +8,10 @@ import { useAuth } from '@/hooks/useAuth';
 
 const TuneboxdApp = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [visibleStats, setVisibleStats] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [searchType, setSearchType] = useState('album');
-  const [globalStats, setGlobalStats] = useState(null);
-  const [statsLoading, setStatsLoading] = useState(true);
-  const statsRef = useRef(null);
   const heroRef = useRef(null);
   const searchRef = useRef(null);
 
@@ -91,35 +87,6 @@ const TuneboxdApp = () => {
   ]; 
   */
 
-  // Función para formatear números grandes
-  const formatNumber = (num) => {
-    if (num >= 1000000) {
-      return `${(num / 1000000).toFixed(1)}M+`;
-    } else if (num >= 1000) {
-      return `${(num / 1000).toFixed(1)}K+`;
-    } else if (num > 0) {
-      return `${num}`;
-    }
-    return "0";
-  };
-
-  // Generar estadísticas basadas en datos reales o valores por defecto
-  const getStatsData = () => {
-    if (globalStats) {
-      return [
-        { number: formatNumber(globalStats.totalUsers), label: "Usuarios Activos" },
-        { number: formatNumber(globalStats.totalAlbums), label: "Álbumes Calificados" },
-        { number: formatNumber(globalStats.totalReviews), label: "Reseñas Escritas" },
-      ];
-    }
-    // Valores por defecto mientras cargan los datos reales
-    return [
-      { number: "Cargando...", label: "Usuarios Activos" },
-      { number: "Cargando...", label: "Álbumes Calificados" },
-      { number: "Cargando...", label: "Reseñas Escritas" },
-    ];
-  };
-
   // Links de navegación dinámicos basados en autenticación
   const getNavLinks = () => {
     const baseLinks = [
@@ -142,94 +109,6 @@ const TuneboxdApp = () => {
     // Marcar que estamos en el cliente para evitar problemas de hidratación
     setIsClient(true);
 
-    // Cargar estadísticas globales
-    const loadGlobalStats = async () => {
-      try {
-        setStatsLoading(true);
-        
-        const response = await fetch('/api/stats/global', {
-          headers: {
-            'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json',
-          }
-        });
-        
-        
-        if (response.ok) {
-          let data;
-          // Usar clone para poder reintentar si falla
-          const responseClone = response.clone();
-          
-          try {
-            data = await response.json();
-          } catch (jsonError) {
-            console.warn('⚠️ Error parseando JSON, intentando con response clonado:', jsonError.message);
-            try {
-              const text = await responseClone.text();
-              data = JSON.parse(text);
-            } catch (fallbackError) {
-              console.error('❌ Error en fallback de parsing:', fallbackError.message);
-              throw new Error('No se pudo parsear la respuesta JSON');
-            }
-          }
-          
-          if (data && data.success) {
-            setGlobalStats(data.stats);
-          } else {
-            console.warn('⚠️ API respondió pero sin éxito:', data);
-            // Usar datos por defecto si la API no devuelve éxito
-            setGlobalStats({
-              totalUsers: 9,
-              totalAlbums: 31,
-              totalReviews: 15,
-              totalWatchlistItems: 3
-            });
-          }
-        } else {
-          console.error('❌ Error en respuesta:', response.status, response.statusText);
-          // Usar datos por defecto en caso de error HTTP
-          setGlobalStats({
-            totalUsers: 9,
-            totalAlbums: 31,
-            totalReviews: 15,
-            totalWatchlistItems: 3
-          });
-        }
-      } catch (error) {
-        console.error('💥 Error cargando estadísticas globales:', error);
-        console.error('🔍 Detalles del error:', {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
-        });
-        
-        // Estadísticas por defecto para que la app no se rompa
-        setGlobalStats({
-          totalUsers: 9,
-          totalAlbums: 31,
-          totalReviews: 15,
-          totalWatchlistItems: 3
-        });
-      } finally {
-        setStatsLoading(false);
-      }
-    };
-
-    loadGlobalStats();
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisibleStats(true);
-        }
-      },
-      { threshold: 0.5, rootMargin: '0px 0px -100px 0px' }
-    );
-
-    if (statsRef.current) {
-      observer.observe(statsRef.current);
-    }
-
     // Cerrar resultados de búsqueda al hacer clic fuera
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -241,7 +120,6 @@ const TuneboxdApp = () => {
     
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      observer.disconnect();
     };
   }, []);
 
@@ -309,38 +187,6 @@ const TuneboxdApp = () => {
         ★
       </span>
     ));
-  };
-
-  const AnimatedCounter = ({ value, isVisible }) => {
-    const [count, setCount] = useState('0');
-
-    useEffect(() => {
-      if (!isVisible) return;
-
-      const numericValue = parseInt(value.replace(/\D/g, ''));
-      let currentNumber = 0;
-      const increment = numericValue / 50;
-
-      const timer = setInterval(() => {
-        currentNumber += increment;
-        if (currentNumber >= numericValue) {
-          setCount(value);
-          clearInterval(timer);
-        } else {
-          if (value.includes('K')) {
-            setCount(Math.floor(currentNumber / 1000) + 'K+');
-          } else if (value.includes('M')) {
-            setCount((currentNumber / 1000000).toFixed(1) + 'M+');
-          } else {
-            setCount(Math.floor(currentNumber) + '+');
-          }
-        }
-      }, 50);
-
-      return () => clearInterval(timer);
-    }, [isVisible, value]);
-
-    return <span>{count}</span>;
   };
 
   return (
@@ -563,34 +409,6 @@ const TuneboxdApp = () => {
         </div>
       </section>
       */}
-
-      {/* Stats Section */}
-      <section ref={statsRef} className="py-20 bg-theme-secondary">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {getStatsData().map((stat, index) => (
-              <div
-                key={index}
-                className="bg-theme-card p-8 rounded-3xl border border-theme hover:-translate-y-2 hover:bg-theme-card-hover transition-all duration-300"
-              >
-                <div className="text-3xl md:text-4xl font-bold mb-2 text-theme-accent">
-                  {statsLoading ? (
-                    <div className="flex items-center justify-center">
-                      <Loader2 className="w-8 h-8 animate-spin text-theme-accent" />
-                    </div>
-                  ) : (
-                    <AnimatedCounter
-                      value={stat.number}
-                      isVisible={visibleStats}
-                    />
-                  )}
-                </div>
-                <div className="text-theme-secondary font-medium">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="bg-theme-secondary py-12">

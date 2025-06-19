@@ -2,7 +2,7 @@
 import React, { memo, useMemo } from 'react';
 import Link from 'next/link';
 import { 
-  MessageSquare, ThumbsUp, Eye, Pin, Lock, Globe
+  MessageSquare, ThumbsUp, Pin, Lock, Globe
 } from 'lucide-react';
 import MarkdownRenderer from './MarkdownRenderer';
 
@@ -41,10 +41,6 @@ const languageNames = {
 const ThreadStats = memo(({ thread }) => {
   return (
     <div className="flex items-center space-x-4 text-sm text-theme-muted">
-      <div className="flex items-center space-x-1">
-        <Eye className="w-4 h-4" />
-        <span>{thread.views_count}</span>
-      </div>
       <div className="flex items-center space-x-1">
         <MessageSquare className="w-4 h-4" />
         <span>{thread.replies_count}</span>

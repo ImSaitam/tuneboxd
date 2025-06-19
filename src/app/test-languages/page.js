@@ -38,7 +38,7 @@ function SimpleLanguageTest() {
 
       <div className="mb-4">
         <label className="block font-bold mb-2">Select de Idiomas:</label>
-        <select className="border p-2 w-64">
+        <select className="border border-theme-border p-2 w-64 bg-theme-card text-theme-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-accent">
           <option value="">Todos los idiomas</option>
           {languages.map((lang, index) => (
             <option key={`lang-${lang.code}-${index}`} value={lang.code}>

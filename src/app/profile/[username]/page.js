@@ -532,10 +532,10 @@ const UserProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="w-12 h-12 text-white animate-spin" />
-          <p className="text-white text-lg">Cargando perfil...</p>
+          <Loader2 className="w-12 h-12 text-theme-accent animate-spin" />
+          <p className="text-theme-primary text-lg">Cargando perfil...</p>
         </div>
       </div>
     );
@@ -543,21 +543,21 @@ const UserProfilePage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-4">{error}</h1>
-          <p className="text-gray-300 mb-6">El usuario que buscas no existe o no se pudo cargar su perfil.</p>
+          <h1 className="text-3xl font-bold text-theme-primary mb-4">{error}</h1>
+          <p className="text-theme-secondary mb-6">El usuario que buscas no existe o no se pudo cargar su perfil.</p>
           <div className="space-x-4">
             <Link 
               href="/"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-theme-accent text-theme-button rounded-lg hover:bg-theme-hover transition-colors"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
               Volver al inicio
             </Link>
             <button 
               onClick={fetchUserProfile}
-              className="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-theme-card text-theme-button rounded-lg hover:bg-theme-hover transition-colors"
             >
               Reintentar
             </button>
@@ -614,15 +614,15 @@ const UserProfilePage = () => {
                 </div>
               ) : (
                 <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center">
-                  <User className="w-12 h-12 text-white" />
+                  <User className="w-12 h-12 text-theme-button" />
                 </div>
               )}
             </div>
 
             {/* User Info */}
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-white mb-2">@{profileUser.username}</h1>
-              <div className="flex items-center space-x-2 text-gray-300">
+              <h1 className="text-3xl font-bold text-theme-primary mb-2">@{profileUser.username}</h1>
+              <div className="flex items-center space-x-2 text-theme-secondary">
                 <Calendar className="w-4 h-4" />
                 <span>Miembro desde {userStats?.memberSince ? new Date(userStats.memberSince).toLocaleDateString('es') : 'N/A'}</span>
               </div>
@@ -632,20 +632,20 @@ const UserProfilePage = () => {
             <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
               <div className="grid grid-cols-2 sm:flex sm:space-x-6 gap-4 sm:gap-0 w-full sm:w-auto">
                 <div className="text-center">
-                  <div className="text-xl sm:text-2xl font-bold text-white">{userStats?.totalReviews || 0}</div>
-                  <div className="text-xs sm:text-sm text-gray-300">Reseñas</div>
+                  <div className="text-xl sm:text-2xl font-bold text-theme-primary">{userStats?.totalReviews || 0}</div>
+                  <div className="text-xs sm:text-sm text-theme-secondary">Reseñas</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xl sm:text-2xl font-bold text-white">{userStats?.averageRating || '0.0'}</div>
-                  <div className="text-xs sm:text-sm text-gray-300">Promedio</div>
+                  <div className="text-xl sm:text-2xl font-bold text-theme-primary">{userStats?.averageRating || '0.0'}</div>
+                  <div className="text-xs sm:text-sm text-theme-secondary">Promedio</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xl sm:text-2xl font-bold text-white">{userStats?.followers || 0}</div>
-                  <div className="text-xs sm:text-sm text-gray-300">Seguidores</div>
+                  <div className="text-xl sm:text-2xl font-bold text-theme-primary">{userStats?.followers || 0}</div>
+                  <div className="text-xs sm:text-sm text-theme-secondary">Seguidores</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xl sm:text-2xl font-bold text-white">{userStats?.following || 0}</div>
-                  <div className="text-xs sm:text-sm text-gray-300">Siguiendo</div>
+                  <div className="text-xl sm:text-2xl font-bold text-theme-primary">{userStats?.following || 0}</div>
+                  <div className="text-xs sm:text-sm text-theme-secondary">Siguiendo</div>
                 </div>
               </div>
 
@@ -657,10 +657,10 @@ const UserProfilePage = () => {
                   data-testid="follow-button"
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                     followStateLoading
-                      ? 'bg-gray-500 cursor-not-allowed text-white'
+                      ? 'bg-theme-card cursor-not-allowed text-theme-muted'
                       : isFollowing
-                      ? 'bg-gray-600 hover:bg-gray-700 text-white'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      ? 'bg-theme-card hover:bg-theme-hover text-theme-button'
+                      : 'bg-theme-accent hover:bg-theme-hover text-theme-button'
                   }`}
                 >
                   {followStateLoading ? (
@@ -686,7 +686,7 @@ const UserProfilePage = () => {
               {isOwnProfile && (
                 <Link
                   href="/profile/edit"
-                  className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all duration-200"
+                  className="flex items-center space-x-2 px-4 py-2 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg font-medium transition-all duration-200"
                 >
                   <User className="w-4 h-4" />
                   <span>Editar Perfil</span>
@@ -697,8 +697,8 @@ const UserProfilePage = () => {
           
           {/* Biografía - Al final del contenedor Profile Header abarcando todo el ancho */}
           {profileUser.bio && (
-            <div className="mt-6 pt-6 border-t border-white/20">
-              <p className="text-gray-300 text-base leading-relaxed text-center">
+            <div className="mt-6 pt-6 border-t border-theme-border">
+              <p className="text-theme-secondary text-base leading-relaxed text-center">
                 {profileUser.bio}
               </p>
             </div>
@@ -713,8 +713,8 @@ const UserProfilePage = () => {
             onClick={() => setActiveTab('reviews')}
             className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
               activeTab === 'reviews'
-                ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
-                : 'text-gray-300 hover:text-white hover:bg-white/10'
+                ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
+                : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
             }`}
           >
             <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
@@ -725,8 +725,8 @@ const UserProfilePage = () => {
             onClick={() => setActiveTab('registro')}
             className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
               activeTab === 'registro'
-                ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
-                : 'text-gray-300 hover:text-white hover:bg-white/10'
+                ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
+                : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
             }`}
           >
             <Clock className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
@@ -738,8 +738,8 @@ const UserProfilePage = () => {
               onClick={() => setActiveTab('artists')}
               className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
                 activeTab === 'artists'
-                  ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
-                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+                  ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
+                  : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
               }`}
             >
               <Music className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
@@ -751,8 +751,8 @@ const UserProfilePage = () => {
             onClick={() => setActiveTab('stats')}
             className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
               activeTab === 'stats'
-                ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
-                : 'text-gray-300 hover:text-white hover:bg-white/10'
+                ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
+                : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
             }`}
           >
             <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
@@ -763,8 +763,8 @@ const UserProfilePage = () => {
             onClick={() => setActiveTab('followers')}
             className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
               activeTab === 'followers'
-                ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
-                : 'text-gray-300 hover:text-white hover:bg-white/10'
+                ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
+                : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
             }`}
           >
             <Users className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
@@ -775,8 +775,8 @@ const UserProfilePage = () => {
             onClick={() => setActiveTab('following')}
             className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
               activeTab === 'following'
-                ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/30'
-                : 'text-gray-300 hover:text-white hover:bg-white/10'
+                ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
+                : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
             }`}
           >
             <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
@@ -807,8 +807,8 @@ const UserProfilePage = () => {
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <h3 className="text-xl font-bold text-white">{review.album_name}</h3>
-                          <p className="text-gray-300">{review.artist}</p>
+                          <h3 className="text-xl font-bold text-theme-primary">{review.album_name}</h3>
+                          <p className="text-theme-secondary">{review.artist}</p>
                         </div>
                         <div className="flex items-center space-x-1">
                           {renderStars(review.rating)}
@@ -816,21 +816,21 @@ const UserProfilePage = () => {
                       </div>
                       
                       {review.title && (
-                        <h4 className="text-lg font-semibold text-blue-200 mb-2">{review.title}</h4>
+                        <h4 className="text-lg font-semibold text-theme-accent mb-2">{review.title}</h4>
                       )}
                       {review.content && (
-                        <p className="text-gray-300 leading-relaxed">{review.content}</p>
+                        <p className="text-theme-secondary leading-relaxed">{review.content}</p>
                       )}
                       
                       <div className="flex items-center justify-between mt-4">
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm text-theme-muted">
                           {new Date(review.created_at).toLocaleDateString('es')}
                         </span>
                         {isOwnProfile && (
                           <div className="flex items-center space-x-2">
                             <button 
                               onClick={() => handleEditReview(review)}
-                              className="flex items-center space-x-1 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+                              className="flex items-center space-x-1 text-theme-accent hover:text-theme-hover text-sm font-medium transition-colors"
                             >
                               <Edit className="w-4 h-4" />
                               <span>Editar</span>
@@ -852,16 +852,16 @@ const UserProfilePage = () => {
               ))
             ) : (
               <div className="text-center py-16">
-                <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">
+                <BookOpen className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-theme-primary mb-2">
                   {isOwnProfile ? 'No has escrito reseñas aún' : `${profileUser.username} no ha escrito reseñas aún`}
                 </h3>
                 {isOwnProfile && (
                   <>
-                    <p className="text-gray-400 mb-6">¡Comienza escribiendo tu primera reseña!</p>
+                    <p className="text-theme-muted mb-6">¡Comienza escribiendo tu primera reseña!</p>
                     <Link 
                       href="/"
-                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
+                      className="inline-flex items-center px-6 py-3 bg-theme-accent text-theme-button rounded-xl hover:bg-theme-hover transition-all duration-200 shadow-lg"
                     >
                       Explorar música
                     </Link>
@@ -908,14 +908,14 @@ const UserProfilePage = () => {
 
             {/* Monthly Activity */}
             {userStats.monthlyStats && userStats.monthlyStats.length > 0 && (
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <h3 className="text-xl font-bold text-white mb-6">Actividad Mensual</h3>
+              <div className="bg-theme-card backdrop-blur-sm rounded-2xl p-6 border border-theme-border">
+                <h3 className="text-xl font-bold text-theme-primary mb-6">Actividad Mensual</h3>
                 <div className="space-y-4">
                   {userStats.monthlyStats.map((stat, index) => (
                     <div key={index} className="flex items-center justify-between">
-                      <span className="text-gray-300">{stat.month}</span>
+                      <span className="text-theme-secondary">{stat.month}</span>
                       <div className="flex items-center space-x-4">
-                        <span className="text-white font-medium">{stat.reviews} reseñas</span>
+                        <span className="text-theme-primary font-medium">{stat.reviews} reseñas</span>
                         <span className="text-yellow-400">★ {stat.avg_rating.toFixed(1)}</span>
                       </div>
                     </div>
@@ -925,11 +925,11 @@ const UserProfilePage = () => {
             )}
 
             {/* Top Genres - Placeholder */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-6">Géneros Favoritos</h3>
+            <div className="bg-theme-card backdrop-blur-sm rounded-2xl p-6 border border-theme-border">
+              <h3 className="text-xl font-bold text-theme-primary mb-6">Géneros Favoritos</h3>
               <div className="text-center py-8">
-                <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-400">Funcionalidad en desarrollo</p>
+                <BarChart3 className="w-12 h-12 text-theme-muted mx-auto mb-4" />
+                <p className="text-theme-muted">Funcionalidad en desarrollo</p>
               </div>
             </div>
           </div>
@@ -942,7 +942,7 @@ const UserProfilePage = () => {
                 {followedArtists.map((artist) => (
                   <div 
                     key={artist.artist_id} 
-                    className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 group"
+                    className="bg-theme-card backdrop-blur-sm rounded-2xl p-6 border border-theme-border hover:bg-theme-hover transition-all duration-300 group"
                   >
                     {/* Artist Image */}
                     <div className="relative mb-4">
@@ -965,18 +965,18 @@ const UserProfilePage = () => {
 
                     {/* Artist Info */}
                     <div className="text-center">
-                      <h3 className="font-bold text-white text-lg mb-2 group-hover:text-teal-300 transition-colors">
+                      <h3 className="font-bold text-theme-primary text-lg mb-2 group-hover:text-theme-accent transition-colors">
                         {artist.artist_name}
                       </h3>
                       
-                      <div className="flex items-center justify-center gap-1 text-gray-400 text-sm mb-4">
+                      <div className="flex items-center justify-center gap-1 text-theme-muted text-sm mb-4">
                         <Calendar className="w-4 h-4" />
                         <span>Desde {new Date(artist.followed_at).toLocaleDateString('es')}</span>
                       </div>
 
                       <Link
                         href={`/artist/${artist.artist_id}`}
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                        className="inline-flex items-center gap-2 bg-theme-accent hover:bg-theme-hover text-theme-button px-4 py-2 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
                       >
                         <Music className="w-4 h-4" />
                         Ver Perfil
@@ -987,14 +987,14 @@ const UserProfilePage = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                <Music className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">No sigues a ningún artista</h3>
-                <p className="text-gray-300 mb-6">
+                <Music className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-theme-primary mb-2">No sigues a ningún artista</h3>
+                <p className="text-theme-secondary mb-6">
                   Busca artistas en la página principal y empieza a seguir a tus favoritos
                 </p>
                 <Link 
                   href="/"
-                  className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                  className="bg-theme-accent hover:bg-theme-hover text-theme-button px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
                 >
                   Explorar Artistas
                 </Link>
@@ -1008,11 +1008,11 @@ const UserProfilePage = () => {
             {listeningHistory.length > 0 ? (
               <div className="space-y-8">
                 {listeningHistory.map((day, index) => (
-                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                  <div key={index} className="bg-theme-card backdrop-blur-sm rounded-2xl p-6 border border-theme-border">
                     {/* Fecha */}
                     <div className="flex items-center space-x-3 mb-6">
-                      <Calendar className="w-5 h-5 text-blue-400" />
-                      <h3 className="text-lg font-bold text-white">
+                      <Calendar className="w-5 h-5 text-theme-accent" />
+                      <h3 className="text-lg font-bold text-theme-primary">
                         {new Date(day.date).toLocaleDateString('es-ES', { 
                           weekday: 'long', 
                           year: 'numeric', 
@@ -1020,7 +1020,7 @@ const UserProfilePage = () => {
                           day: 'numeric' 
                         })}
                       </h3>
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-theme-muted">
                         ({day.albumCount} álbum{day.albumCount !== 1 ? 'es' : ''} escuchado{day.albumCount !== 1 ? 's' : ''})
                       </span>
                     </div>
@@ -1028,7 +1028,7 @@ const UserProfilePage = () => {
                     {/* Lista de álbumes */}
                     <div className="space-y-4">
                       {day.albums.map((album, albumIndex) => (
-                        <div key={albumIndex} className="flex items-center space-x-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-200 group">
+                        <div key={albumIndex} className="flex items-center space-x-4 p-4 bg-theme-hover rounded-xl hover:bg-theme-card transition-all duration-200 group">
                           {/* Album Cover */}
                           <div className="flex-shrink-0">
                             <Image
@@ -1044,13 +1044,13 @@ const UserProfilePage = () => {
                           {/* Album Info */}
                           <div className="flex-1 min-w-0">
                             <h4 
-                              className="text-white font-semibold text-lg cursor-pointer hover:text-blue-300 transition-colors truncate"
+                              className="text-theme-primary font-semibold text-lg cursor-pointer hover:text-theme-accent transition-colors truncate"
                               onClick={() => window.location.href = `/album/${album.spotify_id}`}
                             >
                               {album.album_name}
                             </h4>
-                            <p className="text-gray-300">{album.artist}</p>
-                            <div className="flex items-center space-x-1 text-gray-400 text-sm mt-1">
+                            <p className="text-theme-secondary">{album.artist}</p>
+                            <div className="flex items-center space-x-1 text-theme-muted text-sm mt-1">
                               <Clock className="w-4 h-4" />
                               <span>
                                 {new Date(album.listened_at).toLocaleTimeString('es-ES', { 
@@ -1065,7 +1065,7 @@ const UserProfilePage = () => {
                           <div className="flex-shrink-0">
                             <button
                               onClick={() => window.location.href = `/album/${album.spotify_id}`}
-                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors opacity-0 group-hover:opacity-100"
+                              className="bg-theme-accent hover:bg-theme-hover text-theme-button px-4 py-2 rounded-lg font-medium transition-colors opacity-0 group-hover:opacity-100"
                             >
                               Ver Álbum
                             </button>
@@ -1078,11 +1078,11 @@ const UserProfilePage = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">
+                <Clock className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-theme-primary mb-2">
                   {isOwnProfile ? 'Tu registro está vacío' : `${profileUser.username} no tiene historial de escucha`}
                 </h3>
-                <p className="text-gray-300 mb-6">
+                <p className="text-theme-secondary mb-6">
                   {isOwnProfile 
                     ? 'Empieza a escuchar álbumes para ver tu historial de escucha aquí'
                     : 'Este usuario aún no ha marcado álbumes como escuchados'
@@ -1091,7 +1091,7 @@ const UserProfilePage = () => {
                 {isOwnProfile && (
                   <Link 
                     href="/"
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                    className="bg-theme-accent hover:bg-theme-hover text-theme-button px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
                   >
                     Explorar Música
                   </Link>
@@ -1108,11 +1108,11 @@ const UserProfilePage = () => {
                 {followers.map((follower) => (
                   <div
                     key={follower.id}
-                    className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
+                    className="bg-theme-card backdrop-blur-sm rounded-2xl p-6 border border-theme-border hover:bg-theme-hover transition-all duration-300"
                   >
                     <div className="flex items-center space-x-4 mb-4">
                       {follower.profile_picture ? (
-                        <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white/20">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-theme-border">
                           {isGif(follower.profile_picture) ? (
                             <img
                               src={follower.profile_picture}
@@ -1135,12 +1135,12 @@ const UserProfilePage = () => {
                         </div>
                       )}
                       <div className="flex-1">
-                        <h3 className="text-lg font-bold text-white">@{follower.username}</h3>
-                        <p className="text-gray-300 text-sm">{follower.email}</p>
+                        <h3 className="text-lg font-bold text-theme-primary">@{follower.username}</h3>
+                        <p className="text-theme-secondary text-sm">{follower.email}</p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-center gap-1 text-gray-400 text-sm mb-4">
+                    <div className="flex items-center justify-center gap-1 text-theme-muted text-sm mb-4">
                       <Calendar className="w-4 h-4" />
                       <span>Siguiendo desde {new Date(follower.followed_at).toLocaleDateString('es')}</span>
                     </div>
@@ -1148,7 +1148,7 @@ const UserProfilePage = () => {
                     <div className="flex gap-2">
                       <Link
                         href={`/profile/${follower.username}`}
-                        className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                        className="flex-1 inline-flex items-center justify-center gap-2 bg-theme-accent hover:bg-theme-hover text-theme-button px-4 py-2 rounded-lg font-semibold transition-all duration-300"
                       >
                         <User className="w-4 h-4" />
                         Ver Perfil
@@ -1190,8 +1190,8 @@ const UserProfilePage = () => {
                           }}
                           className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
                             follower.isFollowing
-                              ? 'bg-gray-600 hover:bg-gray-700 text-white'
-                              : 'bg-green-600 hover:bg-green-700 text-white'
+                              ? 'bg-theme-card hover:bg-theme-hover text-theme-button'
+                              : 'bg-theme-accent hover:bg-theme-hover text-theme-button'
                           }`}
                         >
                           {follower.isFollowing ? (
@@ -1207,11 +1207,11 @@ const UserProfilePage = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">
+                <Users className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-theme-primary mb-2">
                   {isOwnProfile ? 'Aún no tienes seguidores' : 'Este usuario no tiene seguidores'}
                 </h3>
-                <p className="text-gray-300 mb-6">
+                <p className="text-theme-secondary mb-6">
                   {isOwnProfile 
                     ? 'Comparte tu perfil para empezar a ganar seguidores'
                     : 'Sé el primero en seguir a este usuario'
@@ -1229,11 +1229,11 @@ const UserProfilePage = () => {
                 {following.map((followedUser) => (
                   <div
                     key={followedUser.id}
-                    className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
+                    className="bg-theme-card backdrop-blur-sm rounded-2xl p-6 border border-theme-border hover:bg-theme-hover transition-all duration-300"
                   >
                     <div className="flex items-center space-x-4 mb-4">
                       {followedUser.profile_picture ? (
-                        <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white/20">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-theme-border">
                           {isGif(followedUser.profile_picture) ? (
                             <img
                               src={followedUser.profile_picture}
@@ -1256,12 +1256,12 @@ const UserProfilePage = () => {
                         </div>
                       )}
                       <div className="flex-1">
-                        <h3 className="text-lg font-bold text-white">@{followedUser.username}</h3>
-                        <p className="text-gray-300 text-sm">{followedUser.email}</p>
+                        <h3 className="text-lg font-bold text-theme-primary">@{followedUser.username}</h3>
+                        <p className="text-theme-secondary text-sm">{followedUser.email}</p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-center gap-1 text-gray-400 text-sm mb-4">
+                    <div className="flex items-center justify-center gap-1 text-theme-muted text-sm mb-4">
                       <Calendar className="w-4 h-4" />
                       <span>Siguiendo desde {new Date(followedUser.followed_at).toLocaleDateString('es')}</span>
                     </div>
@@ -1269,7 +1269,7 @@ const UserProfilePage = () => {
                     <div className="flex gap-2">
                       <Link
                         href={`/profile/${followedUser.username}`}
-                        className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                        className="flex-1 inline-flex items-center justify-center gap-2 bg-theme-accent hover:bg-theme-hover text-theme-button px-4 py-2 rounded-lg font-semibold transition-all duration-300"
                       >
                         <User className="w-4 h-4" />
                         Ver Perfil
@@ -1320,8 +1320,8 @@ const UserProfilePage = () => {
                           }}
                           className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
                             (isOwnProfile || followedUser.isFollowing)
-                              ? 'bg-gray-600 hover:bg-gray-700 text-white'
-                              : 'bg-green-600 hover:bg-green-700 text-white'
+                              ? 'bg-theme-card hover:bg-theme-hover text-theme-primary'
+                              : 'bg-theme-accent hover:bg-theme-hover text-theme-button'
                           }`}
                         >
                           {(isOwnProfile || followedUser.isFollowing) ? (
@@ -1337,11 +1337,11 @@ const UserProfilePage = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                <UserCheck className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">
+                <UserCheck className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-theme-primary mb-2">
                   {isOwnProfile ? 'Aún no sigues a nadie' : 'Este usuario no sigue a nadie'}
                 </h3>
-                <p className="text-gray-300 mb-6">
+                <p className="text-theme-secondary mb-6">
                   {isOwnProfile 
                     ? 'Explora perfiles de otros usuarios para empezar a seguir a gente interesante'
                     : 'Este usuario aún no ha comenzado a seguir a otros usuarios'
@@ -1350,7 +1350,7 @@ const UserProfilePage = () => {
                 {isOwnProfile && (
                   <Link 
                     href="/"
-                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                    className="bg-theme-accent hover:bg-theme-hover text-theme-button px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
                   >
                     Explorar Usuarios
                   </Link>
@@ -1364,12 +1364,12 @@ const UserProfilePage = () => {
       {/* Modal de Edición de Reseña */}
       {editingReview && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-2xl p-6 w-full max-w-lg border border-white/20 shadow-2xl">
+          <div className="bg-theme-card rounded-2xl p-6 w-full max-w-lg border border-theme-border shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white">Editar Reseña</h3>
+              <h3 className="text-xl font-bold text-theme-primary">Editar Reseña</h3>
               <button
                 onClick={handleCancelEdit}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-theme-muted hover:text-theme-primary transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -1377,7 +1377,7 @@ const UserProfilePage = () => {
 
             <div className="space-y-4">
               {/* Album Info */}
-              <div className="flex items-center space-x-3 p-3 bg-white/10 rounded-lg">
+              <div className="flex items-center space-x-3 p-3 bg-theme-hover rounded-lg">
                 <Image
                   src={editingReview.image_url}
                   alt={editingReview.album_name}
@@ -1386,14 +1386,14 @@ const UserProfilePage = () => {
                   className="w-12 h-12 rounded-lg object-cover"
                 />
                 <div>
-                  <h4 className="font-semibold text-white">{editingReview.album_name}</h4>
-                  <p className="text-gray-300 text-sm">{editingReview.artist}</p>
+                  <h4 className="font-semibold text-theme-primary">{editingReview.album_name}</h4>
+                  <p className="text-theme-secondary text-sm">{editingReview.artist}</p>
                 </div>
               </div>
 
               {/* Rating */}
               <div>
-                <label className="block text-white font-medium mb-2">Puntuación</label>
+                <label className="block text-theme-primary font-medium mb-2">Puntuación</label>
                 <div className="flex space-x-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -1406,7 +1406,7 @@ const UserProfilePage = () => {
                         className={`w-8 h-8 ${
                           star <= editForm.rating
                             ? 'text-yellow-400 fill-yellow-400'
-                            : 'text-gray-400 hover:text-yellow-300'
+                            : 'text-theme-muted hover:text-yellow-300'
                         }`}
                       />
                     </button>
@@ -1416,12 +1416,12 @@ const UserProfilePage = () => {
 
               {/* Title */}
               <div>
-                <label className="block text-white font-medium mb-2">Título (opcional)</label>
+                <label className="block text-theme-primary font-medium mb-2">Título (opcional)</label>
                 <input
                   type="text"
                   value={editForm.title}
                   onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent"
                   placeholder="Título de tu reseña..."
                   maxLength={100}
                 />
@@ -1429,16 +1429,16 @@ const UserProfilePage = () => {
 
               {/* Content */}
               <div>
-                <label className="block text-white font-medium mb-2">Reseña (opcional)</label>
+                <label className="block text-theme-primary font-medium mb-2">Reseña (opcional)</label>
                 <textarea
                   value={editForm.content}
                   onChange={(e) => setEditForm(prev => ({ ...prev, content: e.target.value }))}
-                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent resize-none"
                   placeholder="Escribe tu reseña aquí..."
                   rows={4}
                   maxLength={1000}
                 />
-                <div className="text-right text-gray-400 text-xs mt-1">
+                <div className="text-right text-theme-muted text-xs mt-1">
                   {editForm.content.length}/1000
                 </div>
               </div>
@@ -1447,14 +1447,14 @@ const UserProfilePage = () => {
               <div className="flex space-x-3 pt-4">
                 <button
                   onClick={handleCancelEdit}
-                  className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                  className="flex-1 px-4 py-2 bg-theme-card hover:bg-theme-hover text-theme-primary rounded-lg font-medium transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSaveEdit}
                   disabled={isEditing}
-                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="flex-1 px-4 py-2 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 >
                   {isEditing ? (
                     <>

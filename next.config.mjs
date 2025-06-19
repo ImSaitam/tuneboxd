@@ -31,7 +31,7 @@ const nextConfig = {
     }
   },
   
-  // Headers personalizados unificados
+  // Headers personalizados básicos
   async headers() {
     return [
       {
@@ -42,40 +42,10 @@ const nextConfig = {
             value: 'no-cache, no-store, must-revalidate',
           },
           {
-            key: 'Pragma',
-            value: 'no-cache',
-          },
-          {
             key: 'Content-Encoding',
             value: 'identity',
           },
         ],
-      },
-      {
-        source: '/api/stats/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=60',
-          },
-          {
-            key: 'Content-Encoding',
-            value: 'identity',
-          },
-        ],
-      },
-      {
-        source: '/api/forum/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, s-maxage=300, stale-while-revalidate=600'
-          },
-          {
-            key: 'Content-Encoding',
-            value: 'identity',
-          },
-        ]
       }
     ];
   },

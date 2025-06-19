@@ -67,12 +67,6 @@ export async function middleware(request) {
     }
   }
   
-  // Cache para APIs del foro
-  if (request.nextUrl.pathname.startsWith('/api/forum/')) {
-    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-    response.headers.set('Content-Encoding', 'identity'); // Evitar compresión
-  }
-  
   return response;
 }
 

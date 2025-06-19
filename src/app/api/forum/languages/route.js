@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { forumService } from "../../../../lib/database-adapter.js";
 
 // GET - Obtener lista de idiomas disponibles
-export async function GET() {
+export async function GET(request) {
   try {
     const languages = await forumService.getLanguages();
     
