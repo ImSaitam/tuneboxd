@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
@@ -120,11 +120,33 @@ const AlbumDetailPage = () => {
 
           // Verificar estados si está autenticado
           if (isAuthenticated) {
-            await Promise.allSettled([
-              checkIfLiked(result.album.id),
-              checkListenListStatus(result.album.id),
-              checkUserReview(result.album.id)
-            ]);
+            // Verificar favoritos
+            try {
+              const token = localStorage.getItem('auth_token');
+              const checkResponse = await fetch(`/api/listen-list/check?albumId=${result.album.id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (checkResponse.ok) {
+                const data = await checkResponse.json();
+                setInListenList(data.inListenList);
+              }
+            } catch (error) {
+              console.error('Error verificando lista de escucha:', error);
+            }
+
+            // Verificar reseña del usuario
+            try {
+              const token = localStorage.getItem('auth_token');
+              const reviewResponse = await fetch(`/api/reviews/user?albumId=${result.album.id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (reviewResponse.ok) {
+                const data = await reviewResponse.json();
+                setHasUserReview(data.hasReview);
+              }
+            } catch (error) {
+              console.error('Error verificando reseña del usuario:', error);
+            }
           }
         }
 
@@ -137,70 +159,7 @@ const AlbumDetailPage = () => {
     };
 
     loadAlbumData();
-  }, [albumId, isAuthenticated, checkIfLiked, checkListenListStatus, checkUserReview]);
-
-  // Verificar si el album está en favoritos
-  const checkIfLiked = useCallback(async (albumId) => {
-    if (!isAuthenticated || !user) return;
-
-    try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/listen-list/check?albumId=${albumId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setIsLiked(data.isLiked);
-      }
-    } catch (error) {
-      console.error('Error verificando favoritos:', error);
-    }
-  }, [isAuthenticated, user]);
-
-  // Verificar estado de la lista de escucha
-  const checkListenListStatus = useCallback(async (albumId) => {
-    if (!isAuthenticated) return;
-
-    try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/listen-list/check?albumId=${albumId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setInListenList(data.inListenList);
-      }
-    } catch (error) {
-      console.error('Error verificando lista de escucha:', error);
-    }
-  }, [isAuthenticated]);
-
-  // Verificar si el usuario tiene reseña
-  const checkUserReview = useCallback(async (albumId) => {
-    if (!isAuthenticated) return;
-
-    try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/reviews/user?albumId=${albumId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setHasUserReview(data.hasReview);
-      }
-    } catch (error) {
-      console.error('Error verificando reseña del usuario:', error);
-    }
-  }, [isAuthenticated]);
+  }, [albumId, isAuthenticated]);
 
   // Cargar álbumes relacionados del artista
   const loadArtistTopAlbums = async (artistId) => {
