@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
-import AddToListModal from '@/components/AddToListModal';
+// import AddToListModal from '@/components/AddToListModal';
 
 const AlbumDetailPage = () => {
   const params = useParams();
@@ -724,14 +724,14 @@ const AlbumDetailPage = () => {
       </div>
 
       {/* Modal para agregar a lista */}
-      {showAddToListModal && (
+      {/* {showAddToListModal && (
         <AddToListModal
           isOpen={showAddToListModal}
           onClose={() => setShowAddToListModal(false)}
           albumId={album?.id}
           albumData={albumData}
         />
-      )}
+      )} */}
     </div>
   );
 };
