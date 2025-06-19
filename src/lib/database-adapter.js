@@ -198,6 +198,61 @@ export const userService = {
 
     // Por ahora permitir cambio siempre (sin restricción de tiempo)
     return { canChange: true, daysRemaining: 0 };
+  },
+
+  // Buscar usuarios por nombre de usuario con paginación
+  async searchUsersByUsername(searchQuery, limit = 10, currentUserId = null, offset = 0) {
+    const searchPattern = `%${searchQuery}%`;
+    
+    let baseQuery = `
+      SELECT 
+        u.id,
+        u.username,
+        u.email,
+        u.bio,
+        u.profile_image,
+        u.created_at,
+        COUNT(r.id) as total_reviews,
+        COUNT(f.follower_id) as followers_count,
+        COALESCE(AVG(CAST(r.rating AS FLOAT)), 0) as avg_rating
+      FROM users u
+      LEFT JOIN reviews r ON u.id = r.user_id
+      LEFT JOIN follows f ON u.id = f.following_id
+      WHERE u.username ILIKE ? OR u.email ILIKE ?
+      GROUP BY u.id, u.username, u.email, u.bio, u.profile_image, u.created_at
+      ORDER BY 
+        CASE WHEN u.username ILIKE ? THEN 1 ELSE 2 END,
+        followers_count DESC,
+        total_reviews DESC,
+        u.username
+      LIMIT ? OFFSET ?
+    `;
+
+    return await query(baseQuery, [
+      searchPattern,
+      searchPattern, 
+      `${searchQuery}%`, // Para priorizar matches que empiecen con el término
+      limit,
+      offset
+    ]);
+  },
+
+  // Obtener el conteo total de usuarios que coinciden con la búsqueda
+  async getUserSearchCount(searchQuery) {
+    const searchPattern = `%${searchQuery}%`;
+    
+    const result = await get(`
+      SELECT COUNT(DISTINCT u.id) as count
+      FROM users u
+      WHERE u.username ILIKE ? OR u.email ILIKE ?
+    `, [searchPattern, searchPattern]);
+    
+    return result ? parseInt(result.count) : 0;
+  },
+
+  // Obtener todos los usuarios (para desarrollo)
+  async getAllUsers() {
+    return await query('SELECT id, username, email, bio, profile_image, created_at FROM users ORDER BY created_at DESC');
   }
 };
 

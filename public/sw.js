@@ -113,10 +113,13 @@ self.addEventListener('fetch', (event) => {
       
       // Si no está en cache, hacer petición de red
       return fetch(request).then((networkResponse) => {
+        // Clonar la respuesta inmediatamente para evitar errores
+        const responseToCache = networkResponse.clone();
+        
         // Cachear páginas exitosas
         if (networkResponse.ok && request.method === 'GET') {
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, networkResponse.clone()).catch(err => {
+            cache.put(request, responseToCache).catch(err => {
               console.warn('SW: Failed to cache page:', err);
             });
           });

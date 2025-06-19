@@ -456,7 +456,7 @@ const AlbumDetailPage = () => {
     <div className="min-h-screen bg-theme-background">
       {/* Header con imagen de fondo */}
       <div 
-        className="h-96 bg-gradient-to-b from-gray-900 to-theme-background relative"
+        className="min-h-96 max-h-[500px] bg-gradient-to-b from-gray-900 to-theme-background relative overflow-hidden"
         style={{
           backgroundImage: albumData?.images?.[0]?.url ? `url(${albumData.images[0].url})` : undefined,
           backgroundSize: 'cover',
@@ -475,7 +475,7 @@ const AlbumDetailPage = () => {
           </Link>
 
           {/* Información principal del álbum */}
-          <div className="flex flex-col md:flex-row items-start md:items-end space-y-6 md:space-y-0 md:space-x-8 overflow-hidden">
+          <div className="flex flex-col md:flex-row items-start md:items-end space-y-6 md:space-y-0 md:space-x-8 overflow-hidden min-w-0 w-full max-h-80">
             {/* Portada del álbum */}
             <div className="w-64 h-64 rounded-2xl overflow-hidden shadow-2xl flex-shrink-0">
               {albumData?.images?.[0]?.url ? (
@@ -494,16 +494,22 @@ const AlbumDetailPage = () => {
             </div>
 
             {/* Información del álbum */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 max-w-full text-container">
               <div className="text-sm text-white/60 mb-2 uppercase tracking-wide">Álbum</div>
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight break-words">
+              <h1 className={`font-bold text-white mb-4 leading-tight album-title overflow-hidden ${
+                albumData?.name?.length > 50 
+                  ? 'text-xl md:text-2xl' 
+                  : albumData?.name?.length > 30 
+                    ? 'text-2xl md:text-3xl' 
+                    : 'text-3xl md:text-5xl'
+              }`} style={{ wordBreak: 'break-word', overflowWrap: 'break-word', hyphens: 'auto' }}>
                 {albumData?.name}
               </h1>
               
-              <div className="flex flex-wrap items-center gap-4 text-white/80 mb-6">
+              <div className="flex flex-wrap items-center gap-4 text-white/80 mb-6 max-w-full">
                 <Link 
                   href={`/artist/${albumData?.artists[0]?.id}`}
-                  className="text-xl font-semibold hover:text-white transition-colors break-words"
+                  className="text-xl font-semibold hover:text-white transition-colors break-words max-w-full"
                 >
                   {albumData?.artists[0]?.name}
                 </Link>
