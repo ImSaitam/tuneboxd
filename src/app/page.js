@@ -320,14 +320,14 @@ const TuneboxdApp = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isAuthenticated ? (
               <>
-                <button
-                  onClick={() => scrollToSection("#features")}
+                <Link
+                  href="/search"
                   className="relative bg-theme-accent text-theme-button px-8 py-4 rounded-full text-lg font-semibold hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden group"
                 >
                   <span className="relative z-10">Explorar música</span>
                   <div className="absolute inset-0 bg-theme-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:left-full transition-all duration-500"></div>
-                </button>
+                </Link>
               </>
             ) : (
               <>

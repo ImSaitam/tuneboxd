@@ -96,6 +96,13 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
 
       if (!response.ok) {
+        // Manejar casos específicos de error
+        if (data.needsVerification) {
+          const error = new Error(data.message || 'Verificación requerida');
+          error.needsVerification = true;
+          error.email = data.email;
+          throw error;
+        }
         throw new Error(data.message || 'Error al iniciar sesión');
       }
 
@@ -258,6 +265,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshAuth = useCallback(async () => {
+    await checkAuthStatus();
+  }, [checkAuthStatus]);
+
   const value = {
     user,
     loading,
@@ -269,6 +280,7 @@ export const AuthProvider = ({ children }) => {
     resetPassword,
     updateProfile,
     updateUserData,
+    refreshAuth,
     isAuthenticated: !!user,
   };
 

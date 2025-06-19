@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Music, Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 const LoginPage = () => {
   const router = useRouter();
+  const { login, refreshAuth } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -31,36 +33,27 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setNeedsVerification(false);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        if (data.needsVerification) {
-          setNeedsVerification(true);
-          setUserEmail(data.email);
-        }
-        setError(data.message);
-        return;
-      }
-
-      // Guardar token en localStorage
-      localStorage.setItem('auth_token', data.token);
-      localStorage.setItem('user_data', JSON.stringify(data.user));
+      // Usar el hook useAuth para manejar el login
+      const result = await login(formData.email, formData.password);
       
-      // Redirigir a la página principal
-      router.push('/');
+      if (result.success) {
+        // Refrescar el estado de autenticación para asegurar sincronización
+        await refreshAuth();
+        
+        // Redirigir a la página principal
+        router.push('/');
+      }
       
     } catch (err) {
-      setError('Error al conectar con el servidor. Inténtalo de nuevo.');
+      // Manejar errores específicos del login
+      if (err.needsVerification) {
+        setNeedsVerification(true);
+        setUserEmail(err.email || formData.email);
+      }
+      setError(err.message || 'Error al conectar con el servidor. Inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }

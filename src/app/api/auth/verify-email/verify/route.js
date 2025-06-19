@@ -1,5 +1,4 @@
 import { userService } from "../../../../../lib/database-adapter.js";
-import { sendWelcomeEmail } from '../../../../../lib/email-resend.js';
 
 export async function POST(request) {
   try {
@@ -35,14 +34,8 @@ export async function POST(request) {
     // Eliminar el token usado
     await userService.deleteVerificationToken(token);
 
-    // Enviar email de bienvenida
-    const welcomeResult = await sendWelcomeEmail(user.email, user.username);
-    
-    if (welcomeResult.success) {
-      console.log(`✅ Email de bienvenida enviado a ${user.email}`);
-    } else {
-      console.error(`❌ Error enviando email de bienvenida: ${welcomeResult.error}`);
-    }
+    // Nota: Se eliminó el envío del email de bienvenida para evitar spam
+    // El usuario ya recibió el email de verificación al registrarse
 
     return Response.json({
       success: true,
