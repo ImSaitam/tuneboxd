@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
@@ -26,13 +26,15 @@ import {
   Info
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSpotify } from '@/hooks/useSpotify';
 import { useNotifications } from '@/hooks/useNotifications';
-// import AddToListModal from '@/components/AddToListModal';
+import AddToListModal from '@/components/AddToListModal';
 
 const AlbumDetailPage = () => {
   const params = useParams();
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { getAlbumById, getArtistTopTracks, searchMusic } = useSpotify();
   const { success: showSuccess, error: showError } = useNotifications();
 
   // Estados principales
@@ -57,12 +59,6 @@ const AlbumDetailPage = () => {
   const [activeTab, setActiveTab] = useState('info');
   const [showAddToListModal, setShowAddToListModal] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  
-  // Estados del formulario de reseña
-  const [reviewRating, setReviewRating] = useState(0);
-  const [reviewTitle, setReviewTitle] = useState('');
-  const [reviewContent, setReviewContent] = useState('');
-  const [submittingReview, setSubmittingReview] = useState(false);
 
   const albumId = params.albumId;
 
@@ -126,33 +122,11 @@ const AlbumDetailPage = () => {
 
           // Verificar estados si está autenticado
           if (isAuthenticated) {
-            // Verificar favoritos
-            try {
-              const token = localStorage.getItem('auth_token');
-              const checkResponse = await fetch(`/api/listen-list/check?albumId=${result.album.id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-              });
-              if (checkResponse.ok) {
-                const data = await checkResponse.json();
-                setInListenList(data.inListenList);
-              }
-            } catch (error) {
-              console.error('Error verificando lista de escucha:', error);
-            }
-
-            // Verificar reseña del usuario
-            try {
-              const token = localStorage.getItem('auth_token');
-              const reviewResponse = await fetch(`/api/reviews/user?albumId=${result.album.id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-              });
-              if (reviewResponse.ok) {
-                const data = await reviewResponse.json();
-                setHasUserReview(data.hasReview);
-              }
-            } catch (error) {
-              console.error('Error verificando reseña del usuario:', error);
-            }
+            await Promise.allSettled([
+              checkIfLiked(result.album.id),
+              checkListenListStatus(result.album.id),
+              checkUserReview(result.album.id)
+            ]);
           }
         }
 
@@ -166,6 +140,69 @@ const AlbumDetailPage = () => {
 
     loadAlbumData();
   }, [albumId, isAuthenticated]);
+
+  // Verificar si el album está en favoritos
+  const checkIfLiked = useCallback(async (albumId) => {
+    if (!isAuthenticated || !user) return;
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/listen-list/check?albumId=${albumId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setIsLiked(data.isLiked);
+      }
+    } catch (error) {
+      console.error('Error verificando favoritos:', error);
+    }
+  }, [isAuthenticated, user]);
+
+  // Verificar estado de la lista de escucha
+  const checkListenListStatus = useCallback(async (albumId) => {
+    if (!isAuthenticated) return;
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/listen-list/check?albumId=${albumId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setInListenList(data.inListenList);
+      }
+    } catch (error) {
+      console.error('Error verificando lista de escucha:', error);
+    }
+  }, [isAuthenticated]);
+
+  // Verificar si el usuario tiene reseña
+  const checkUserReview = useCallback(async (albumId) => {
+    if (!isAuthenticated) return;
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/reviews/user?albumId=${albumId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setHasUserReview(data.hasReview);
+      }
+    } catch (error) {
+      console.error('Error verificando reseña del usuario:', error);
+    }
+  }, [isAuthenticated]);
 
   // Cargar álbumes relacionados del artista
   const loadArtistTopAlbums = async (artistId) => {
@@ -349,65 +386,6 @@ const AlbumDetailPage = () => {
     }
   };
 
-  // Función para manejar el envío de reseñas
-  const handleSubmitReview = async (e) => {
-    e.preventDefault();
-    
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-
-    if (reviewRating === 0) {
-      showError('Por favor selecciona una calificación');
-      return;
-    }
-
-    setSubmittingReview(true);
-
-    try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/reviews', {
-        method: hasUserReview ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          albumId: album?.id,
-          rating: reviewRating,
-          title: reviewTitle.trim() || null,
-          content: reviewContent.trim() || null
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        showSuccess(hasUserReview ? 'Reseña actualizada' : 'Reseña publicada');
-        setShowReviewForm(false);
-        setHasUserReview(true);
-        
-        // Limpiar formulario
-        setReviewRating(0);
-        setReviewTitle('');
-        setReviewContent('');
-        
-        // Recargar reseñas
-        if (album) {
-          await loadAlbumReviews(album.id);
-        }
-      } else {
-        const errorData = await response.json();
-        showError(errorData.error || 'Error al enviar reseña');
-      }
-    } catch (error) {
-      console.error('Error enviando reseña:', error);
-      showError('Error al enviar reseña');
-    } finally {
-      setSubmittingReview(false);
-    }
-  };
-
   // Calcular duración total del álbum
   const getTotalDuration = () => {
     if (!albumTracks.length) return 0;
@@ -572,7 +550,6 @@ const AlbumDetailPage = () => {
           {[
             { key: 'info', label: 'Información', icon: Eye },
             { key: 'tracks', label: 'Canciones', icon: Music },
-            { key: 'reviews', label: 'Reseñas', icon: Star },
             { key: 'stats', label: 'Estadísticas', icon: BarChart3 }
           ].map(({ key, label, icon: Icon }) => (
             <button
@@ -719,114 +696,6 @@ const AlbumDetailPage = () => {
           </div>
         )}
 
-        {activeTab === 'reviews' && (
-          <div className="space-y-6">
-            {/* Header de reseñas con botón para escribir */}
-            <div className="flex justify-between items-center">
-              <h3 className="text-2xl font-bold text-theme-primary">
-                Reseñas del álbum ({reviews.length})
-              </h3>
-              {isAuthenticated && (
-                <button
-                  onClick={() => setShowReviewForm(true)}
-                  className="flex items-center space-x-2 py-2 px-4 bg-theme-accent text-white rounded-lg hover:bg-theme-accent/80 transition-colors"
-                >
-                  <Star className="w-4 h-4" />
-                  <span>{hasUserReview ? 'Editar mi reseña' : 'Escribir reseña'}</span>
-                </button>
-              )}
-            </div>
-
-            {/* Lista de reseñas */}
-            {reviews.length > 0 ? (
-              <div className="space-y-4">
-                {reviews.map((review) => (
-                  <div key={review.id} className="bg-theme-card rounded-2xl p-6 border border-theme">
-                    {/* Header de la reseña */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-theme-accent to-theme-accent/60 flex items-center justify-center">
-                          <User className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-theme-primary">
-                            {review.user?.username || 'Usuario'}
-                          </div>
-                          <div className="text-sm text-theme-secondary">
-                            {formatDate(review.created_at)}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Calificación */}
-                      <div className="flex items-center space-x-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`w-4 h-4 ${
-                              star <= (review.rating || 0)
-                                ? 'text-yellow-400 fill-current'
-                                : 'text-theme-muted'
-                            }`}
-                          />
-                        ))}
-                        <span className="ml-2 text-sm text-theme-secondary">
-                          {review.rating}/5
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Título de la reseña */}
-                    {review.title && (
-                      <h4 className="text-lg font-semibold text-theme-primary mb-3">
-                        {review.title}
-                      </h4>
-                    )}
-
-                    {/* Contenido de la reseña */}
-                    {review.content && (
-                      <p className="text-theme-secondary leading-relaxed mb-4">
-                        {review.content}
-                      </p>
-                    )}
-
-                    {/* Acciones de la reseña */}
-                    <div className="flex items-center space-x-4 pt-3 border-t border-theme">
-                      <button className="flex items-center space-x-1 text-theme-muted hover:text-theme-accent transition-colors">
-                        <Heart className="w-4 h-4" />
-                        <span className="text-sm">{review.likes || 0}</span>
-                      </button>
-                      <span className="text-theme-muted text-sm">
-                        ¿Te resultó útil esta reseña?
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              /* Estado vacío */
-              <div className="text-center py-12">
-                <Star className="w-16 h-16 text-theme-muted mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-theme-primary mb-2">
-                  Aún no hay reseñas
-                </h3>
-                <p className="text-theme-secondary mb-6">
-                  Sé el primero en compartir tu opinión sobre este álbum
-                </p>
-                {isAuthenticated && (
-                  <button
-                    onClick={() => setShowReviewForm(true)}
-                    className="flex items-center space-x-2 py-2 px-4 bg-theme-accent text-white rounded-lg hover:bg-theme-accent/80 transition-colors mx-auto"
-                  >
-                    <Star className="w-4 h-4" />
-                    <span>Escribir primera reseña</span>
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
         {activeTab === 'stats' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-theme-card rounded-2xl p-6 border border-theme text-center">
@@ -857,144 +726,13 @@ const AlbumDetailPage = () => {
       </div>
 
       {/* Modal para agregar a lista */}
-      {/* {showAddToListModal && (
+      {showAddToListModal && (
         <AddToListModal
           isOpen={showAddToListModal}
           onClose={() => setShowAddToListModal(false)}
           albumId={album?.id}
           albumData={albumData}
         />
-      )} */}
-
-      {/* Modal para escribir reseña */}
-      {showReviewForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-theme-card rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-theme">
-            {/* Header del modal */}
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-theme-primary">
-                {hasUserReview ? 'Editar reseña' : 'Escribir reseña'}
-              </h2>
-              <button
-                onClick={() => setShowReviewForm(false)}
-                className="p-2 hover:bg-theme-card-hover rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-theme-muted" />
-              </button>
-            </div>
-
-            {/* Información del álbum */}
-            <div className="flex items-center space-x-4 mb-6 p-4 bg-theme-background rounded-xl">
-              <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                {albumData?.images?.[0]?.url ? (
-                  <Image
-                    src={albumData.images[0].url}
-                    alt={albumData.name}
-                    width={64}
-                    height={64}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-red-400 to-teal-400 flex items-center justify-center">
-                    <Album className="w-6 h-6 text-white" />
-                  </div>
-                )}
-              </div>
-              <div>
-                <h3 className="font-semibold text-theme-primary">{albumData?.name}</h3>
-                <p className="text-theme-secondary">{albumData?.artists[0]?.name}</p>
-              </div>
-            </div>
-
-            {/* Formulario de reseña */}
-            <form onSubmit={handleSubmitReview} className="space-y-6">
-              {/* Calificación */}
-              <div>
-                <label className="block text-sm font-medium text-theme-primary mb-3">
-                  Calificación
-                </label>
-                <div className="flex items-center space-x-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setReviewRating(star)}
-                      className="p-1 hover:scale-110 transition-transform"
-                    >
-                      <Star 
-                        className={`w-8 h-8 cursor-pointer transition-colors ${
-                          star <= reviewRating 
-                            ? 'text-yellow-400 fill-current' 
-                            : 'text-theme-muted hover:text-yellow-300'
-                        }`} 
-                      />
-                    </button>
-                  ))}
-                  {reviewRating > 0 && (
-                    <span className="ml-3 text-theme-secondary">
-                      {reviewRating}/5 estrellas
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Título */}
-              <div>
-                <label className="block text-sm font-medium text-theme-primary mb-2">
-                  Título (opcional)
-                </label>
-                <input
-                  type="text"
-                  value={reviewTitle}
-                  onChange={(e) => setReviewTitle(e.target.value)}
-                  placeholder="Resume tu experiencia con este álbum..."
-                  className="w-full px-4 py-3 bg-theme-background border border-theme rounded-lg focus:ring-2 focus:ring-theme-accent focus:border-transparent text-theme-primary placeholder-theme-muted"
-                />
-              </div>
-
-              {/* Contenido */}
-              <div>
-                <label className="block text-sm font-medium text-theme-primary mb-2">
-                  Reseña
-                </label>
-                <textarea
-                  rows={6}
-                  value={reviewContent}
-                  onChange={(e) => setReviewContent(e.target.value)}
-                  placeholder="Comparte tu opinión detallada sobre el álbum..."
-                  className="w-full px-4 py-3 bg-theme-background border border-theme rounded-lg focus:ring-2 focus:ring-theme-accent focus:border-transparent text-theme-primary placeholder-theme-muted resize-none"
-                />
-              </div>
-
-              {/* Acciones */}
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowReviewForm(false)}
-                  disabled={submittingReview}
-                  className="px-6 py-2 text-theme-secondary hover:text-theme-primary transition-colors disabled:opacity-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={submittingReview || reviewRating === 0}
-                  className="px-6 py-2 bg-theme-accent text-white rounded-lg hover:bg-theme-accent/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-                >
-                  {submittingReview && (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  )}
-                  <span>
-                    {submittingReview 
-                      ? 'Enviando...' 
-                      : hasUserReview ? 'Actualizar reseña' : 'Publicar reseña'
-                    }
-                  </span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
       )}
     </div>
   );
