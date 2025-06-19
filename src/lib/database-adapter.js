@@ -641,6 +641,162 @@ export const customListService = {
     );
 
     return result.changes > 0;
+  },
+
+  // Agregar álbum a una lista
+  async addAlbumToList(listId, albumId, userId, notes = null) {
+    try {
+      // Verificar que la lista existe y el usuario tiene permisos
+      const list = await get(
+        'SELECT * FROM lists WHERE id = ? AND user_id = ?',
+        [listId, userId]
+      );
+
+      if (!list) {
+        throw new Error('Lista no encontrada o no tienes permisos');
+      }
+
+      // Obtener el spotify_id del álbum usando su ID interno
+      const album = await get('SELECT spotify_id FROM albums WHERE id = ?', [albumId]);
+      if (!album) {
+        throw new Error('Álbum no encontrado');
+      }
+
+      // Verificar si el álbum ya está en la lista
+      const existing = await get(
+        'SELECT 1 FROM list_albums WHERE list_id = ? AND spotify_album_id = ?',
+        [listId, album.spotify_id]
+      );
+
+      if (existing) {
+        throw new Error('El álbum ya está en esta lista');
+      }
+
+      // Obtener el siguiente order_index
+      const maxOrder = await get(
+        'SELECT COALESCE(MAX(order_index), -1) as max_order FROM list_albums WHERE list_id = ?',
+        [listId]
+      );
+
+      const nextOrder = (maxOrder?.max_order || 0) + 1;
+
+      // Agregar álbum a la lista
+      const result = await run(
+        `INSERT INTO list_albums 
+         (list_id, spotify_album_id, notes, order_index, created_at, updated_at) 
+         VALUES (?, ?, ?, ?, NOW(), NOW())`,
+        [listId, album.spotify_id, notes, nextOrder]
+      );
+
+      // Actualizar el timestamp de la lista
+      await run(
+        'UPDATE lists SET updated_at = NOW() WHERE id = ?',
+        [listId]
+      );
+
+      return result;
+    } catch (error) {
+      if (error.message.includes('duplicate key') || error.message.includes('UNIQUE constraint')) {
+        throw new Error('El álbum ya está en esta lista');
+      }
+      throw error;
+    }
+  },
+
+  // Remover álbum de una lista
+  async removeAlbumFromList(listId, albumId, userId) {
+    try {
+      // Verificar que la lista existe y el usuario tiene permisos
+      const list = await get(
+        'SELECT * FROM lists WHERE id = ? AND user_id = ?',
+        [listId, userId]
+      );
+
+      if (!list) {
+        throw new Error('Lista no encontrada o no tienes permisos');
+      }
+
+      // Obtener el spotify_id del álbum usando su ID interno
+      const album = await get('SELECT spotify_id FROM albums WHERE id = ?', [albumId]);
+      if (!album) {
+        throw new Error('Álbum no encontrado');
+      }
+
+      // Remover álbum de la lista
+      const result = await run(
+        'DELETE FROM list_albums WHERE list_id = ? AND spotify_album_id = ?',
+        [listId, album.spotify_id]
+      );
+
+      if (result.changes === 0) {
+        throw new Error('Álbum no encontrado en esta lista');
+      }
+
+      // Actualizar el timestamp de la lista
+      await run(
+        'UPDATE lists SET updated_at = NOW() WHERE id = ?',
+        [listId]
+      );
+
+      return result.changes > 0;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Verificar si un álbum está en una lista específica
+  async isAlbumInList(listId, spotifyAlbumId) {
+    const result = await get(
+      'SELECT 1 FROM list_albums WHERE list_id = ? AND spotify_album_id = ?',
+      [listId, spotifyAlbumId]
+    );
+    return !!result;
+  },
+
+  // Obtener álbumes de una lista específica
+  async getListAlbums(listId, limit = 50, offset = 0) {
+    return await query(`
+      SELECT 
+        la.*,
+        a.spotify_id,
+        a.name,
+        a.artist_name as artist,
+        a.release_date,
+        a.image_url,
+        a.id as album_id
+      FROM list_albums la
+      JOIN albums a ON la.spotify_album_id = a.spotify_id
+      WHERE la.list_id = ?
+      ORDER BY la.order_index ASC, la.created_at DESC
+      LIMIT ? OFFSET ?
+    `, [listId, limit, offset]);
+  },
+
+  // Actualizar el orden de álbumes en una lista
+  async updateAlbumOrder(listId, albumId, newOrder, userId) {
+    // Verificar permisos
+    const list = await get(
+      'SELECT * FROM lists WHERE id = ? AND user_id = ?',
+      [listId, userId]
+    );
+
+    if (!list) {
+      throw new Error('Lista no encontrada o no tienes permisos');
+    }
+
+    // Obtener el spotify_id del álbum
+    const album = await get('SELECT spotify_id FROM albums WHERE id = ?', [albumId]);
+    if (!album) {
+      throw new Error('Álbum no encontrado');
+    }
+
+    // Actualizar el orden
+    const result = await run(
+      'UPDATE list_albums SET order_index = ?, updated_at = NOW() WHERE list_id = ? AND spotify_album_id = ?',
+      [newOrder, listId, album.spotify_id]
+    );
+
+    return result.changes > 0;
   }
 };
 
