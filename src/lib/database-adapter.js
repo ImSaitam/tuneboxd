@@ -1322,6 +1322,48 @@ export const trackFavorites = {
       [userId, trackId]
     );
   },
+
+  // Método completo para agregar track con toda su información
+  async addTrackToFavorites(userId, trackData) {
+    try {
+      const { id: trackId, name, artists, album, duration_ms, images } = trackData;
+      
+      // Verificar si ya está en favoritos
+      const existing = await this.isFavorite(userId, trackId);
+      if (existing) {
+        throw new Error('Este track ya está en tus favoritos');
+      }
+
+      // Agregar track completo a favoritos
+      const result = await run(
+        `INSERT INTO track_favorites 
+         (user_id, track_id, track_name, artist_name, album_name, image_url, duration_ms, added_at) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
+        [
+          userId, 
+          trackId, 
+          name,
+          artists && artists[0] ? artists[0].name : 'Unknown Artist',
+          album ? album.name : 'Unknown Album',
+          images && images[0] ? images[0].url : null,
+          duration_ms || 0
+        ]
+      );
+
+      return result;
+    } catch (error) {
+      if (error.message.includes('duplicate key') || error.message.includes('UNIQUE constraint')) {
+        throw new Error('Este track ya está en tus favoritos');
+      }
+      throw error;
+    }
+  },
+
+  // Método para remover track de favoritos por trackId
+  async removeTrackFromFavorites(userId, trackId) {
+    const result = await run('DELETE FROM track_favorites WHERE user_id = ? AND track_id = ?', [userId, trackId]);
+    return result.changes > 0;
+  },
   
   async remove(userId, trackId) {
     return await run('DELETE FROM track_favorites WHERE user_id = ? AND track_id = ?', [userId, trackId]);
@@ -1330,6 +1372,42 @@ export const trackFavorites = {
   async isFavorite(userId, trackId) {
     const result = await get('SELECT 1 FROM track_favorites WHERE user_id = ? AND track_id = ?', [userId, trackId]);
     return !!result;
+  },
+
+  // Obtener favoritos de un usuario con paginación
+  async getUserFavorites(userId, limit = 20, offset = 0) {
+    return await query(
+      `SELECT * FROM track_favorites 
+       WHERE user_id = ? 
+       ORDER BY added_at DESC 
+       LIMIT ? OFFSET ?`,
+      [userId, limit, offset]
+    );
+  },
+
+  // Contar total de favoritos de un usuario
+  async getUserFavoritesCount(userId) {
+    const result = await get(
+      'SELECT COUNT(*) as count FROM track_favorites WHERE user_id = ?',
+      [userId]
+    );
+    return result ? parseInt(result.count) : 0;
+  },
+
+  // Verificar si un track específico está en favoritos del usuario
+  async isTrackInFavorites(userId, trackId) {
+    return await this.isFavorite(userId, trackId);
+  },
+
+  // Obtener estadísticas de un track (cuántos usuarios lo tienen en favoritos)
+  async getTrackStats(trackId) {
+    const result = await get(
+      'SELECT COUNT(*) as favorite_count FROM track_favorites WHERE track_id = ?',
+      [trackId]
+    );
+    return {
+      favorite_count: result ? parseInt(result.favorite_count) : 0
+    };
   }
 };
 
