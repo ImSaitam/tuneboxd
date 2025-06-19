@@ -273,19 +273,19 @@ export default function ListDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      <div className="min-h-screen bg-theme-primary">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-700 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+            <div className="h-8 bg-theme-card rounded w-1/3"></div>
+            <div className="h-4 bg-theme-card rounded w-1/2"></div>
             <div className="grid gap-6">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="bg-white/10 rounded-lg p-6">
+                <div key={i} className="bg-theme-card rounded-lg p-6">
                   <div className="flex gap-4">
-                    <div className="w-20 h-20 bg-gray-700 rounded-lg"></div>
+                    <div className="w-20 h-20 bg-theme-card-hover rounded-lg"></div>
                     <div className="flex-1 space-y-3">
-                      <div className="h-6 bg-gray-700 rounded w-3/4"></div>
-                      <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+                      <div className="h-6 bg-theme-card-hover rounded w-3/4"></div>
+                      <div className="h-4 bg-theme-card-hover rounded w-1/2"></div>
                     </div>
                   </div>
                 </div>
@@ -299,13 +299,13 @@ export default function ListDetailPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Error</h1>
-          <p className="text-gray-300 mb-6">{error}</p>
+          <h1 className="text-2xl font-bold text-theme-primary mb-4">Error</h1>
+          <p className="text-theme-secondary mb-6">{error}</p>
           <Link 
             href="/lists"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+            className="bg-theme-accent hover:bg-theme-hover text-theme-button px-6 py-3 rounded-lg transition-colors"
           >
             Volver a Listas
           </Link>
@@ -316,12 +316,12 @@ export default function ListDetailPage() {
 
   if (!list) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Lista no encontrada</h1>
+          <h1 className="text-2xl font-bold text-theme-primary mb-4">Lista no encontrada</h1>
           <Link 
             href="/lists"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+            className="bg-theme-accent hover:bg-theme-hover text-theme-button px-6 py-3 rounded-lg transition-colors"
           >
             Volver a Listas
           </Link>
@@ -331,18 +331,18 @@ export default function ListDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-theme-primary">
       <div className="container mx-auto px-4 py-8">
         
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Link href="/lists" className="text-white hover:text-gray-300 transition-colors">
+            <Link href="/lists" className="text-theme-primary hover:text-theme-secondary transition-colors">
               <ArrowLeft size={24} />
             </Link>
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-white">{list.name}</h1>
+                <h1 className="text-3xl font-bold text-theme-primary">{list.name}</h1>
                 {list.is_public ? (
                   <Eye size={20} className="text-green-400" />
                 ) : (
@@ -350,9 +350,9 @@ export default function ListDetailPage() {
                 )}
               </div>
               {list.description && (
-                <p className="text-gray-300">{list.description}</p>
+                <p className="text-theme-secondary">{list.description}</p>
               )}
-              <div className="flex items-center gap-6 mt-3 text-sm text-gray-400">
+              <div className="flex items-center gap-6 mt-3 text-sm text-theme-muted">
                 <div className="flex items-center gap-2">
                   <User size={16} />
                   <span>Por {list.username || 'Usuario'}</span>
@@ -373,7 +373,7 @@ export default function ListDetailPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowEditModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg transition-colors"
               >
                 <Edit3 size={16} />
                 Editar
@@ -383,7 +383,7 @@ export default function ListDetailPage() {
         </div>
 
         {/* Likes y Comentarios */}
-        <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 mb-8 border border-white/20">
+        <div className="bg-theme-card backdrop-blur-md rounded-lg p-6 mb-8 border border-theme">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               {/* Botón de Like */}
@@ -393,7 +393,7 @@ export default function ListDetailPage() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
                   userHasLiked 
                     ? 'bg-red-600 hover:bg-red-700 text-white' 
-                    : 'bg-white/20 hover:bg-white/30 text-white'
+                    : 'bg-theme-card-hover hover:bg-theme-muted text-theme-primary'
                 } disabled:opacity-50`}
               >
                 <Heart 
@@ -406,7 +406,7 @@ export default function ListDetailPage() {
               {/* Botón de Comentarios */}
               <button
                 onClick={handleShowComments}
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-theme-card-hover hover:bg-theme-muted text-theme-primary rounded-lg transition-colors"
               >
                 <MessageCircle size={20} />
                 <span>{commentsCount} {commentsCount === 1 ? 'comentario' : 'comentarios'}</span>
@@ -416,7 +416,7 @@ export default function ListDetailPage() {
 
           {/* Sección de Comentarios */}
           {showComments && (
-            <div className="mt-6 border-t border-white/20 pt-6">
+            <div className="mt-6 border-t border-theme pt-6">
               {/* Formulario para nuevo comentario */}
               {isAuthenticated && (
                 <form onSubmit={handleSubmitComment} className="mb-6">
@@ -425,14 +425,14 @@ export default function ListDetailPage() {
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Escribe un comentario..."
-                      className="flex-1 bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 bg-theme-card border border-theme rounded-lg px-4 py-3 text-theme-primary placeholder-theme-muted resize-none focus:outline-none focus:ring-2 focus:ring-theme-accent"
                       rows={3}
                       maxLength={500}
                     />
                     <button
                       type="submit"
                       disabled={submittingComment || !newComment.trim()}
-                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-6 py-3 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {submittingComment ? (
                         <Loader2 size={20} className="animate-spin" />
@@ -441,7 +441,7 @@ export default function ListDetailPage() {
                       )}
                     </button>
                   </div>
-                  <div className="text-xs text-gray-400 mt-2">
+                  <div className="text-xs text-theme-muted mt-2">
                     {newComment.length}/500 caracteres
                   </div>
                 </form>
@@ -450,27 +450,27 @@ export default function ListDetailPage() {
               {/* Lista de comentarios */}
               {loadingComments ? (
                 <div className="flex justify-center py-8">
-                  <Loader2 size={32} className="animate-spin text-white" />
+                  <Loader2 size={32} className="animate-spin text-theme-primary" />
                 </div>
               ) : comments.length > 0 ? (
                 <div className="space-y-4">
                   {comments.map((comment) => (
-                    <div key={comment.id} className="bg-white/5 rounded-lg p-4">
+                    <div key={comment.id} className="bg-theme-card-hover rounded-lg p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="font-semibold text-white">{comment.username}</span>
-                            <span className="text-xs text-gray-400">
+                            <span className="font-semibold text-theme-primary">{comment.username}</span>
+                            <span className="text-xs text-theme-muted">
                               {new Date(comment.created_at).toLocaleDateString('es')}
                             </span>
                           </div>
-                          <p className="text-gray-300">{comment.content}</p>
+                          <p className="text-theme-secondary">{comment.content}</p>
                         </div>
                         
                         {(isAuthenticated && (user?.username === comment.username || isOwner)) && (
                           <button
                             onClick={() => handleDeleteComment(comment.id)}
-                            className="text-gray-400 hover:text-red-400 transition-colors"
+                            className="text-theme-muted hover:text-red-400 transition-colors"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -480,7 +480,7 @@ export default function ListDetailPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-400">
+                <div className="text-center py-8 text-theme-muted">
                   <MessageCircle size={48} className="mx-auto mb-4 opacity-50" />
                   <p>No hay comentarios aún. ¡Sé el primero en comentar!</p>
                 </div>
@@ -493,7 +493,7 @@ export default function ListDetailPage() {
         {list.albums && list.albums.length > 0 ? (
           <div className="space-y-6">
             {list.albums.map((album) => (
-              <div key={album.id} className="bg-white/10 backdrop-blur-md rounded-lg p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
+              <div key={album.id} className="bg-theme-card backdrop-blur-md rounded-lg p-6 border border-theme hover:bg-theme-card-hover transition-all duration-300">
                 <div className="flex flex-col md:flex-row gap-6 items-start">
                   {/* Album Cover */}
                   <div className="flex-shrink-0">
@@ -508,14 +508,14 @@ export default function ListDetailPage() {
                   {/* Album Info */}
                   <div className="flex-1 min-w-0">
                     <h3 
-                      className="text-xl font-bold text-white mb-1 cursor-pointer hover:text-blue-300 transition-colors"
+                      className="text-xl font-bold text-theme-primary mb-1 cursor-pointer hover:text-theme-accent transition-colors"
                       onClick={() => handleAlbumClick(album)}
                     >
                       {album.name}
                     </h3>
-                    <p className="text-gray-300 mb-2 truncate">{album.artist}</p>
+                    <p className="text-theme-secondary mb-2 truncate">{album.artist}</p>
                     
-                    <div className="flex items-center gap-4 text-sm text-gray-400">
+                    <div className="flex items-center gap-4 text-sm text-theme-muted">
                       {album.release_date && (
                         <div className="flex items-center gap-2">
                           <Calendar size={16} />
@@ -529,8 +529,8 @@ export default function ListDetailPage() {
                     </div>
 
                     {album.notes && (
-                      <div className="mt-3 p-3 bg-white/5 rounded-lg">
-                        <p className="text-gray-300 text-sm">{album.notes}</p>
+                      <div className="mt-3 p-3 bg-theme-card-hover rounded-lg">
+                        <p className="text-theme-secondary text-sm">{album.notes}</p>
                       </div>
                     )}
                   </div>
@@ -539,7 +539,7 @@ export default function ListDetailPage() {
                   <div className="flex flex-col gap-2">
                     <button
                       onClick={() => handleAlbumClick(album)}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg transition-colors"
                     >
                       <Music size={16} />
                       Ver Álbum
@@ -574,13 +574,13 @@ export default function ListDetailPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <Music size={64} className="text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">Lista vacía</h3>
-            <p className="text-gray-300 mb-6">Esta lista no tiene álbumes aún</p>
+            <Music size={64} className="text-theme-muted mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-theme-primary mb-2">Lista vacía</h3>
+            <p className="text-theme-secondary mb-6">Esta lista no tiene álbumes aún</p>
             {isOwner && (
               <Link 
                 href="/"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+                className="bg-theme-accent hover:bg-theme-hover text-theme-button font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
               >
                 Explorar Música
               </Link>
