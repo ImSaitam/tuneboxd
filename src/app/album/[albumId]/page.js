@@ -475,7 +475,7 @@ const AlbumDetailPage = () => {
           </Link>
 
           {/* Información principal del álbum */}
-          <div className="flex flex-col md:flex-row items-end space-y-6 md:space-y-0 md:space-x-8">
+          <div className="flex flex-col md:flex-row items-start md:items-end space-y-6 md:space-y-0 md:space-x-8 overflow-hidden">
             {/* Portada del álbum */}
             <div className="w-64 h-64 rounded-2xl overflow-hidden shadow-2xl flex-shrink-0">
               {albumData?.images?.[0]?.url ? (
@@ -496,14 +496,14 @@ const AlbumDetailPage = () => {
             {/* Información del álbum */}
             <div className="flex-1 min-w-0">
               <div className="text-sm text-white/60 mb-2 uppercase tracking-wide">Álbum</div>
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight break-words">
                 {albumData?.name}
               </h1>
               
               <div className="flex flex-wrap items-center gap-4 text-white/80 mb-6">
                 <Link 
                   href={`/artist/${albumData?.artists[0]?.id}`}
-                  className="text-xl font-semibold hover:text-white transition-colors"
+                  className="text-xl font-semibold hover:text-white transition-colors break-words"
                 >
                   {albumData?.artists[0]?.name}
                 </Link>
@@ -901,8 +901,8 @@ const AlbumDetailPage = () => {
                 )}
               </div>
               <div>
-                <h3 className="font-semibold text-theme-primary">{albumData?.name}</h3>
-                <p className="text-theme-secondary">{albumData?.artists[0]?.name}</p>
+                <h3 className="font-semibold text-theme-primary break-words">{albumData?.name}</h3>
+                <p className="text-theme-secondary break-words">{albumData?.artists[0]?.name}</p>
               </div>
             </div>
 
