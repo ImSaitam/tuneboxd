@@ -22,7 +22,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 
 const FavoritesPage = () => {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { success: showSuccess, error: showError } = useNotifications();
 
   // Estados
@@ -65,6 +65,11 @@ const FavoritesPage = () => {
         setTotalCount(data.count);
         setHasMore(data.hasMore);
         setPage(currentPage + 1);
+      } else if (response.status === 401) {
+        // Token inválido o expirado, redirigir al login
+        localStorage.removeItem('auth_token');
+        router.push('/login');
+        return;
       } else {
         setError('Error cargando favoritos');
       }
@@ -74,16 +79,19 @@ const FavoritesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, page]);
+  }, [isAuthenticated, page, router]);
 
   // Verificar autenticación
   useEffect(() => {
+    if (authLoading) return; // Esperar a que termine la verificación de auth
+    
     if (!isAuthenticated) {
       router.push('/login');
       return;
     }
+    
     loadFavorites();
-  }, [isAuthenticated, router, loadFavorites]);
+  }, [isAuthenticated, authLoading, router, loadFavorites]);
 
   // Remover de favoritos
   const removeFromFavorites = async (trackId) => {
@@ -99,9 +107,14 @@ const FavoritesPage = () => {
       });
 
       if (response.ok) {
-        setFavorites(prev => prev.filter(fav => fav.spotify_track_id !== trackId));
+        setFavorites(prev => prev.filter(fav => fav.track_id !== trackId));
         setTotalCount(prev => prev - 1);
         showSuccess('Eliminado de favoritos');
+      } else if (response.status === 401) {
+        // Token inválido o expirado
+        localStorage.removeItem('auth_token');
+        router.push('/login');
+        return;
       } else {
         const errorData = await response.json();
         showError(errorData.error || 'Error al eliminar de favoritos');
@@ -121,7 +134,15 @@ const FavoritesPage = () => {
 
   // Formatear fecha
   const formatDate = (dateString) => {
+    if (!dateString) return 'Fecha no disponible';
+    
     const date = new Date(dateString);
+    
+    // Verificar si la fecha es válida
+    if (isNaN(date.getTime())) {
+      return 'Fecha inválida';
+    }
+    
     return date.toLocaleDateString('es', { 
       year: 'numeric', 
       month: 'short', 
@@ -139,9 +160,9 @@ const FavoritesPage = () => {
     .sort((a, b) => {
       switch (sortBy) {
         case 'newest':
-          return new Date(b.created_at) - new Date(a.created_at);
+          return new Date(b.added_at) - new Date(a.added_at);
         case 'oldest':
-          return new Date(a.created_at) - new Date(b.created_at);
+          return new Date(a.added_at) - new Date(b.added_at);
         case 'alphabetical':
           return a.track_name.localeCompare(b.track_name);
         case 'artist':
@@ -241,7 +262,7 @@ const FavoritesPage = () => {
                 {filteredAndSortedFavorites.map((track) => (
                   <div key={track.id} className="group">
                     <div className="relative">
-                      <Link href={`/track/${track.spotify_track_id}`}>
+                      <Link href={`/track/${track.track_id}`}>
                         <div className="aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-red-400 to-teal-400 mb-3 group-hover:scale-105 transition-transform duration-200">
                           {track.image_url ? (
                             <Image
@@ -261,25 +282,25 @@ const FavoritesPage = () => {
                       
                       {/* Botón de eliminar */}
                       <button
-                        onClick={() => removeFromFavorites(track.spotify_track_id)}
+                        onClick={() => removeFromFavorites(track.track_id)}
                         className="absolute top-2 right-2 p-2 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-white hover:bg-black/70"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                     
-                    <Link href={`/track/${track.spotify_track_id}`}>
+                    <Link href={`/track/${track.track_id}`}>
                       <h3 className="font-semibold text-theme-primary truncate mb-1 group-hover:text-theme-accent transition-colors">
                         {track.track_name}
                       </h3>
                     </Link>
                     
-                    <Link href={`/artist/${track.spotify_track_id}`} className="text-sm text-theme-secondary hover:text-theme-accent transition-colors truncate block">
+                    <span className="text-sm text-theme-secondary hover:text-theme-accent transition-colors truncate block">
                       {track.artist_name}
-                    </Link>
+                    </span>
                     
                     <div className="text-xs text-theme-muted mt-1">
-                      {formatDate(track.created_at)}
+                      {formatDate(track.added_at)}
                     </div>
                   </div>
                 ))}
@@ -305,7 +326,7 @@ const FavoritesPage = () => {
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <Link href={`/track/${track.spotify_track_id}`}>
+                      <Link href={`/track/${track.track_id}`}>
                         <h3 className="font-medium text-theme-primary truncate group-hover:text-theme-accent transition-colors">
                           {track.track_name}
                         </h3>
@@ -320,10 +341,10 @@ const FavoritesPage = () => {
                         {formatDuration(track.duration_ms)}
                       </span>
                       <span className="text-sm">
-                        {formatDate(track.created_at)}
+                        {formatDate(track.added_at)}
                       </span>
                       <button
-                        onClick={() => removeFromFavorites(track.spotify_track_id)}
+                        onClick={() => removeFromFavorites(track.track_id)}
                         className="p-2 rounded-full hover:bg-theme-primary/10 text-theme-muted hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 className="w-4 h-4" />
