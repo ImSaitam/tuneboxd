@@ -852,7 +852,7 @@ export const customListService = {
       SELECT 
         ll.*,
         u.username,
-        u.profile_image_url
+        u.profile_image
       FROM list_likes ll
       JOIN users u ON ll.user_id = u.id
       WHERE ll.list_id = ?
@@ -919,7 +919,7 @@ export const customListService = {
       SELECT 
         lc.*,
         u.username,
-        u.profile_image_url
+        u.profile_image
       FROM list_comments lc
       JOIN users u ON lc.user_id = u.id
       WHERE lc.list_id = ?
