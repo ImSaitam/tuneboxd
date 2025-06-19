@@ -28,7 +28,6 @@ dist/
 database.db
 tuneboxd.db
 users.db
-database-adapter.js
 
 # Security files
 *.key

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { 
   MessageSquare, ThumbsUp, Eye, Pin, Lock, Globe
 } from 'lucide-react';
+import MarkdownRenderer from './MarkdownRenderer';
 
 // Función pura para formatear tiempo (se puede memoizar)
 const formatTimeAgo = (dateString) => {
@@ -134,9 +135,9 @@ const OptimizedThreadCard = memo(({ thread }) => {
         </div>
 
         {thread.content && (
-          <p className="text-theme-secondary mb-4 line-clamp-2">
-            {thread.content}
-          </p>
+          <div className="mb-4 line-clamp-2">
+            <MarkdownRenderer content={thread.content} className="text-sm" />
+          </div>
         )}
 
         <div className="flex items-center justify-between">

@@ -81,6 +81,13 @@ const ForumPage = () => {
       const response = await fetch(dataUrl);
       if (response.ok) {
         const data = await response.json();
+        console.log('Forum data received:', {
+          threads: data.threads?.length || 0,
+          categories: data.categories?.length || 0,
+          languages: data.languages?.length || 0,
+          categoriesData: data.categories,
+          languagesData: data.languages
+        });
         setThreads(data.threads || []);
         setCategories(data.categories || []);
         setLanguages(data.languages || []);
@@ -88,6 +95,8 @@ const ForumPage = () => {
         // Log si viene del cache para debugging
         if (data.fromCache) {
         }
+      } else {
+        console.error('Error response:', response.status, response.statusText);
       }
 
     } catch (error) {
@@ -443,17 +452,34 @@ const ForumPage = () => {
 
               {/* Content */}
               <div>
-                <label className="block text-theme-primary font-medium mb-2">Contenido (opcional)</label>
+                <label className="block text-theme-primary font-medium mb-2">
+                  Contenido (opcional)
+                  <span className="text-theme-muted text-xs ml-2">
+                    • Soporta Markdown: **negrita**, *cursiva*, [enlaces](url)
+                  </span>
+                </label>
                 <textarea
                   value={newThread.content}
                   onChange={(e) => setNewThread(prev => ({ ...prev, content: e.target.value }))}
-                  placeholder="Describe tu hilo, haz una pregunta, comparte una opinión..."
+                  placeholder="Describe tu hilo, haz una pregunta, comparte una opinión...
+
+Puedes usar Markdown:
+• **texto en negrita**
+• *texto en cursiva*
+• [enlace](https://ejemplo.com)
+• `código`
+• > cita"
                   rows={6}
                   className="w-full px-4 py-3 bg-theme-card border border-theme-border rounded-lg text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent resize-none"
                   maxLength={5000}
                 />
-                <div className="text-right text-theme-muted text-xs mt-1">
-                  {newThread.content.length}/5000
+                <div className="flex justify-between items-center text-xs mt-1">
+                  <span className="text-theme-muted">
+                    🎨 Markdown habilitado para formatear texto
+                  </span>
+                  <span className="text-theme-muted">
+                    {newThread.content.length}/5000
+                  </span>
                 </div>
               </div>
 

@@ -247,6 +247,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUserData = async (userData) => {
+    try {
+      setUser(userData);
+      return { success: true };
+    } catch (error) {
+      console.error('Error actualizando datos del usuario:', error);
+      setError(error.message);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -257,6 +268,7 @@ export const AuthProvider = ({ children }) => {
     forgotPassword,
     resetPassword,
     updateProfile,
+    updateUserData,
     isAuthenticated: !!user,
   };
 

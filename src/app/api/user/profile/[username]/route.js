@@ -21,12 +21,15 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Remover información sensible
-    const { password, reset_token, reset_token_expires, ...publicUser } = user;
+    // Remover información sensible y mapear profile_image a profile_picture
+    const { password, reset_token, reset_token_expires, profile_image, ...publicUser } = user;
 
     return Response.json({
       success: true,
-      user: publicUser
+      user: {
+        ...publicUser,
+        profile_picture: profile_image  // Mapear profile_image (DB) a profile_picture (frontend)
+      }
     });
 
   } catch (error) {

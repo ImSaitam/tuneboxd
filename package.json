@@ -12,6 +12,8 @@
     "vercel-build": "npm run build"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.1.10",
+    "autoprefixer": "^10.4.21",
     "bcryptjs": "^3.0.2",
     "critters": "^0.0.23",
     "dotenv": "^16.5.0",
@@ -19,12 +21,12 @@
     "lucide-react": "^0.514.0",
     "next": "15.3.3",
     "node-fetch": "^3.3.2",
+    "pg": "^8.16.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "resend": "^4.6.0",
-    "pg": "^8.16.0",
-    "@tailwindcss/postcss": "^4.1.10",
-    "autoprefixer": "^10.4.21",
     "tailwindcss": "^4.1.10"
   },
   "devDependencies": {

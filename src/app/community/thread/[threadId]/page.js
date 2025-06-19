@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../../../hooks/useAuth';
 import { useNotifications } from '../../../../hooks/useNotifications';
+import MarkdownRenderer from '../../../../components/MarkdownRenderer';
 
 const ThreadDetailPage = () => {
   const params = useParams();
@@ -303,8 +304,8 @@ const ThreadDetailPage = () => {
           </div>
 
           {thread.content && (
-            <div className="text-theme-secondary leading-relaxed mb-6 whitespace-pre-wrap">
-              {thread.content}
+            <div className="leading-relaxed mb-6">
+              <MarkdownRenderer content={thread.content} />
             </div>
           )}
 
@@ -351,14 +352,20 @@ const ThreadDetailPage = () => {
             <textarea
               value={newReply}
               onChange={(e) => setNewReply(e.target.value)}
-              placeholder="Escribe tu respuesta..."
+              placeholder="Escribe tu respuesta...
+
+Puedes usar Markdown:
+• **texto en negrita**
+• *texto en cursiva*
+• [enlace](url)
+• `código`"
               rows={4}
               className="w-full px-4 py-3 bg-theme-primary border border-theme-border rounded-lg text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent resize-none mb-4"
               maxLength={2000}
             />
             <div className="flex items-center justify-between">
               <span className="text-theme-muted text-xs">
-                {newReply.length}/2000
+                🎨 Markdown habilitado • {newReply.length}/2000
               </span>
               <button
                 onClick={handleSubmitReply}
@@ -443,8 +450,8 @@ const ThreadDetailPage = () => {
                       </span>
                     </div>
 
-                    <div className="text-theme-secondary leading-relaxed mb-4 whitespace-pre-wrap">
-                      {reply.content}
+                    <div className="leading-relaxed mb-4">
+                      <MarkdownRenderer content={reply.content} />
                     </div>
 
                     <div className="flex items-center justify-between">

@@ -119,7 +119,7 @@ async function getAverageRating(userId) {
 async function getRecentActivity(userId) {
   try {
     const result = await getAsync(
-      'SELECT COUNT(*) as count FROM reviews WHERE user_id = ? AND created_at >= datetime("now", "-30 days")',
+      "SELECT COUNT(*) as count FROM reviews WHERE user_id = ? AND created_at >= NOW() - INTERVAL '30 days'",
       [userId]
     );
     return result?.count || 0;
@@ -133,9 +133,9 @@ async function getTopGenres(userId) {
   try {
     // Esta es una implementación básica - en un proyecto real tendrías géneros en tu base de datos
     const reviews = await allAsync(
-      `SELECT a.name as album_name, a.artist 
+      `SELECT a.name as album_name, a.artist_name as artist 
        FROM reviews r 
-       JOIN albums a ON r.album_id = a.id 
+       LEFT JOIN albums a ON r.spotify_album_id = a.spotify_id 
        WHERE r.user_id = ? 
        ORDER BY r.created_at DESC 
        LIMIT 20`,
@@ -161,13 +161,13 @@ async function getMonthlyStats(userId) {
   try {
     const result = await allAsync(`
       SELECT 
-        strftime('%Y-%m', created_at) as month,
+        TO_CHAR(created_at, 'YYYY-MM') as month,
         COUNT(*) as reviews,
         AVG(rating) as avg_rating
       FROM reviews 
       WHERE user_id = ? 
-        AND created_at >= datetime('now', '-12 months')
-      GROUP BY strftime('%Y-%m', created_at)
+        AND created_at >= NOW() - INTERVAL '12 months'
+      GROUP BY TO_CHAR(created_at, 'YYYY-MM')
       ORDER BY month DESC
       LIMIT 12
     `, [userId]);
@@ -195,15 +195,14 @@ async function getUserReviewForAlbum(userId, albumId) {
       SELECT 
         r.id,
         r.rating,
-        r.title,
-        r.content,
+        r.review_text as content,
         r.created_at,
         a.id as album_id,
         a.name as album_name,
-        a.artist
+        a.artist_name as artist
       FROM reviews r
-      JOIN albums a ON r.album_id = a.id
-      WHERE r.user_id = ? AND r.album_id = ?
+      LEFT JOIN albums a ON r.spotify_album_id = a.spotify_id
+      WHERE r.user_id = ? AND a.id = ?
     `, [userId, albumId]);
     
     return review || null;

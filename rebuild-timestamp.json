@@ -1,6 +1,0 @@
-{
-  "rebuild_timestamp": "2025-06-18T13:20:00Z",
-  "reason": "Fix listeningHistoryService.addToHistory export issue",
-  "cache_cleared": true,
-  "forced_rebuild": true
-}

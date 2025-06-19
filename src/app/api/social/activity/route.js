@@ -31,18 +31,8 @@ export async function GET(request) {
     const limit = parseInt(url.searchParams.get('limit')) || 20;
     const offset = parseInt(url.searchParams.get('offset')) || 0;
 
-    // Crear tabla de user_follows si no existe
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS user_follows (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        follower_id INTEGER NOT NULL,
-        followed_id INTEGER NOT NULL,
-        followed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(follower_id, followed_id),
-        FOREIGN KEY (follower_id) REFERENCES users (id) ON DELETE CASCADE,
-        FOREIGN KEY (followed_id) REFERENCES users (id) ON DELETE CASCADE
-      )
-    `);
+    // La tabla follows ya existe en Neon
+    // No necesitamos crearla aquí
 
     // Obtener actividad de usuarios seguidos
     const activities = await allAsync(`
@@ -52,18 +42,18 @@ export async function GET(request) {
         u.username,
         u.id as user_id,
         r.rating,
-        r.title as review_title,
-        r.content as review_content,
+        r.review_text as review_title,
+        r.review_text as review_content,
         r.created_at,
         a.name as album_name,
-        a.artist,
+        a.artist_name as artist,
         a.image_url,
         a.spotify_id as album_spotify_id
       FROM reviews r
       JOIN users u ON r.user_id = u.id
       JOIN albums a ON r.album_id = a.id
       WHERE r.user_id IN (
-        SELECT followed_id FROM user_follows WHERE follower_id = ?
+        SELECT following_id FROM follows WHERE follower_id = ?
       )
       
       UNION ALL
@@ -84,7 +74,7 @@ export async function GET(request) {
       FROM artist_follows af
       JOIN users u ON af.user_id = u.id
       WHERE af.user_id IN (
-        SELECT followed_id FROM user_follows WHERE follower_id = ?
+        SELECT following_id FROM follows WHERE follower_id = ?
       )
       
       ORDER BY created_at DESC

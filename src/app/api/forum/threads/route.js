@@ -83,13 +83,15 @@ export async function POST(request) {
       );
     }
 
-    const threadId = await forumService.createThread(
-      decoded.userId,
-      title.trim(),
-      content ? content.trim() : '',
+    const threadData = {
+      user_id: decoded.userId,
+      title: title.trim(),
+      content: content ? content.trim() : '',
       category,
       language
-    );
+    };
+
+    const threadId = await forumService.createThread(threadData);
 
     return NextResponse.json({
       success: true,

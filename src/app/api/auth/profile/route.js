@@ -95,12 +95,15 @@ export async function PUT(request) {
 
     // Obtener el usuario actualizado
     const updatedUser = await userService.findById(decoded.userId);
-    const { password: _, reset_token, reset_token_expires, ...publicUser } = updatedUser;
+    const { password: _, reset_token, reset_token_expires, profile_image, ...publicUser } = updatedUser;
 
     return Response.json({
       success: true,
       message: 'Perfil actualizado exitosamente',
-      user: publicUser
+      user: {
+        ...publicUser,
+        profile_picture: profile_image  // Mapear profile_image (DB) a profile_picture (frontend)
+      }
     });
 
   } catch (error) {

@@ -45,6 +45,7 @@ export async function GET(request, { params }) {
         
         return {
           ...follower,
+          profile_picture: follower.profile_image, // Mapear profile_image (DB) a profile_picture (frontend)
           isFollowing
         };
       })

@@ -44,12 +44,18 @@ export async function GET(request) {
     // Buscar usuarios por nombre de usuario con paginación
     const users = await userService.searchUsersByUsername(cleanQuery, limit, currentUserId, offset);
     
+    // Mapear profile_image a profile_picture para consistencia con el frontend
+    const mappedUsers = users?.map(user => ({
+      ...user,
+      profile_picture: user.profile_image
+    })) || [];
+    
     // Obtener el conteo total para paginación
     const totalCount = await userService.getUserSearchCount(cleanQuery);
 
     return NextResponse.json({
       success: true,
-      users: users,
+      users: mappedUsers,
       query: cleanQuery,
       pagination: {
         limit,

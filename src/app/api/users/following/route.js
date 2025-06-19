@@ -34,21 +34,27 @@ export async function GET(request) {
         u.username,
         u.email,
         u.bio,
-        u.profile_picture,
-        uf.followed_at,
+        u.profile_image,
+        f.created_at as followed_at,
         COUNT(r.id) as total_reviews,
         COALESCE(AVG(CAST(r.rating AS FLOAT)), 0) as avg_rating
-      FROM user_follows uf
-      JOIN users u ON uf.followed_id = u.id
+      FROM follows f
+      JOIN users u ON f.following_id = u.id
       LEFT JOIN reviews r ON u.id = r.user_id
-      WHERE uf.follower_id = ?
-      GROUP BY u.id, u.username, u.email, u.bio, u.profile_picture, uf.followed_at
-      ORDER BY uf.followed_at DESC
+      WHERE f.follower_id = ?
+      GROUP BY u.id, u.username, u.email, u.bio, u.profile_image, f.created_at
+      ORDER BY f.created_at DESC
     `, [decoded.userId]);
+
+    // Mapear profile_image a profile_picture para consistencia con el frontend
+    const mappedUsers = followedUsers?.map(user => ({
+      ...user,
+      profile_picture: user.profile_image
+    })) || [];
 
     return NextResponse.json({
       success: true,
-      users: followedUsers || []
+      users: mappedUsers
     });
 
   } catch (error) {

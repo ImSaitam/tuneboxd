@@ -6,38 +6,26 @@ export async function GET() {
   try {
     const languages = await forumService.getLanguages();
     
-    // Mapear códigos de idioma a nombres legibles
-    const languageNames = {
-      'es': 'Español',
-      'en': 'English',
-      'fr': 'Français',
-      'de': 'Deutsch',
-      'it': 'Italiano',
-      'pt': 'Português',
-      'ru': 'Русский',
-      'ja': '日本語',
-      'ko': '한국어',
-      'zh': '中文',
-      'ar': 'العربية',
-      'hi': 'हिन्दी',
-      'other': 'Otro'
-    };
-
-    const languagesWithNames = languages.map(lang => ({
-      code: lang.language,
-      name: languageNames[lang.language] || lang.language,
-      thread_count: lang.thread_count
-    }));
-
     return NextResponse.json({
       success: true,
-      languages: languagesWithNames
+      languages: languages
     });
   } catch (error) {
     console.error('Error obteniendo idiomas:', error);
-    return NextResponse.json(
-      { success: false, message: 'Error interno del servidor' },
-      { status: 500 }
-    );
+    
+    // Fallback en caso de error
+    const fallbackLanguages = [
+      { code: 'es', name: 'Español', language: 'es', thread_count: 0 },
+      { code: 'en', name: 'English', language: 'en', thread_count: 0 },
+      { code: 'fr', name: 'Français', language: 'fr', thread_count: 0 },
+      { code: 'de', name: 'Deutsch', language: 'de', thread_count: 0 },
+      { code: 'it', name: 'Italiano', language: 'it', thread_count: 0 },
+      { code: 'pt', name: 'Português', language: 'pt', thread_count: 0 }
+    ];
+    
+    return NextResponse.json({
+      success: true,
+      languages: fallbackLanguages
+    });
   }
 }

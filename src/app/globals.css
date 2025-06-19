@@ -17,6 +17,39 @@ html, body {
   min-width: 0;
 }
 
+/* Estilos para contenido Markdown */
+.markdown-content {
+  line-height: 1.6;
+}
+
+.markdown-content > *:first-child {
+  margin-top: 0 !important;
+}
+
+.markdown-content > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Mejorar la legibilidad en dispositivos móviles */
+.markdown-content code {
+  word-break: break-word;
+}
+
+.markdown-content pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.markdown-content table {
+  font-size: 0.875rem;
+}
+
+@media (max-width: 640px) {
+  .markdown-content h1 { font-size: 1.5rem; }
+  .markdown-content h2 { font-size: 1.25rem; }
+  .markdown-content h3 { font-size: 1.125rem; }
+}
+
 /* Variables CSS para ambos temas */
 :root {
   --background: #ffffff;

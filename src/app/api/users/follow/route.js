@@ -46,7 +46,7 @@ export async function POST(request) {
 
     // Verificar if ya sigue al usuario
     const existingFollow = await getAsync(
-      `SELECT * FROM user_follows WHERE follower_id = ? AND followed_id = ?`,
+      `SELECT * FROM follows WHERE follower_id = ? AND following_id = ?`,
       [decoded.userId, user_id]
     );
 
@@ -57,22 +57,11 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    // Crear tabla si no existe
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS user_follows (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        follower_id INTEGER NOT NULL,
-        followed_id INTEGER NOT NULL,
-        followed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(follower_id, followed_id),
-        FOREIGN KEY (follower_id) REFERENCES users (id) ON DELETE CASCADE,
-        FOREIGN KEY (followed_id) REFERENCES users (id) ON DELETE CASCADE
-      )
-    `);
+    // La tabla follows ya existe en Neon, no necesitamos crearla
 
     // Insertar seguimiento
     await runAsync(
-      `INSERT INTO user_follows (follower_id, followed_id) VALUES (?, ?)`,
+      `INSERT INTO follows (follower_id, following_id) VALUES (?, ?)`,
       [decoded.userId, user_id]
     );
 
@@ -134,7 +123,7 @@ export async function DELETE(request) {
     // Eliminar seguimiento
     try {
       const result = await runAsync(
-        `DELETE FROM user_follows WHERE follower_id = ? AND followed_id = ?`,
+        `DELETE FROM follows WHERE follower_id = ? AND following_id = ?`,
         [decoded.userId, user_id]
       );
       
@@ -197,7 +186,7 @@ export async function GET(request) {
 
     // Verificar si sigue al usuario
     const follow = await getAsync(
-      `SELECT * FROM user_follows WHERE follower_id = ? AND followed_id = ?`,
+      `SELECT * FROM follows WHERE follower_id = ? AND following_id = ?`,
       [decoded.userId, user_id]
     );
 

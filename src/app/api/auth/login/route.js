@@ -85,13 +85,16 @@ export async function POST(request) {
       { expiresIn: '7d' }
     );
 
-    // Remover contraseña de la respuesta
-    const { password_hash: _, ...userWithoutPassword } = user;
+    // Remover contraseña de la respuesta y mapear profile_image a profile_picture
+    const { password_hash: _, profile_image, ...userWithoutPassword } = user;
 
     const responseData = {
       success: true,
       token,
-      user: userWithoutPassword,
+      user: {
+        ...userWithoutPassword,
+        profile_picture: profile_image  // Mapear profile_image (DB) a profile_picture (frontend)
+      },
       message: 'Inicio de sesión exitoso'
     };
 

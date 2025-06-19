@@ -163,6 +163,41 @@ export const userService = {
       'UPDATE users SET verification_token = ? WHERE id = ?',
       [token, userId]
     );
+  },
+
+  // Actualizar perfil de usuario (bio y foto de perfil)
+  async updateProfile(userId, profileData) {
+    const { bio, profilePicture } = profileData;
+    return await run(
+      'UPDATE users SET bio = ?, profile_image = ?, updated_at = NOW() WHERE id = ?',
+      [bio, profilePicture, userId]
+    );
+  },
+
+  // Actualizar nombre de usuario
+  async updateUsername(userId, newUsername) {
+    // Verificar si el username ya existe
+    const existingUser = await this.findByUsername(newUsername);
+    if (existingUser && existingUser.id !== userId) {
+      throw new Error('Este nombre de usuario ya está en uso');
+    }
+
+    // Actualizar username - sin restricción de tiempo por ahora
+    return await run(
+      'UPDATE users SET username = ?, updated_at = NOW() WHERE id = ?',
+      [newUsername, userId]
+    );
+  },
+
+  // Verificar si el usuario puede cambiar su username
+  async canChangeUsername(userId) {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    // Por ahora permitir cambio siempre (sin restricción de tiempo)
+    return { canChange: true, daysRemaining: 0 };
   }
 };
 
@@ -301,6 +336,39 @@ export const reviewService = {
       ORDER BY r.created_at DESC
       LIMIT ? OFFSET ?
     `, [album.spotify_id, limit, offset]);
+  },
+
+  // Obtener reseñas de un usuario específico
+  async getUserReviews(userId, limit = 20, offset = 0) {
+    return await query(`
+      SELECT 
+        r.id,
+        r.user_id,
+        r.spotify_album_id,
+        r.rating,
+        r.review_text as content,
+        r.is_private,
+        r.created_at,
+        r.updated_at,
+        a.name as album_name,
+        a.artist_name as artist,
+        a.image_url,
+        a.spotify_id as album_spotify_id
+      FROM reviews r
+      LEFT JOIN albums a ON r.spotify_album_id = a.spotify_id
+      WHERE r.user_id = ?
+      ORDER BY r.created_at DESC
+      LIMIT ? OFFSET ?
+    `, [userId, limit, offset]);
+  },
+
+  // Contar total de reseñas de un usuario
+  async getUserReviewsCount(userId) {
+    const result = await get(
+      'SELECT COUNT(*) as count FROM reviews WHERE user_id = ?',
+      [userId]
+    );
+    return result ? parseInt(result.count) : 0;
   }
 };
 
@@ -426,14 +494,30 @@ export const customListService = {
   // Crear una nueva lista
   async createList(userId, listData) {
     const { name, description = null, is_public = true } = listData;
-    const result = await run(
-      'INSERT INTO lists (user_id, name, description, is_private, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
-      [userId, name, description, !is_public] // is_private es lo opuesto de is_public
-    );
     
-    // Retornar la lista recién creada (usar RETURNING para PostgreSQL)
-    const newList = await get('SELECT * FROM lists WHERE id = ? AND user_id = ?', [result.lastInsertRowid || result.rows?.[0]?.id, userId]);
-    return newList;
+    try {
+      // Insertar la nueva lista
+      await run(
+        'INSERT INTO lists (user_id, name, description, is_private, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
+        [userId, name, description, !is_public] // is_private es lo opuesto de is_public
+      );
+      
+      // Obtener la lista recién creada
+      const newList = await get(
+        'SELECT * FROM lists WHERE user_id = ? AND name = ? ORDER BY created_at DESC LIMIT 1',
+        [userId, name]
+      );
+      
+      if (!newList) {
+        throw new Error('No se pudo recuperar la lista creada');
+      }
+      
+      return newList;
+      
+    } catch (error) {
+      console.error('Error creating list:', error);
+      throw new Error('Error al crear la lista: ' + error.message);
+    }
   },
 
   // Obtener listas de un usuario - MÉTODO REQUERIDO AGREGADO
@@ -574,6 +658,87 @@ export const userFollowService = {
       'SELECT u.* FROM users u JOIN follows f ON u.id = f.following_id WHERE f.follower_id = ?',
       [userId]
     );
+  },
+
+  // Obtener seguidores de un usuario con paginación
+  async getFollowers(userId, limit = 20, offset = 0) {
+    return await query(`
+      SELECT 
+        u.id,
+        u.username,
+        u.email,
+        u.bio,
+        u.profile_image,
+        f.created_at as followed_at,
+        COUNT(r.id) as total_reviews,
+        COALESCE(AVG(CAST(r.rating AS FLOAT)), 0) as avg_rating
+      FROM follows f
+      JOIN users u ON f.follower_id = u.id
+      LEFT JOIN reviews r ON u.id = r.user_id
+      WHERE f.following_id = ?
+      GROUP BY u.id, u.username, u.email, u.bio, u.profile_image, f.created_at
+      ORDER BY f.created_at DESC
+      LIMIT ? OFFSET ?
+    `, [userId, limit, offset]);
+  },
+
+  // Obtener usuarios que sigue un usuario con paginación
+  async getFollowing(userId, limit = 20, offset = 0) {
+    return await query(`
+      SELECT 
+        u.id,
+        u.username,
+        u.email,
+        u.bio,
+        u.profile_image,
+        f.created_at as followed_at,
+        COUNT(r.id) as total_reviews,
+        COALESCE(AVG(CAST(r.rating AS FLOAT)), 0) as avg_rating
+      FROM follows f
+      JOIN users u ON f.following_id = u.id
+      LEFT JOIN reviews r ON u.id = r.user_id
+      WHERE f.follower_id = ?
+      GROUP BY u.id, u.username, u.email, u.bio, u.profile_image, f.created_at
+      ORDER BY f.created_at DESC
+      LIMIT ? OFFSET ?
+    `, [userId, limit, offset]);
+  },
+
+  // Contar seguidores
+  async getFollowersCount(userId) {
+    const result = await get(
+      'SELECT COUNT(*) as count FROM follows WHERE following_id = ?',
+      [userId]
+    );
+    return result ? parseInt(result.count) : 0;
+  },
+
+  // Contar usuarios que sigue
+  async getFollowingCount(userId) {
+    const result = await get(
+      'SELECT COUNT(*) as count FROM follows WHERE follower_id = ?',
+      [userId]
+    );
+    return result ? parseInt(result.count) : 0;
+  },
+
+  // Verificar si un usuario sigue a otro
+  async isFollowing(followerId, followedId) {
+    const result = await get(
+      'SELECT 1 FROM follows WHERE follower_id = ? AND following_id = ?',
+      [followerId, followedId]
+    );
+    return !!result;
+  },
+
+  // Obtener estadísticas de seguimiento
+  async getFollowStats(userId) {
+    const [followers, following] = await Promise.all([
+      this.getFollowersCount(userId),
+      this.getFollowingCount(userId)
+    ]);
+    
+    return { followers, following };
   }
 };
 
@@ -794,18 +959,354 @@ export const forumService = {
   },
   
   async getCategories() {
-    return ['General', 'Recomendaciones', 'Reseñas', 'Discusión', 'Noticias'];
+    // Devolver categorías con conteo de hilos
+    const sql = `
+      SELECT 
+        category,
+        COUNT(*) as thread_count
+      FROM forum_threads 
+      WHERE category IS NOT NULL
+      GROUP BY category
+      ORDER BY thread_count DESC, category ASC
+    `;
+    
+    try {
+      const dbCategories = await query(sql);
+      
+      // Categorías predefinidas para asegurar que siempre estén disponibles
+      const defaultCategories = [
+        'General', 'Recomendaciones', 'Reseñas', 'Discusión', 'Noticias'
+      ];
+      
+      const result = [];
+      const existingCategories = dbCategories.map(c => c.category);
+      
+      // Agregar categorías de la base de datos
+      dbCategories.forEach(cat => {
+        result.push({
+          category: cat.category,
+          thread_count: parseInt(cat.thread_count) || 0
+        });
+      });
+      
+      // Agregar categorías predefinidas que no estén en la DB
+      defaultCategories.forEach(cat => {
+        if (!existingCategories.includes(cat)) {
+          result.push({
+            category: cat,
+            thread_count: 0
+          });
+        }
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('Error obteniendo categorías de DB:', error);
+      // Fallback a categorías estáticas
+      return [
+        { category: 'General', thread_count: 0 },
+        { category: 'Recomendaciones', thread_count: 0 },
+        { category: 'Reseñas', thread_count: 0 },
+        { category: 'Discusión', thread_count: 0 },
+        { category: 'Noticias', thread_count: 0 }
+      ];
+    }
   },
   
   async getLanguages() {
-    return [
-      { code: 'es', name: 'Español' },
-      { code: 'en', name: 'English' },
-      { code: 'fr', name: 'Français' },
-      { code: 'de', name: 'Deutsch' },
-      { code: 'it', name: 'Italiano' },
-      { code: 'pt', name: 'Português' }
-    ];
+    // Devolver idiomas con conteo de hilos
+    const sql = `
+      SELECT 
+        language,
+        COUNT(*) as thread_count
+      FROM forum_threads 
+      WHERE language IS NOT NULL
+      GROUP BY language
+      ORDER BY thread_count DESC, language ASC
+    `;
+    
+    try {
+      const dbLanguages = await query(sql);
+      
+      // Mapeo simplificado con idiomas principales y comunes
+      const languageNames = {
+        // Idiomas principales
+        'es': 'Español',
+        'en': 'English',
+        'fr': 'Français',
+        'de': 'Deutsch',
+        'it': 'Italiano',
+        'pt': 'Português',
+        'pt-br': 'Português (Brasil)',
+        
+        // Idiomas europeos importantes
+        'ru': 'Русский',
+        'pl': 'Polski',
+        'nl': 'Nederlands',
+        'sv': 'Svenska',
+        'no': 'Norsk',
+        'da': 'Dansk',
+        'fi': 'Suomi',
+        'el': 'Ελληνικά',
+        'tr': 'Türkçe',
+        
+        // Idiomas asiáticos principales
+        'zh': '中文',
+        'ja': '日本語',
+        'ko': '한국어',
+        'hi': 'हिन्दी',
+        'ar': 'العربية',
+        'th': 'ไทย',
+        'vi': 'Tiếng Việt',
+        'id': 'Bahasa Indonesia',
+        
+        // Otros idiomas importantes
+        'uk': 'Українська',
+        'he': 'עברית',
+        'fa': 'فارسی',
+        'ur': 'اردو',
+        'bn': 'বাংলা',
+        'tl': 'Filipino',
+        'sw': 'Kiswahili',
+        'ms': 'Bahasa Melayu',
+        
+        // Idiomas regionales destacados
+        'ca': 'Català',
+        'eu': 'Euskera',
+        'gl': 'Galego',
+        'cy': 'Cymraeg',
+        'ga': 'Gaeilge'
+      };
+      
+      const result = [];
+      const existingLanguages = dbLanguages.map(l => l.language);
+      
+      // Agregar idiomas de la base de datos
+      dbLanguages.forEach(lang => {
+        result.push({
+          code: lang.language,
+          name: languageNames[lang.language] || lang.language,
+          language: lang.language, // Para compatibilidad
+          thread_count: parseInt(lang.thread_count) || 0
+        });
+      });
+      
+      // Agregar idiomas predefinidos que no estén en la DB
+      Object.entries(languageNames).forEach(([code, name]) => {
+        if (!existingLanguages.includes(code)) {
+          result.push({
+            code: code,
+            name: name,
+            language: code, // Para compatibilidad
+            thread_count: 0
+          });
+        }
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('Error obteniendo idiomas de DB:', error);
+      // Fallback a idiomas estáticos
+      return [
+        { code: 'es', name: 'Español', language: 'es', thread_count: 0 },
+        { code: 'en', name: 'English', language: 'en', thread_count: 0 },
+        { code: 'fr', name: 'Français', language: 'fr', thread_count: 0 },
+        { code: 'de', name: 'Deutsch', language: 'de', thread_count: 0 },
+        { code: 'it', name: 'Italiano', language: 'it', thread_count: 0 },
+        { code: 'pt', name: 'Português', language: 'pt', thread_count: 0 }
+      ];
+    }
+  },
+
+  // Métodos adicionales requeridos por los endpoints
+  async getThreads(limit = 20, offset = 0, category = null, language = null) {
+    let sql = `
+      SELECT 
+        ft.*, 
+        u.username as author_username,
+        u.profile_image as author_profile_picture,
+        COALESCE(ft.views_count, 0) as views_count,
+        COALESCE(ft.replies_count, 0) as replies_count,
+        COALESCE(ft.likes_count, 0) as likes_count,
+        ft.last_activity
+      FROM forum_threads ft
+      LEFT JOIN users u ON ft.user_id = u.id
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    
+    if (category && category !== 'all') {
+      sql += ' AND ft.category = ?';
+      params.push(category);
+    }
+    
+    if (language && language !== 'all') {
+      sql += ' AND ft.language = ?';
+      params.push(language);
+    }
+    
+    sql += ' ORDER BY ft.last_activity DESC, ft.created_at DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+    
+    return await query(sql, params);
+  },
+
+  async getThreadsOptimized(limit = 20, offset = 0, category = null, language = null) {
+    // Versión optimizada con menos JOINs para mejor rendimiento
+    return await this.getThreads(limit, offset, category, language);
+  },
+
+  async getThread(threadId) {
+    const sql = `
+      SELECT 
+        ft.*, 
+        u.username as author_username,
+        u.profile_image as author_profile_picture,
+        COALESCE(ft.views_count, 0) as views_count,
+        COALESCE(ft.replies_count, 0) as replies_count,
+        COALESCE(ft.likes_count, 0) as likes_count
+      FROM forum_threads ft
+      LEFT JOIN users u ON ft.user_id = u.id
+      WHERE ft.id = ?
+    `;
+    
+    return await get(sql, [threadId]);
+  },
+
+  async getReplies(threadId, limit = 50, offset = 0) {
+    const sql = `
+      SELECT 
+        fr.*, 
+        u.username as author_username,
+        u.profile_image as author_profile_picture,
+        COALESCE(fr.likes_count, 0) as likes_count
+      FROM forum_replies fr
+      LEFT JOIN users u ON fr.user_id = u.id
+      WHERE fr.thread_id = ?
+      ORDER BY fr.created_at ASC
+      LIMIT ? OFFSET ?
+    `;
+    
+    return await query(sql, [threadId, limit, offset]);
+  },
+
+  async searchThreads(searchTerm, limit = 20, offset = 0) {
+    const sql = `
+      SELECT 
+        ft.*, 
+        u.username as author_username,
+        u.profile_image as author_profile_picture,
+        COALESCE(ft.views_count, 0) as views_count,
+        COALESCE(ft.replies_count, 0) as replies_count,
+        COALESCE(ft.likes_count, 0) as likes_count
+      FROM forum_threads ft
+      LEFT JOIN users u ON ft.user_id = u.id
+      WHERE ft.title ILIKE ? OR ft.content ILIKE ?
+      ORDER BY ft.last_activity DESC, ft.created_at DESC
+      LIMIT ? OFFSET ?
+    `;
+    
+    const searchPattern = `%${searchTerm}%`;
+    return await query(sql, [searchPattern, searchPattern, limit, offset]);
+  },
+
+  async incrementViews(threadId) {
+    const sql = `
+      UPDATE forum_threads 
+      SET views_count = COALESCE(views_count, 0) + 1 
+      WHERE id = ?
+    `;
+    
+    return await run(sql, [threadId]);
+  },
+
+  async hasLikedThread(userId, threadId) {
+    const sql = `
+      SELECT COUNT(*) as count 
+      FROM forum_thread_likes 
+      WHERE user_id = ? AND thread_id = ?
+    `;
+    
+    const result = await get(sql, [userId, threadId]);
+    return result && result.count > 0;
+  },
+
+  async hasLikedReply(userId, replyId) {
+    const sql = `
+      SELECT COUNT(*) as count 
+      FROM forum_reply_likes 
+      WHERE user_id = ? AND reply_id = ?
+    `;
+    
+    const result = await get(sql, [userId, replyId]);
+    return result && result.count > 0;
+  },
+
+  async likeThread(userId, threadId) {
+    // Verificar si ya le dio like
+    const hasLiked = await this.hasLikedThread(userId, threadId);
+    
+    if (hasLiked) {
+      // Quitar like
+      await run('DELETE FROM forum_thread_likes WHERE user_id = ? AND thread_id = ?', [userId, threadId]);
+      await run('UPDATE forum_threads SET likes_count = COALESCE(likes_count, 0) - 1 WHERE id = ?', [threadId]);
+      return { action: 'removed', liked: false };
+    } else {
+      // Agregar like
+      await run('INSERT INTO forum_thread_likes (user_id, thread_id, created_at) VALUES (?, ?, NOW())', [userId, threadId]);
+      await run('UPDATE forum_threads SET likes_count = COALESCE(likes_count, 0) + 1 WHERE id = ?', [threadId]);
+      return { action: 'added', liked: true };
+    }
+  },
+
+  async likeReply(userId, replyId) {
+    // Verificar si ya le dio like
+    const hasLiked = await this.hasLikedReply(userId, replyId);
+    
+    if (hasLiked) {
+      // Quitar like
+      await run('DELETE FROM forum_reply_likes WHERE user_id = ? AND reply_id = ?', [userId, replyId]);
+      await run('UPDATE forum_replies SET likes_count = COALESCE(likes_count, 0) - 1 WHERE id = ?', [replyId]);
+      return { action: 'removed', liked: false };
+    } else {
+      // Agregar like
+      await run('INSERT INTO forum_reply_likes (user_id, reply_id, created_at) VALUES (?, ?, NOW())', [userId, replyId]);
+      await run('UPDATE forum_replies SET likes_count = COALESCE(likes_count, 0) + 1 WHERE id = ?', [replyId]);
+      return { action: 'added', liked: true };
+    }
+  },
+
+  async getUserLikes(userId, threadId) {
+    const threadLike = await this.hasLikedThread(userId, threadId);
+    const replies = await this.getReplies(threadId);
+    
+    const replyLikes = {};
+    for (const reply of replies) {
+      replyLikes[reply.id] = await this.hasLikedReply(userId, reply.id);
+    }
+    
+    return {
+      thread: threadLike,
+      replies: replyLikes
+    };
+  },
+
+  async deleteThread(threadId, userId) {
+    // Verificar que el usuario es el autor del hilo
+    const thread = await this.getThread(threadId);
+    if (!thread || thread.user_id !== userId) {
+      throw new Error('No tienes permisos para eliminar este hilo');
+    }
+
+    // Eliminar respuestas primero (integridad referencial)
+    await run('DELETE FROM forum_replies WHERE thread_id = ?', [threadId]);
+    
+    // Eliminar likes del hilo
+    await run('DELETE FROM forum_thread_likes WHERE thread_id = ?', [threadId]);
+    
+    // Eliminar el hilo
+    return await run('DELETE FROM forum_threads WHERE id = ?', [threadId]);
   }
 };
 
