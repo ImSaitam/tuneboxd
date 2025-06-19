@@ -12,46 +12,40 @@ const urlsToCache = [
 
 // Instalar Service Worker con manejo de errores mejorado
 self.addEventListener('install', (event) => {
-  console.log('SW: Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('SW: Cache opened');
         // Cachear URLs individualmente para mejor manejo de errores
         return Promise.allSettled(
           urlsToCache.map(url => {
             return cache.add(url).catch(err => {
-              console.warn(`SW: Failed to cache ${url}:`, err);
-              return null; // Continuar con otras URLs
+              // Continuar con otras URLs si una falla
+              return null;
             });
           })
         );
       })
       .then(() => {
-        console.log('SW: Cache setup completed');
         return self.skipWaiting(); // Activar inmediatamente
       })
       .catch(err => {
-        console.error('SW: Installation failed:', err);
+        // Error en instalación - manejado silenciosamente
       })
   );
 });
 
 // Activar Service Worker y limpiar caches antiguos
 self.addEventListener('activate', (event) => {
-  console.log('SW: Activating...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME && cacheName !== API_CACHE_NAME) {
-            console.log('SW: Eliminando cache antiguo:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     }).then(() => {
-      console.log('SW: Activated and controlling clients');
       return self.clients.claim(); // Controlar páginas inmediatamente
     })
   );
@@ -120,13 +114,13 @@ self.addEventListener('fetch', (event) => {
         if (networkResponse.ok && request.method === 'GET') {
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(request, responseToCache).catch(err => {
-              console.warn('SW: Failed to cache page:', err);
+              // Error cacheando página - manejado silenciosamente
             });
           });
         }
         return networkResponse;
       }).catch(err => {
-        console.error('SW: Fetch failed for:', url.pathname, err);
+        // Error de fetch - no exponer URL o detalles
         throw err;
       });
     })

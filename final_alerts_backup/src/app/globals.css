@@ -1,0 +1,310 @@
+@import "tailwindcss";
+@import "./modal-animations.css";
+
+/* Prevenir scroll horizontal global */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Asegurar que ningún elemento exceda el ancho de la pantalla */
+* {
+  box-sizing: border-box;
+}
+
+/* Prevenir desbordamiento en contenedores flexibles */
+.flex {
+  min-width: 0;
+}
+
+/* Estilos para contenido Markdown */
+.markdown-content {
+  line-height: 1.6;
+}
+
+.markdown-content > *:first-child {
+  margin-top: 0 !important;
+}
+
+.markdown-content > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Mejorar la legibilidad en dispositivos móviles */
+.markdown-content code {
+  word-break: break-word;
+}
+
+.markdown-content pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.markdown-content table {
+  font-size: 0.875rem;
+}
+
+@media (max-width: 640px) {
+  .markdown-content h1 { font-size: 1.5rem; }
+  .markdown-content h2 { font-size: 1.25rem; }
+  .markdown-content h3 { font-size: 1.125rem; }
+}
+
+/* Variables CSS para ambos temas */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+/* Tema Dark (por defecto) */
+[data-theme="dark"] {
+  --background-start: #0f172a; /* slate-900 */
+  --background-middle: #111827; /* gray-900 */
+  --background-end: #000000; /* black */
+  
+  --accent-start: #34d399; /* emerald-400 */
+  --accent-end: #22d3ee; /* cyan-400 */
+  
+  --secondary-start: #1f2937; /* gray-800 */
+  --secondary-end: #1e293b; /* slate-800 */
+  
+  --text-primary: #f8fafc; /* slate-50 */
+  --text-secondary: #cbd5e1; /* slate-300 */
+  --text-muted: #94a3b8; /* slate-400 */
+  
+  --border-color: #374151; /* gray-700 */
+  --card-bg: rgba(31, 41, 55, 0.8); /* gray-800 with opacity */
+  --card-hover: rgba(55, 65, 81, 0.8); /* gray-700 with opacity */
+}
+
+/* Tema Light con mayor especificidad */
+html[data-theme="light"],
+html[data-theme="light"] *,
+[data-theme="light"],
+[data-theme="light"] * {
+  --background-start: #f9fafb; /* gray-50 */
+  --background-middle: #ffffff; /* white */
+  --background-end: #f3f4f6; /* gray-100 */
+  
+  --accent-start: #059669; /* emerald-600 */
+  --accent-end: #0891b2; /* cyan-600 */
+  
+  --secondary-start: #e5e7eb; /* gray-200 */
+  --secondary-end: #d1d5db; /* gray-300 */
+  
+  --text-primary: #111827 !important; /* gray-900 */
+  --text-secondary: #374151 !important; /* gray-700 */
+  --text-muted: #6b7280 !important; /* gray-500 */
+  
+  --border-color: rgba(209, 213, 219, 0.3) !important; /* gray-300 with opacity */
+  --card-bg: rgba(255, 255, 255, 0.95) !important; /* white with high opacity */
+  --card-hover: rgba(249, 250, 251, 0.95) !important; /* gray-50 with high opacity */
+}
+
+/* Variables adicionales */
+:root {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Clases utility para usar con los temas */
+.bg-theme-primary {
+  background: linear-gradient(135deg, var(--background-start), var(--background-middle), var(--background-end));
+}
+
+.bg-theme-accent {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+}
+
+.bg-theme-secondary {
+  background: linear-gradient(135deg, var(--secondary-start), var(--secondary-end));
+}
+
+.bg-theme-hover {
+  background: var(--card-hover);
+}
+
+.text-theme-primary {
+  color: var(--text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+
+.text-theme-muted {
+  color: var(--text-muted);
+}
+
+/* Texto blanco para botones - siempre blanco en ambos temas */
+.text-theme-button {
+  color: #ffffff;
+}
+
+.border-theme {
+  border-color: var(--border-color);
+}
+
+.bg-theme-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.bg-theme-card-hover {
+  background: var(--card-hover);
+}
+
+/* Gradiente de texto para los acentos */
+.text-theme-accent {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Placeholders con colores de tema */
+.placeholder-theme-muted::placeholder {
+  color: var(--text-muted);
+}
+
+/* Clases específicas para modo claro con alta especificidad */
+html[data-theme="light"] .bg-theme-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(209, 213, 219, 0.3);
+}
+
+html[data-theme="light"] .bg-theme-card-hover {
+  background: rgba(249, 250, 251, 0.95) !important;
+}
+
+html[data-theme="light"] .text-theme-primary {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] .text-theme-secondary {
+  color: #374151 !important;
+}
+
+html[data-theme="light"] .text-theme-muted {
+  color: #6b7280 !important;
+}
+
+html[data-theme="light"] .border-theme {
+  border-color: rgba(209, 213, 219, 0.3) !important;
+}
+
+/* Eliminar cualquier sombra o borde oscuro en modo claro */
+html[data-theme="light"] nav {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.4) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] nav::after {
+  display: none !important;
+}
+
+html[data-theme="light"] nav::before {
+  display: none !important;
+}
+
+/* Forzar el borde inferior en modo claro */
+html[data-theme="light"] nav.border-b {
+  border-bottom-color: rgba(229, 231, 235, 0.4) !important;
+  border-bottom-width: 1px !important;
+  border-bottom-style: solid !important;
+}
+
+/* Asegurar que la navbar funcione correctamente en modo claro */
+html[data-theme="light"] nav .bg-theme-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+html[data-theme="light"] nav .bg-theme-card\/80 {
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Corregir el color del logo en modo claro */
+html[data-theme="light"] .text-theme-accent {
+  background: linear-gradient(135deg, #059669, #0891b2) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Asegurar que todos los textos se vean correctamente en modo claro */
+html[data-theme="light"] nav * {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] nav .text-theme-accent {
+  background: linear-gradient(135deg, #059669, #0891b2) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Regla final para eliminar bordes problemáticos en modo claro */
+html[data-theme="light"] nav,
+html[data-theme="light"] nav *,
+html[data-theme="light"] [class*="nav"],
+html[data-theme="light"] .fixed.top-0 {
+  border-color: rgba(229, 231, 235, 0.4) !important;
+}
+
+/* Override específico para cualquier border-black o border-gray-900 */
+html[data-theme="light"] .border-black,
+html[data-theme="light"] .border-gray-900,
+html[data-theme="light"] .border-slate-900 {
+  border-color: rgba(229, 231, 235, 0.4) !important;
+}
+
+/* Estilos específicos para manejo de texto largo */
+.album-title {
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  hyphens: auto !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+  line-height: 1.2 !important;
+}
+
+.text-container {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
+  overflow: hidden !important;
+}
+
+/* Mejoras para títulos largos en diferentes tamaños de pantalla */
+@media (max-width: 768px) {
+  .album-title {
+    font-size: 1.25rem !important; /* text-xl */
+    line-height: 1.2 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .album-title {
+    font-size: 1.125rem !important; /* text-lg */
+    line-height: 1.2 !important;
+  }
+}
