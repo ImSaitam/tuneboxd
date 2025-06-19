@@ -797,6 +797,212 @@ export const customListService = {
     );
 
     return result.changes > 0;
+  },
+
+  // ===== MÉTODOS PARA LIKES DE LISTAS =====
+  
+  // Dar/quitar like a una lista
+  async likeList(listId, userId) {
+    // Verificar que la lista existe y es accesible
+    const list = await get(
+      'SELECT * FROM lists WHERE id = ? AND (is_private = false OR user_id = ?)',
+      [listId, userId]
+    );
+
+    if (!list) {
+      throw new Error('Lista no encontrada o no es accesible');
+    }
+
+    // Verificar si ya le dio like
+    const existingLike = await get(
+      'SELECT id FROM list_likes WHERE list_id = ? AND user_id = ?',
+      [listId, userId]
+    );
+
+    if (existingLike) {
+      throw new Error('Ya le diste like a esta lista');
+    }
+
+    // Agregar like
+    await run(
+      'INSERT INTO list_likes (list_id, user_id, created_at) VALUES (?, ?, NOW())',
+      [listId, userId]
+    );
+
+    return { success: true };
+  },
+
+  // Quitar like de una lista
+  async unlikeList(listId, userId) {
+    const result = await run(
+      'DELETE FROM list_likes WHERE list_id = ? AND user_id = ?',
+      [listId, userId]
+    );
+
+    if (result.changes === 0) {
+      throw new Error('No has dado like a esta lista');
+    }
+
+    return { success: true };
+  },
+
+  // Obtener likes de una lista
+  async getListLikes(listId, limit = 20, offset = 0) {
+    return await query(`
+      SELECT 
+        ll.*,
+        u.username,
+        u.profile_image_url
+      FROM list_likes ll
+      JOIN users u ON ll.user_id = u.id
+      WHERE ll.list_id = ?
+      ORDER BY ll.created_at DESC
+      LIMIT ? OFFSET ?
+    `, [listId, limit, offset]);
+  },
+
+  // Contar likes de una lista
+  async getListLikesCount(listId) {
+    const result = await get(
+      'SELECT COUNT(*) as count FROM list_likes WHERE list_id = ?',
+      [listId]
+    );
+    return result ? parseInt(result.count) : 0;
+  },
+
+  // ===== MÉTODOS PARA COMENTARIOS DE LISTAS =====
+
+  // Agregar comentario a una lista
+  async addCommentToList(listId, userId, content) {
+    // Verificar que la lista existe y es accesible
+    const list = await get(
+      'SELECT * FROM lists WHERE id = ? AND (is_private = false OR user_id = ?)',
+      [listId, userId]
+    );
+
+    if (!list) {
+      throw new Error('Lista no encontrada o no es accesible');
+    }
+
+    // Validar contenido
+    if (!content || !content.trim()) {
+      throw new Error('El comentario no puede estar vacío');
+    }
+
+    if (content.length > 500) {
+      throw new Error('El comentario no puede exceder 500 caracteres');
+    }
+
+    // Agregar comentario
+    const result = await run(
+      'INSERT INTO list_comments (list_id, user_id, content, created_at) VALUES (?, ?, ?, NOW())',
+      [listId, userId, content.trim()]
+    );
+
+    // Obtener el comentario recién creado con información del usuario
+    const comment = await get(`
+      SELECT 
+        lc.*,
+        u.username,
+        u.profile_image_url
+      FROM list_comments lc
+      JOIN users u ON lc.user_id = u.id
+      WHERE lc.id = ?
+    `, [result.lastInsertRowid || result.insertId]);
+
+    return comment;
+  },
+
+  // Obtener comentarios de una lista
+  async getListComments(listId, limit = 20, offset = 0) {
+    return await query(`
+      SELECT 
+        lc.*,
+        u.username,
+        u.profile_image_url
+      FROM list_comments lc
+      JOIN users u ON lc.user_id = u.id
+      WHERE lc.list_id = ?
+      ORDER BY lc.created_at DESC
+      LIMIT ? OFFSET ?
+    `, [listId, limit, offset]);
+  },
+
+  // Contar comentarios de una lista
+  async getListCommentsCount(listId) {
+    const result = await get(
+      'SELECT COUNT(*) as count FROM list_comments WHERE list_id = ?',
+      [listId]
+    );
+    return result ? parseInt(result.count) : 0;
+  },
+
+  // Actualizar comentario
+  async updateComment(commentId, userId, content) {
+    // Validar contenido
+    if (!content || !content.trim()) {
+      throw new Error('El comentario no puede estar vacío');
+    }
+
+    if (content.length > 500) {
+      throw new Error('El comentario no puede exceder 500 caracteres');
+    }
+
+    // Verificar permisos
+    const comment = await get(
+      'SELECT * FROM list_comments WHERE id = ? AND user_id = ?',
+      [commentId, userId]
+    );
+
+    if (!comment) {
+      throw new Error('Comentario no encontrado o no tienes permisos');
+    }
+
+    // Actualizar comentario
+    await run(
+      'UPDATE list_comments SET content = ?, updated_at = NOW() WHERE id = ?',
+      [content.trim(), commentId]
+    );
+
+    // Retornar comentario actualizado
+    return await get(`
+      SELECT 
+        lc.*,
+        u.username,
+        u.profile_image_url
+      FROM list_comments lc
+      JOIN users u ON lc.user_id = u.id
+      WHERE lc.id = ?
+    `, [commentId]);
+  },
+
+  // Eliminar comentario
+  async deleteComment(commentId, userId) {
+    // Verificar permisos (el usuario debe ser el autor del comentario o el dueño de la lista)
+    const comment = await get(`
+      SELECT 
+        lc.*,
+        l.user_id as list_owner_id
+      FROM list_comments lc
+      JOIN lists l ON lc.list_id = l.id
+      WHERE lc.id = ?
+    `, [commentId]);
+
+    if (!comment) {
+      throw new Error('Comentario no encontrado');
+    }
+
+    if (comment.user_id !== userId && comment.list_owner_id !== userId) {
+      throw new Error('No tienes permisos para eliminar este comentario');
+    }
+
+    // Eliminar comentario
+    const result = await run(
+      'DELETE FROM list_comments WHERE id = ?',
+      [commentId]
+    );
+
+    return result.changes > 0;
   }
 };
 
