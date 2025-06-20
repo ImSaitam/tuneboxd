@@ -57,12 +57,14 @@ const AlbumDetailPage = () => {
   const [activeTab, setActiveTab] = useState('info');
   const [showAddToListModal, setShowAddToListModal] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  
-  // Estados del formulario de reseña
+    // Estados del formulario de reseña
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewTitle, setReviewTitle] = useState('');
   const [reviewContent, setReviewContent] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+  
+  // Estados para likes de reseñas
+  const [reviewLikes, setReviewLikes] = useState({});
 
   const albumId = params.albumId;
 
@@ -180,8 +182,7 @@ const AlbumDetailPage = () => {
     } catch (error) {
       console.error('Error cargando álbumes del artista:', error);
     }
-  };
-  // Cargar reseñas del album
+  };  // Cargar reseñas del album
   const loadAlbumReviews = async (albumId) => {
     try {
       const response = await fetch(`/api/reviews?type=album&albumId=${albumId}`);
@@ -189,6 +190,29 @@ const AlbumDetailPage = () => {
         const data = await response.json();
         console.log('📝 Reseñas cargadas:', data.reviews);
         setReviews(data.reviews || []);
+        
+        // Si está autenticado, cargar estado de likes del usuario
+        if (isAuthenticated && data.reviews?.length > 0) {
+          const token = localStorage.getItem('auth_token');
+          const likesState = {};
+          
+          // Verificar likes del usuario para cada reseña
+          for (const review of data.reviews) {
+            try {
+              const likeResponse = await fetch(`/api/reviews/${review.id}/like`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (likeResponse.ok) {
+                const likeData = await likeResponse.json();
+                likesState[review.id] = likeData.userLiked;
+              }
+            } catch (error) {
+              console.error(`Error verificando like para reseña ${review.id}:`, error);
+            }
+          }
+          
+          setReviewLikes(likesState);
+        }
       } else {
         console.error('Error en respuesta de reseñas:', response.status);
       }
@@ -351,7 +375,6 @@ const AlbumDetailPage = () => {
       return 'Fecha inválida';
     }
   };
-
   // Función para manejar el envío de reseñas
   const handleSubmitReview = async (e) => {
     e.preventDefault();
@@ -408,6 +431,54 @@ const AlbumDetailPage = () => {
       showError('Error al enviar reseña');
     } finally {
       setSubmittingReview(false);
+    }
+  };
+
+  // Función para dar/quitar like a una reseña
+  const handleReviewLike = async (reviewId) => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/reviews/${reviewId}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Actualizar el estado local de likes
+        setReviewLikes(prev => ({
+          ...prev,
+          [reviewId]: result.liked
+        }));
+
+        // Actualizar el conteo de likes en la reseña
+        setReviews(prev => prev.map(review => 
+          review.id === reviewId 
+            ? { 
+                ...review, 
+                likes: result.liked 
+                  ? (review.likes || 0) + 1 
+                  : Math.max((review.likes || 0) - 1, 0)
+              }
+            : review
+        ));
+
+        showSuccess(result.liked ? 'Me gusta agregado' : 'Me gusta eliminado');
+      } else {
+        const errorData = await response.json();
+        showError(errorData.error || 'Error al procesar like');
+      }
+    } catch (error) {
+      console.error('Error con like de reseña:', error);
+      showError('Error al procesar like');
     }
   };
 
@@ -767,11 +838,13 @@ const AlbumDetailPage = () => {
                               <User className="w-5 h-5 text-white" />
                             </div>
                           )}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-theme-primary">
+                        </div>                        <div>
+                          <Link 
+                            href={`/profile/${review.username}`}
+                            className="font-semibold text-theme-primary hover:text-theme-accent transition-colors"
+                          >
                             {review.username || 'Usuario'}
-                          </div>
+                          </Link>
                           <div className="text-sm text-theme-secondary">
                             {formatDate(review.created_at)}
                           </div>
@@ -810,16 +883,24 @@ const AlbumDetailPage = () => {
                       <p className="text-theme-muted italic mb-4">
                         {review.username} ha valorado este álbum sin agregar comentarios.
                       </p>
-                    )}
-
-                    {/* Acciones de la reseña */}
+                    )}                    {/* Acciones de la reseña */}
                     <div className="flex items-center space-x-4 pt-3 border-t border-theme">
-                      <button className="flex items-center space-x-1 text-theme-muted hover:text-theme-accent transition-colors">
-                        <Heart className="w-4 h-4" />
-                        <span className="text-sm">{review.likes || 0}</span>
+                      <button 
+                        onClick={() => handleReviewLike(review.id)}
+                        disabled={!isAuthenticated}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                          isAuthenticated 
+                            ? reviewLikes[review.id] 
+                              ? 'text-red-500 hover:text-red-400 hover:bg-red-50/10' 
+                              : 'text-theme-muted hover:text-theme-accent hover:bg-theme-card-hover'
+                            : 'text-theme-muted cursor-not-allowed'
+                        }`}
+                      >
+                        <Heart className={`w-5 h-5 ${reviewLikes[review.id] ? 'fill-current' : ''}`} />
+                        <span className="text-sm font-medium">{review.likes || 0}</span>
                       </button>
                       <span className="text-theme-muted text-sm">
-                        ¿Te gustó esta reseña?
+                        {isAuthenticated ? '¿Te gustó esta reseña?' : 'Inicia sesión para dar me gusta'}
                       </span>
                     </div>
                   </div>

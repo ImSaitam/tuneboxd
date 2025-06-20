@@ -447,16 +447,20 @@ export const reviewService = {
     const album = await get('SELECT spotify_id FROM albums WHERE id = ?', [albumId]);
     if (!album?.spotify_id) {
       return [];
-    }
-
-    return await query(`
+    }    return await query(`
       SELECT 
         r.*,
         u.username,
         u.profile_image as profile_image_url,
-        r.review_text as content
+        r.review_text as content,
+        COALESCE(like_counts.like_count, 0) as likes
       FROM reviews r
       JOIN users u ON r.user_id = u.id
+      LEFT JOIN (
+        SELECT review_id, COUNT(*) as like_count
+        FROM review_likes
+        GROUP BY review_id
+      ) like_counts ON r.id = like_counts.review_id
       WHERE r.spotify_album_id = ?
       ORDER BY r.created_at DESC
       LIMIT ? OFFSET ?
@@ -535,6 +539,74 @@ export const reviewService = {
     );
 
     return result.changes > 0;
+  },
+
+  // ===== MÉTODOS PARA LIKES DE RESEÑAS =====
+  
+  // Dar/quitar like a una reseña
+  async toggleReviewLike(reviewId, userId) {
+    // Verificar que la reseña existe
+    const review = await get('SELECT id FROM reviews WHERE id = ?', [reviewId]);
+    if (!review) {
+      throw new Error('Reseña no encontrada');
+    }
+
+    // Verificar si ya le dio like
+    const existingLike = await get(
+      'SELECT id FROM review_likes WHERE review_id = ? AND user_id = ?',
+      [reviewId, userId]
+    );
+
+    if (existingLike) {
+      // Quitar like
+      await run(
+        'DELETE FROM review_likes WHERE review_id = ? AND user_id = ?',
+        [reviewId, userId]
+      );
+      return { liked: false };
+    } else {
+      // Agregar like
+      await run(
+        'INSERT INTO review_likes (review_id, user_id, created_at) VALUES (?, ?, NOW())',
+        [reviewId, userId]
+      );
+      return { liked: true };
+    }
+  },
+
+  // Obtener likes de una reseña
+  async getReviewLikes(reviewId, limit = 20, offset = 0) {
+    return await query(`
+      SELECT 
+        rl.id,
+        rl.created_at,
+        u.id as user_id,
+        u.username,
+        u.profile_image_url
+      FROM review_likes rl
+      JOIN users u ON rl.user_id = u.id
+      WHERE rl.review_id = ?
+      ORDER BY rl.created_at DESC
+      LIMIT ? OFFSET ?
+    `, [reviewId, limit, offset]);
+  },
+
+  // Obtener conteo de likes de una reseña
+  async getReviewLikeCount(reviewId) {
+    const result = await get(
+      'SELECT COUNT(*) as like_count FROM review_likes WHERE review_id = ?',
+      [reviewId]
+    );
+    return result ? parseInt(result.like_count) : 0;
+  },
+
+  // Verificar si un usuario le dio like a una reseña
+  async hasUserLikedReview(reviewId, userId) {
+    const like = await get(
+      'SELECT id FROM review_likes WHERE review_id = ? AND user_id = ?',
+      [reviewId, userId]
+    );
+    return !!like;
   }
 };
 
