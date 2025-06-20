@@ -1064,9 +1064,8 @@ export const customListService = {
     const result = await run(
       'INSERT INTO list_comments (list_id, user_id, content, created_at) VALUES (?, ?, ?, NOW())',
       [listId, userId, content.trim()]
-    );
-
-    // Obtener el comentario recién creado con información del usuario    const comment = await get(`
+    );    // Obtener el comentario recién creado con información del usuario
+    const comment = await get(`
       SELECT 
         lc.*,
         u.username,
