@@ -63,6 +63,10 @@ const AlbumDetailPage = () => {
   const [reviewContent, setReviewContent] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   
+  // Estados para el registro de escucha
+  const [addToListenHistory, setAddToListenHistory] = useState(false);
+  const [listenDate, setListenDate] = useState(new Date().toISOString().split('T')[0]);
+  
   // Estados para likes de reseñas
   const [reviewLikes, setReviewLikes] = useState({});
 
@@ -408,7 +412,43 @@ const AlbumDetailPage = () => {
 
       if (response.ok) {
         const result = await response.json();
-        showSuccess(hasUserReview ? 'Reseña actualizada' : 'Reseña publicada');
+        
+        // Si está marcado para agregar al registro de escucha, agregarlo
+        if (addToListenHistory) {
+          try {
+            const historyResponse = await fetch('/api/listening-history', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                albumId: album?.id,
+                listenedAt: listenDate,
+                albumData: {
+                  spotify_id: albumData.id,
+                  name: albumData.name,
+                  artist: albumData.artists[0]?.name,
+                  release_date: albumData.release_date,
+                  image_url: albumData.images[0]?.url,
+                  spotify_url: albumData.external_urls?.spotify
+                }
+              })
+            });
+
+            if (historyResponse.ok) {
+              showSuccess(hasUserReview ? 'Reseña actualizada y agregada al registro' : 'Reseña publicada y agregada al registro');
+            } else {
+              showSuccess(hasUserReview ? 'Reseña actualizada (error al agregar al registro)' : 'Reseña publicada (error al agregar al registro)');
+            }
+          } catch (historyError) {
+            console.error('Error agregando al historial:', historyError);
+            showSuccess(hasUserReview ? 'Reseña actualizada (error al agregar al registro)' : 'Reseña publicada (error al agregar al registro)');
+          }
+        } else {
+          showSuccess(hasUserReview ? 'Reseña actualizada' : 'Reseña publicada');
+        }
+        
         setShowReviewForm(false);
         setHasUserReview(true);
         
@@ -416,6 +456,8 @@ const AlbumDetailPage = () => {
         setReviewRating(0);
         setReviewTitle('');
         setReviewContent('');
+        setAddToListenHistory(false);
+        setListenDate(new Date().toISOString().split('T')[0]);
         
         // Recargar reseñas
         if (album) {
@@ -1066,6 +1108,52 @@ const AlbumDetailPage = () => {
                   placeholder="Comparte tu opinión detallada sobre el álbum..."
                   className="w-full px-4 py-3 bg-theme-background border border-theme rounded-lg focus:ring-2 focus:ring-theme-accent focus:border-transparent text-theme-primary placeholder-theme-muted resize-none"
                 />
+              </div>
+
+              {/* Registro de escucha */}
+              <div className="border-t border-theme pt-6">
+                <div className="flex items-start space-x-3">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={addToListenHistory}
+                      onChange={(e) => setAddToListenHistory(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                      addToListenHistory 
+                        ? 'bg-theme-accent border-theme-accent' 
+                        : 'border-theme-muted hover:border-theme-accent'
+                    }`}>
+                      {addToListenHistory && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="ml-3 text-sm font-medium text-theme-primary">
+                      Añadir al registro de álbumes escuchados
+                    </span>
+                  </label>
+                </div>
+                
+                {addToListenHistory && (
+                  <div className="mt-4 ml-8">
+                    <label className="block text-sm font-medium text-theme-primary mb-2">
+                      Fecha de escucha
+                    </label>
+                    <input
+                      type="date"
+                      value={listenDate}
+                      onChange={(e) => setListenDate(e.target.value)}
+                      max={new Date().toISOString().split('T')[0]}
+                      className="w-full max-w-xs px-4 py-2 bg-theme-background border border-theme rounded-lg focus:ring-2 focus:ring-theme-accent focus:border-transparent text-theme-primary"
+                    />
+                    <p className="text-xs text-theme-muted mt-1">
+                      Este álbum aparecerá en tu registro personal de música escuchada
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Acciones */}
