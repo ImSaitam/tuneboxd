@@ -23,9 +23,7 @@ export const metadata = {
   keywords: "música, reseñas, álbumes, playlist, comunidad musical, social music",
   robots: "index, follow",
   author: "Tuneboxd",
-  category: "music, social media",
-  other: {
-    "google-site-verification": "pending", // Agregar código de verificación de Google
+  category: "music, social media",  other: {
     "format-detection": "telephone=no",
   }
 };

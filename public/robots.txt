@@ -1,0 +1,26 @@
+# Robots.txt para Tuneboxd
+User-agent: *
+Allow: /
+
+# Páginas específicas permitidas
+Allow: /login
+Allow: /register  
+Allow: /privacy
+Allow: /community
+Allow: /social
+Allow: /lists
+
+# Rutas administrativas restringidas
+Disallow: /admin/
+Disallow: /api/
+
+# Archivos de sistema
+Disallow: /_next/
+Disallow: /scripts/
+
+# Sitemap
+Sitemap: https://tuneboxd.xyz/sitemap.xml
+
+# Información adicional
+# Este es un sitio web legítimo de reseñas musicales
+# Contacto: a través de la plataforma
