@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search, Music, Edit3, Users, Target, BarChart3, Eye, Loader2 } from 'lucide-react';
 import { useSpotify } from '@/hooks/useSpotify';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +18,7 @@ const TuneboxdApp = () => {
   // Hooks
   const { loading: spotifyLoading, error: spotifyError, searchMusic } = useSpotify();
   const { user, isAuthenticated, logout, loading: authLoading } = useAuth();
+  const router = useRouter();
 
   // Array de posiciones fijas para las notas musicales para evitar Math.random() en hydration
   const musicNotesPositions = [
@@ -169,11 +171,11 @@ const TuneboxdApp = () => {
     
     // Navegar según el tipo de búsqueda
     if (searchType === 'album') {
-      window.location.href = `/album/${item.id}`;
+      router.push(`/album/${item.id}`);
     } else if (searchType === 'artist') {
-      window.location.href = `/artist/${item.id}`;
+      router.push(`/artist/${item.id}`);
     } else if (searchType === 'track') {
-      window.location.href = `/track/${item.id}`;
+      router.push(`/track/${item.id}`);
     } else {
       // Para otros tipos, mostrar en consola
     }

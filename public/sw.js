@@ -1,5 +1,5 @@
-const CACHE_NAME = 'tuneboxd-v3';
-const API_CACHE_NAME = 'tuneboxd-api-v3';
+const CACHE_NAME = 'tuneboxd-v4';
+const API_CACHE_NAME = 'tuneboxd-api-v4';
 
 // URLs que queremos cachear para uso offline (solo las que sabemos que existen)
 const urlsToCache = [

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Star, Calendar, Music, ArrowLeft, ExternalLink, Trash2, Heart, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function ListenListPage() {
@@ -11,6 +12,7 @@ export default function ListenListPage() {
   const [error, setError] = useState(null);
   const [removingAlbums, setRemovingAlbums] = useState(new Set());
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -77,7 +79,7 @@ export default function ListenListPage() {
   };
 
   const handleAlbumClick = (album) => {
-    window.location.href = `/album/${album.spotify_id}`;
+    router.push(`/album/${album.spotify_id}`);
   };
 
   if (!isAuthenticated) {

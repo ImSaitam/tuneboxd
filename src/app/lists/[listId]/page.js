@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useGlobalModal } from '../../../components/ModalContext';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
   ArrowLeft, 
@@ -26,6 +26,7 @@ import {
 
 export default function ListDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const listId = params.listId;
   const { alert, confirm, success, error: showError, notify, notifyError, notifySuccess } = useGlobalModal();
   const [list, setList] = useState(null);
@@ -270,7 +271,7 @@ export default function ListDetailPage() {
   };
 
   const handleAlbumClick = (album) => {
-    window.location.href = `/album/${album.spotify_id}`;
+    router.push(`/album/${album.spotify_id}`);
   };
 
   const isOwner = isAuthenticated && user && list && user.id === list.user_id;
