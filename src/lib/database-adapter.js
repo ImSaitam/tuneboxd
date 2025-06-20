@@ -441,7 +441,6 @@ export const reviewService = {
       one_star: 0
     };
   },
-
   // Obtener reseñas de un álbum con información del usuario
   async getAlbumReviews(albumId, limit = 10, offset = 0) {
     // Primero obtener el spotify_id del álbum
@@ -454,7 +453,7 @@ export const reviewService = {
       SELECT 
         r.*,
         u.username,
-        u.profile_image_url,
+        u.profile_image as profile_image_url,
         r.review_text as content
       FROM reviews r
       JOIN users u ON r.user_id = u.id
@@ -1067,12 +1066,11 @@ export const customListService = {
       [listId, userId, content.trim()]
     );
 
-    // Obtener el comentario recién creado con información del usuario
-    const comment = await get(`
+    // Obtener el comentario recién creado con información del usuario    const comment = await get(`
       SELECT 
         lc.*,
         u.username,
-        u.profile_image_url
+        u.profile_image as profile_image_url
       FROM list_comments lc
       JOIN users u ON lc.user_id = u.id
       WHERE lc.id = ?
@@ -1130,14 +1128,12 @@ export const customListService = {
     await run(
       'UPDATE list_comments SET content = ?, updated_at = NOW() WHERE id = ?',
       [content.trim(), commentId]
-    );
-
-    // Retornar comentario actualizado
+    );    // Retornar comentario actualizado
     return await get(`
       SELECT 
         lc.*,
         u.username,
-        u.profile_image_url
+        u.profile_image as profile_image_url
       FROM list_comments lc
       JOIN users u ON lc.user_id = u.id
       WHERE lc.id = ?
