@@ -134,50 +134,29 @@ const UserProfilePage = () => {
           .catch(() => null)
       );
 
-      // Si es el perfil del usuario actual autenticado
-      console.log('🔍 Debug conditions:', {
-        isAuthenticated,
-        currentUser: currentUser?.username,
-        username,
-        match: currentUser?.username === username
-      });
-      
-      if (isAuthenticated && currentUser?.username === username) {
-        console.log('🔍 Making request for followed artists');
-        // Artistas seguidos
-        requests.push(
-          fetch('/api/artists/following', {
-            signal,
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+      // Artistas seguidos - disponible para todos los usuarios usando el endpoint público
+      console.log('🔍 Loading followed artists for user:', userData.user.id);
+      requests.push(
+        fetch(`/api/artists/following/${userData.user.id}`, {
+          signal
+        })
+          .then(res => {
+            console.log('🔍 Artists following response:', res.status);
+            return res.ok ? res.json() : null;
+          })
+          .then(data => {
+            console.log('🔍 Artists following data received:', data);
+            if (data && data.artists) {
+              setFollowedArtists(data.artists);
+            } else {
+              setFollowedArtists([]);
             }
           })
-            .then(res => {
-              console.log('🔍 Artists following response:', res.status);
-              if (res.status === 401) {
-                // Token expirado o inválido
-                console.warn('Token de autenticación expirado o inválido');
-                setFollowedArtists([]);
-                return null;
-              }
-              return res.ok ? res.json() : null;
-            })
-            .then(data => {
-              console.log('🔍 Artists following data received:', data);
-              if (data && data.artists) {
-                setFollowedArtists(data.artists);
-              } else {
-                setFollowedArtists([]);
-              }
-            })
-            .catch(error => {
-              console.error('Error fetching artists:', error);
-              setFollowedArtists([]);
-            })
-        );
-      } else {
-        console.log('🔍 NOT making request for followed artists - conditions not met');
-      }
+          .catch(error => {
+            console.error('Error fetching artists:', error);
+            setFollowedArtists([]);
+          })
+      );
 
       // Historial de escucha - disponible para todos los usuarios
       requests.push(
@@ -807,20 +786,18 @@ const UserProfilePage = () => {
             <span className="hidden sm:inline">Registro</span>
             <span className="sm:hidden">Log</span>
           </button>
-          {isOwnProfile && (
-            <button
-              onClick={() => setActiveTab('artists')}
-              className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
-                activeTab === 'artists'
-                  ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
-                  : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
-              }`}
-            >
-              <Music className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
-              <span className="hidden sm:inline">Mis Artistas</span>
-              <span className="sm:hidden">Artists</span>
-            </button>
-          )}
+          <button
+            onClick={() => setActiveTab('artists')}
+            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
+              activeTab === 'artists'
+                ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
+                : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
+            }`}
+          >
+            <Music className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
+            <span className="hidden sm:inline">{isOwnProfile ? 'Mis Artistas' : 'Artistas'}</span>
+            <span className="sm:hidden">Artists</span>
+          </button>
           <button
             onClick={() => setActiveTab('stats')}
             className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
@@ -1009,7 +986,7 @@ const UserProfilePage = () => {
           </div>
         )}
 
-        {activeTab === 'artists' && isOwnProfile && (
+        {activeTab === 'artists' && (
           <div className="space-y-6">
             {followedArtists.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
