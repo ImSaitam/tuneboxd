@@ -188,7 +188,6 @@ const AlbumDetailPage = () => {
       const response = await fetch(`/api/reviews?type=album&albumId=${albumId}`);
       if (response.ok) {
         const data = await response.json();
-        console.log('📝 Reseñas cargadas:', data.reviews);
         setReviews(data.reviews || []);
         
         // Si está autenticado, cargar estado de likes del usuario

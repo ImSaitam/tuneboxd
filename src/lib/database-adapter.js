@@ -1561,12 +1561,10 @@ export const forumService = {
   async findReplies(threadId) {
     return await query('SELECT * FROM forum_replies WHERE thread_id = ? ORDER BY created_at ASC', [threadId]);
   },
-  
-  async createReply(replyData) {
-    const { thread_id, user_id, content } = replyData;
+    async createReply(threadId, userId, content) {
     return await run(
       'INSERT INTO forum_replies (thread_id, user_id, content, created_at) VALUES (?, ?, ?, NOW())',
-      [thread_id, user_id, content]
+      [threadId, userId, content]
     );
   },
   
