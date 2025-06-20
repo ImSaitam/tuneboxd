@@ -69,8 +69,8 @@ self.addEventListener('fetch', (event) => {
           // Intentar petición de red primero (Network First)
           const networkResponse = await fetch(request.clone());
           
-          // Si la respuesta es exitosa, cachearla
-          if (networkResponse.ok && networkResponse.status === 200) {
+          // Solo cachear requests GET exitosos (no POST, PUT, DELETE)
+          if (networkResponse.ok && networkResponse.status === 200 && request.method === 'GET') {
             try {
               cache.put(request.clone(), networkResponse.clone());
             } catch (cacheError) {
@@ -81,11 +81,13 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         } catch (networkError) {
           console.log('SW: Network failed, trying cache for:', url.pathname);
-          // Si falla la red, usar cache
-          const cachedResponse = await cache.match(request);
-          if (cachedResponse) {
-            console.log('SW: Serving from cache:', url.pathname);
-            return cachedResponse;
+          // Solo intentar usar cache para requests GET
+          if (request.method === 'GET') {
+            const cachedResponse = await cache.match(request);
+            if (cachedResponse) {
+              console.log('SW: Serving from cache:', url.pathname);
+              return cachedResponse;
+            }
           }
           
           // Si no hay cache, devolver error de red

@@ -476,16 +476,15 @@ const AlbumDetailPage = () => {
                 'Authorization': `Bearer ${token}`
               },
               body: JSON.stringify({
-                albumId: album?.id,
-                listenedAt: listenDate,
-                albumData: {
+                album: {
                   spotify_id: albumData.id,
                   name: albumData.name,
                   artist: albumData.artists[0]?.name,
                   release_date: albumData.release_date,
                   image_url: albumData.images[0]?.url,
                   spotify_url: albumData.external_urls?.spotify
-                }
+                },
+                listenedAt: new Date(listenDate + 'T12:00:00').toISOString()
               })
             });
 
