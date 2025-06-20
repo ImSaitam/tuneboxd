@@ -469,6 +469,12 @@ const AlbumDetailPage = () => {
         // Si está marcado para agregar al registro de escucha, agregarlo
         if (addToListenHistory) {
           try {
+            console.log('albumData completo:', JSON.stringify(albumData, null, 2));
+            console.log('albumData.id:', albumData?.id);
+            console.log('albumData.name:', albumData?.name);
+            console.log('albumData.artists:', albumData?.artists);
+            console.log('listenDate:', listenDate);
+            
             const payload = {
               album: {
                 spotify_id: albumData.id,
