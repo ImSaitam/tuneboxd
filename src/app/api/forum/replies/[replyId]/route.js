@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { forumService } from '../../../../../../../lib/database-adapter.js';
+import { forumService } from '../../../../../lib/database-adapter.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
