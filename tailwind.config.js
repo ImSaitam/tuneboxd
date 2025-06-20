@@ -6,11 +6,9 @@ const config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {
-      fontFamily: {
-        sans: ['var(--font-nunito)', 'sans-serif'],
-        mono: ['var(--font-nunito-sans)', 'monospace'],
-      },
+    fontFamily: {
+      sans: ['var(--font-nunito)', 'Nunito', 'sans-serif'],
+      mono: ['var(--font-nunito-sans)', 'Nunito Sans', 'monospace'],
     },
   },
 };

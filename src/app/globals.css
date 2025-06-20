@@ -1,9 +1,14 @@
 @import "tailwindcss";
 @import "./modal-animations.css";
 
-/* Aplicar fuente Nunito por defecto */
-body {
-  font-family: var(--font-nunito), sans-serif;
+/* Aplicar fuente Nunito por defecto con mayor especificidad */
+html, body {
+  font-family: var(--font-nunito), "Nunito", sans-serif !important;
+}
+
+/* Reset de fuente para todos los elementos */
+*, *::before, *::after {
+  font-family: inherit;
 }
 
 /* Prevenir scroll horizontal global */
