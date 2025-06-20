@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
@@ -66,6 +66,8 @@ const AlbumDetailPage = () => {
   // Estados para el registro de escucha
   const [addToListenHistory, setAddToListenHistory] = useState(false);
   const [listenDate, setListenDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isInListeningHistory, setIsInListeningHistory] = useState(false);
+  const [removingFromHistory, setRemovingFromHistory] = useState(false);
   
   // Estados para likes de reseñas
   const [reviewLikes, setReviewLikes] = useState({});
@@ -159,6 +161,13 @@ const AlbumDetailPage = () => {
             } catch (error) {
               console.error('Error verificando reseña del usuario:', error);
             }
+
+            // Verificar si está en el historial de escucha
+            try {
+              await checkListeningHistory(result.album.id);
+            } catch (error) {
+              console.error('Error verificando historial de escucha:', error);
+            }
           }
         }
 
@@ -171,7 +180,7 @@ const AlbumDetailPage = () => {
     };
 
     loadAlbumData();
-  }, [albumId, isAuthenticated]);
+  }, [albumId, isAuthenticated, checkListeningHistory, loadAlbumReviews]);
 
   // Cargar álbumes relacionados del artista
   const loadArtistTopAlbums = async (artistId) => {
@@ -186,8 +195,10 @@ const AlbumDetailPage = () => {
     } catch (error) {
       console.error('Error cargando álbumes del artista:', error);
     }
-  };  // Cargar reseñas del album
-  const loadAlbumReviews = async (albumId) => {
+  };
+
+  // Cargar reseñas del album
+  const loadAlbumReviews = useCallback(async (albumId) => {
     try {
       const response = await fetch(`/api/reviews?type=album&albumId=${albumId}`);
       if (response.ok) {
@@ -222,7 +233,7 @@ const AlbumDetailPage = () => {
     } catch (error) {
       console.error('Error cargando reseñas:', error);
     }
-  };
+  }, [isAuthenticated]);
 
   // Cargar estadísticas del album
   const loadAlbumStats = async (albumId) => {
@@ -356,6 +367,56 @@ const AlbumDetailPage = () => {
     }
   };
 
+  // Verificar si el álbum está en el historial del usuario
+  const checkListeningHistory = useCallback(async (albumId) => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/listening-history`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const isInHistory = data.listeningHistory?.some(entry => 
+          entry.albums?.some(album => album.album_id === parseInt(albumId))
+        );
+        setIsInListeningHistory(isInHistory);
+      }
+    } catch (error) {
+      console.error('Error verificando historial de escucha:', error);
+    }
+  }, [isAuthenticated]);
+
+  // Eliminar álbum del historial de escucha
+  const handleRemoveFromHistory = async () => {
+    if (!isAuthenticated || !album?.id) return;
+    
+    setRemovingFromHistory(true);
+    
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/listening-history?albumId=${album.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        setIsInListeningHistory(false);
+        showSuccess('Álbum eliminado del historial de escucha');
+      } else {
+        const errorData = await response.json();
+        showError(errorData.message || 'Error al eliminar del historial');
+      }
+    } catch (error) {
+      console.error('Error eliminando del historial:', error);
+      showError('Error al eliminar del historial');
+    } finally {
+      setRemovingFromHistory(false);
+    }
+  };
+
   // Función para formatear duración
   const formatDuration = (durationMs) => {
     const minutes = Math.floor(durationMs / 60000);
@@ -437,6 +498,7 @@ const AlbumDetailPage = () => {
             });
 
             if (historyResponse.ok) {
+              setIsInListeningHistory(true); // Actualizar estado
               showSuccess(hasUserReview ? 'Reseña actualizada y agregada al registro' : 'Reseña publicada y agregada al registro');
             } else {
               showSuccess(hasUserReview ? 'Reseña actualizada (error al agregar al registro)' : 'Reseña publicada (error al agregar al registro)');
@@ -787,6 +849,14 @@ const AlbumDetailPage = () => {
                       <span className="text-theme-secondary">Reseñas</span>
                       <span className="text-theme-primary font-medium">{reviews.length}</span>
                     </div>
+                    {isAuthenticated && (
+                      <div className="flex justify-between">
+                        <span className="text-theme-secondary">En tu historial</span>
+                        <span className={`font-medium ${isInListeningHistory ? 'text-green-500' : 'text-theme-muted'}`}>
+                          {isInListeningHistory ? 'Sí' : 'No'}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -802,6 +872,24 @@ const AlbumDetailPage = () => {
                     <Star className="w-4 h-4" />
                     <span>{hasUserReview ? 'Editar Reseña' : 'Escribir Reseña'}</span>
                   </button>
+                  
+                  {/* Botón para eliminar del historial de escucha */}
+                  {isAuthenticated && isInListeningHistory && (
+                    <button
+                      onClick={handleRemoveFromHistory}
+                      disabled={removingFromHistory}
+                      className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {removingFromHistory ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Clock className="w-4 h-4" />
+                      )}
+                      <span>
+                        {removingFromHistory ? 'Eliminando...' : 'Eliminar del historial'}
+                      </span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -150,3 +150,58 @@ export async function GET(request) {
     );
   }
 }
+
+// DELETE: Eliminar álbum del historial de escucha
+export async function DELETE(request) {
+  try {
+    const decoded = await verifyAuth(request, true);
+    const { searchParams } = new URL(request.url);
+    const albumId = searchParams.get('albumId');
+    const historyId = searchParams.get('historyId');
+
+    // Se puede eliminar por albumId (elimina todas las entradas de ese álbum)
+    // o por historyId (elimina una entrada específica)
+    if (!albumId && !historyId) {
+      return Response.json(
+        { success: false, message: 'Se requiere albumId o historyId' },
+        { status: 400 }
+      );
+    }
+
+    let changes;
+    
+    if (historyId) {
+      // Eliminar entrada específica del historial
+      changes = await listeningHistoryService.removeFromHistory(decoded.userId, null, parseInt(historyId));
+    } else {
+      // Eliminar todas las entradas de un álbum específico
+      changes = await listeningHistoryService.removeFromHistory(decoded.userId, parseInt(albumId));
+    }
+
+    if (changes === 0) {
+      return Response.json(
+        { success: false, message: 'Álbum no encontrado en tu historial de escucha' },
+        { status: 404 }
+      );
+    }
+
+    return Response.json({
+      success: true,
+      message: 'Álbum eliminado del historial de escucha'
+    });
+
+  } catch (error) {
+    if (error.message === 'Token de autorización requerido' || error.message === 'Token inválido') {
+      return Response.json(
+        { success: false, message: error.message },
+        { status: 401 }
+      );
+    }
+
+    console.error('Error eliminando álbum del historial:', error);
+    return Response.json(
+      { success: false, message: 'Error interno del servidor' },
+      { status: 500 }
+    );
+  }
+}

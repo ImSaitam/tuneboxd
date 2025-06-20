@@ -1462,6 +1462,29 @@ export const listeningHistoryService = {
   async getHistoryCount(userId) {
     const result = await get('SELECT COUNT(*) as count FROM listening_history WHERE user_id = ?', [userId]);
     return result ? parseInt(result.count) : 0;
+  },
+
+  // Eliminar álbum(es) del historial de escucha
+  async removeFromHistory(userId, albumId = null, historyId = null) {
+    let result;
+    
+    if (historyId) {
+      // Eliminar entrada específica del historial
+      result = await run(
+        'DELETE FROM listening_history WHERE id = ? AND user_id = ?',
+        [historyId, userId]
+      );
+    } else if (albumId) {
+      // Eliminar todas las entradas de un álbum específico
+      result = await run(
+        'DELETE FROM listening_history WHERE user_id = ? AND album_id = ?',
+        [userId, albumId]
+      );
+    } else {
+      throw new Error('Se requiere albumId o historyId');
+    }
+    
+    return result.changes || 0;
   }
 };
 
