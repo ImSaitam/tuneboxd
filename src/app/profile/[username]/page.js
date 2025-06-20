@@ -1119,11 +1119,6 @@ const UserProfilePage = () => {
                             {isOwnProfile && isAuthenticated && (
                               <button
                                 onClick={() => {
-                                  console.log('Attempting to remove album:', album.album_id);
-                                  console.log('isOwnProfile:', isOwnProfile);
-                                  console.log('isAuthenticated:', isAuthenticated);
-                                  console.log('currentUser:', currentUser);
-                                  console.log('username:', username);
                                   handleRemoveFromHistory(album.album_id);
                                 }}
                                 disabled={removingFromHistory.has(`${album.album_id}`)}
