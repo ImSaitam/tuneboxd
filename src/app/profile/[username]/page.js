@@ -992,8 +992,13 @@ const UserProfilePage = () => {
 
         {activeTab === 'artists' && (
           <div className="space-y-6">
-            {/* Debug info */}
-            {console.log('🔍 Rendering artists tab. followedArtists:', followedArtists, 'length:', followedArtists.length)}
+            {/* Debugging info - temporary */}
+            <div className="bg-red-500/20 p-4 rounded border border-red-500/50 text-red-200 text-sm">
+              <p><strong>DEBUG INFO:</strong></p>
+              <p>• followedArtists length: {followedArtists.length}</p>
+              <p>• followedArtists: {JSON.stringify(followedArtists.map(a => a.artist_name))}</p>
+              <p>• Should show grid: {followedArtists.length > 0 ? 'YES' : 'NO'}</p>
+            </div>
             
             {followedArtists.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
