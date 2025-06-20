@@ -146,14 +146,18 @@ const UserProfilePage = () => {
           })
           .then(data => {
             console.log('🔍 Artists following data received:', data);
+            console.log('🔍 Setting followedArtists to:', data?.artists || []);
             if (data && data.artists) {
               setFollowedArtists(data.artists);
+              console.log('✅ followedArtists set with', data.artists.length, 'artists');
             } else {
+              console.log('⚠️ No artists data, setting empty array');
               setFollowedArtists([]);
             }
           })
           .catch(error => {
             console.error('Error fetching artists:', error);
+            console.log('❌ Error, setting followedArtists to empty array');
             setFollowedArtists([]);
           })
       );
@@ -988,6 +992,9 @@ const UserProfilePage = () => {
 
         {activeTab === 'artists' && (
           <div className="space-y-6">
+            {/* Debug info */}
+            {console.log('🔍 Rendering artists tab. followedArtists:', followedArtists, 'length:', followedArtists.length)}
+            
             {followedArtists.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {followedArtists.map((artist) => (

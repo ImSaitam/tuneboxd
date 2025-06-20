@@ -20,9 +20,9 @@ const nunitoSans = Nunito_Sans({
 });
 
 export const metadata = {
-  title: "Tuneboxd - Tu plataforma de reseñas musicales",
-  description: "Descubre, reseña y comparte tu música favorita con la comunidad",
-  keywords: "música, reseñas, álbumes, playlist, comunidad musical, social music",
+  title: "Tuneboxd | Reseñas de álbumes, listas y comunidad musical",
+  description: "Explorá reseñas de álbumes, descubrí música nueva y compartí tus playlists favoritas con la comunidad musical en Tuneboxd.",
+  keywords: "reseñas de música, descubrir álbumes, playlists recomendadas, comunidad musical, red social de música, críticas de discos",
   robots: "index, follow",
   author: "Tuneboxd",
   category: "music, social media",  other: {
