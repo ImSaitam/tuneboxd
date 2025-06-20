@@ -192,23 +192,25 @@ const ThreadDetailPage = () => {
             [replyId]: !isLiked
           }
         }));
+      } else {
+        const errorData = await response.json();
+        error(errorData.message || 'Error procesando el like');
       }
     } catch (err) {
-      console.error('Error toggling reply like:', err);
-      error('Error al procesar el like');
+      console.error('Error toggling like:', err);
+      error('Error procesando el like');
     }
   };
 
+  // Función para eliminar respuesta
   const handleDeleteReply = async (replyId) => {
     if (!isAuthenticated) {
       error('Debes iniciar sesión para eliminar respuestas');
       return;
     }
 
-    // Confirmar eliminación
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta respuesta? Esta acción no se puede deshacer.')) {
-      return;
-    }
+    const confirmed = window.confirm('¿Estás seguro de que quieres eliminar esta respuesta?');
+    if (!confirmed) return;
 
     try {
       setDeletingReplyId(replyId);
@@ -221,16 +223,16 @@ const ThreadDetailPage = () => {
       });
 
       if (response.ok) {
-        // Eliminar respuesta del estado local
-        setReplies(prev => prev.filter(reply => reply.id !== replyId));
         success('Respuesta eliminada exitosamente');
+        // Actualizar la lista de respuestas eliminando la respuesta borrada
+        setReplies(prev => prev.filter(reply => reply.id !== replyId));
       } else {
         const errorData = await response.json();
-        error(errorData.message || 'Error al eliminar la respuesta');
+        error(errorData.error || 'Error eliminando la respuesta');
       }
     } catch (err) {
       console.error('Error deleting reply:', err);
-      error('Error al eliminar la respuesta');
+      error('Error eliminando la respuesta');
     } finally {
       setDeletingReplyId(null);
     }
@@ -510,7 +512,7 @@ Puedes usar Markdown:
                       >
                         <ThumbsUp className="w-4 h-4" />
                         <span className="text-sm">{reply.likes_count}</span>
-                      </button>                      {isAuthenticated && user?.id === reply.author_id && (
+                      </button>                      {isAuthenticated && (user?.id === reply.author_id || user?.id === thread?.user_id) && (
                         <div className="flex items-center space-x-2">
                           <button 
                             onClick={() => handleDeleteReply(reply.id)}
