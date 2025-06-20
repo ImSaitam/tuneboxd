@@ -42,6 +42,9 @@ const UserProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Estados para eliminación del historial
+  const [removingFromHistory, setRemovingFromHistory] = useState(new Set());
+
   // Función para detectar si es un GIF
   const isGif = (url) => {
     if (!url) return false;
@@ -505,6 +508,46 @@ const UserProfilePage = () => {
       showError('Error al eliminar la reseña');
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  // Función para eliminar álbum del historial de escucha
+  const handleRemoveFromHistory = async (albumId) => {
+    if (!isAuthenticated) return;
+    
+    const albumKey = `${albumId}`;
+    setRemovingFromHistory(prev => new Set(prev.add(albumKey)));
+    
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/listening-history?albumId=${albumId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        // Actualizar el historial de escucha eliminando el álbum
+        setListeningHistory(prevHistory => 
+          prevHistory.map(day => ({
+            ...day,
+            albums: day.albums.filter(album => album.album_id !== parseInt(albumId)),
+            albumCount: day.albums.filter(album => album.album_id !== parseInt(albumId)).length
+          })).filter(day => day.albumCount > 0) // Eliminar días que quedaron sin álbumes
+        );
+        showSuccess('Álbum eliminado del historial de escucha');
+      } else {
+        const errorData = await response.json();
+        showError(errorData.message || 'Error al eliminar del historial');
+      }
+    } catch (error) {
+      console.error('Error eliminando del historial:', error);
+      showError('Error al eliminar del historial');
+    } finally {
+      setRemovingFromHistory(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(albumKey);
+        return newSet;
+      });
     }
   };
 
@@ -1064,13 +1107,29 @@ const UserProfilePage = () => {
                           </div>
 
                           {/* Action Button */}
-                          <div className="flex-shrink-0">
+                          <div className="flex-shrink-0 flex space-x-2">
                             <button
                               onClick={() => window.location.href = `/album/${album.spotify_id}`}
                               className="bg-theme-accent hover:bg-theme-hover text-theme-button px-4 py-2 rounded-lg font-medium transition-colors opacity-0 group-hover:opacity-100"
                             >
                               Ver Álbum
                             </button>
+                            
+                            {/* Botón de eliminar solo para el propietario del perfil */}
+                            {isOwnProfile && isAuthenticated && (
+                              <button
+                                onClick={() => handleRemoveFromHistory(album.album_id)}
+                                disabled={removingFromHistory.has(`${album.album_id}`)}
+                                className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                                title="Eliminar del historial"
+                              >
+                                {removingFromHistory.has(`${album.album_id}`) ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-4 h-4" />
+                                )}
+                              </button>
+                            )}
                           </div>
                         </div>
                       ))}
