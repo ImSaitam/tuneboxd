@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "./modal-animations.css";
 
+/* Aplicar fuente Nunito por defecto */
+body {
+  font-family: var(--font-nunito), sans-serif;
+}
+
 /* Prevenir scroll horizontal global */
 html, body {
   overflow-x: hidden;

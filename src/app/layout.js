@@ -33,7 +33,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es" className="overflow-x-hidden">      <body
-        className={`${nunito.variable} ${nunitoSans.variable} antialiased overflow-x-hidden`}
+        className={`${nunito.variable} ${nunitoSans.variable} font-sans antialiased overflow-x-hidden`}
       >
         <ThemeProvider>
           <ModalContextProvider>
