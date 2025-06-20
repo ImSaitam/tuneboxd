@@ -20,6 +20,14 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Tuneboxd - Tu plataforma de reseñas musicales",
   description: "Descubre, reseña y comparte tu música favorita con la comunidad",
+  keywords: "música, reseñas, álbumes, playlist, comunidad musical, social music",
+  robots: "index, follow",
+  author: "Tuneboxd",
+  category: "music, social media",
+  other: {
+    "google-site-verification": "pending", // Agregar código de verificación de Google
+    "format-detection": "telephone=no",
+  }
 };
 
 export default function RootLayout({ children }) {
