@@ -1127,7 +1127,7 @@ const UserProfilePage = () => {
                                   handleRemoveFromHistory(album.album_id);
                                 }}
                                 disabled={removingFromHistory.has(`${album.album_id}`)}
-                                className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition-colors opacity-100 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                                className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
                                 title="Eliminar del historial"
                               >
                                 {removingFromHistory.has(`${album.album_id}`) ? (

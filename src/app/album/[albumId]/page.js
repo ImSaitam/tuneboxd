@@ -128,7 +128,43 @@ const AlbumDetailPage = () => {
           // Cargar datos relacionados en paralelo
           await Promise.allSettled([
             loadArtistTopAlbums(albumData.artists[0].id),
-            loadAlbumReviews(result.album.id),
+            // Cargar reseñas inline para evitar dependencias problemáticas
+            (async () => {
+              try {
+                const response = await fetch(`/api/reviews?type=album&albumId=${result.album.id}`);
+                if (response.ok) {
+                  const data = await response.json();
+                  setReviews(data.reviews || []);
+                  
+                  // Si está autenticado, cargar estado de likes del usuario
+                  if (isAuthenticated && data.reviews?.length > 0) {
+                    const token = localStorage.getItem('auth_token');
+                    const likesState = {};
+                    
+                    // Verificar likes del usuario para cada reseña
+                    for (const review of data.reviews) {
+                      try {
+                        const likeResponse = await fetch(`/api/reviews/${review.id}/like`, {
+                          headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (likeResponse.ok) {
+                          const likeData = await likeResponse.json();
+                          likesState[review.id] = likeData.userLiked;
+                        }
+                      } catch (error) {
+                        console.error(`Error verificando like para reseña ${review.id}:`, error);
+                      }
+                    }
+                    
+                    setReviewLikes(likesState);
+                  }
+                } else {
+                  console.error('Error en respuesta de reseñas:', response.status);
+                }
+              } catch (error) {
+                console.error('Error cargando reseñas:', error);
+              }
+            })(),
             loadAlbumStats(result.album.id)
           ]);
 
@@ -164,7 +200,21 @@ const AlbumDetailPage = () => {
 
             // Verificar si está en el historial de escucha
             try {
-              await checkListeningHistory(result.album.id);
+              // Función inline para verificar historial
+              if (isAuthenticated) {
+                const token = localStorage.getItem('auth_token');
+                const response = await fetch(`/api/listening-history`, {
+                  headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                  const data = await response.json();
+                  const isInHistory = data.listeningHistory?.some(entry => 
+                    entry.albums?.some(album => album.album_id === parseInt(result.album.id))
+                  );
+                  setIsInListeningHistory(isInHistory);
+                }
+              }
             } catch (error) {
               console.error('Error verificando historial de escucha:', error);
             }
@@ -180,7 +230,7 @@ const AlbumDetailPage = () => {
     };
 
     loadAlbumData();
-  }, [albumId, isAuthenticated, checkListeningHistory, loadAlbumReviews]);
+  }, [albumId, isAuthenticated]);
 
   // Cargar álbumes relacionados del artista
   const loadArtistTopAlbums = async (artistId) => {
@@ -197,43 +247,7 @@ const AlbumDetailPage = () => {
     }
   };
 
-  // Cargar reseñas del album
-  const loadAlbumReviews = useCallback(async (albumId) => {
-    try {
-      const response = await fetch(`/api/reviews?type=album&albumId=${albumId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setReviews(data.reviews || []);
-        
-        // Si está autenticado, cargar estado de likes del usuario
-        if (isAuthenticated && data.reviews?.length > 0) {
-          const token = localStorage.getItem('auth_token');
-          const likesState = {};
-          
-          // Verificar likes del usuario para cada reseña
-          for (const review of data.reviews) {
-            try {
-              const likeResponse = await fetch(`/api/reviews/${review.id}/like`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-              });
-              if (likeResponse.ok) {
-                const likeData = await likeResponse.json();
-                likesState[review.id] = likeData.userLiked;
-              }
-            } catch (error) {
-              console.error(`Error verificando like para reseña ${review.id}:`, error);
-            }
-          }
-          
-          setReviewLikes(likesState);
-        }
-      } else {
-        console.error('Error en respuesta de reseñas:', response.status);
-      }
-    } catch (error) {
-      console.error('Error cargando reseñas:', error);
-    }
-  }, [isAuthenticated]);
+
 
   // Cargar estadísticas del album
   const loadAlbumStats = async (albumId) => {
