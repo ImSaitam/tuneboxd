@@ -135,7 +135,15 @@ const UserProfilePage = () => {
       );
 
       // Si es el perfil del usuario actual autenticado
+      console.log('🔍 Debug conditions:', {
+        isAuthenticated,
+        currentUser: currentUser?.username,
+        username,
+        match: currentUser?.username === username
+      });
+      
       if (isAuthenticated && currentUser?.username === username) {
+        console.log('🔍 Making request for followed artists');
         // Artistas seguidos
         requests.push(
           fetch('/api/artists/following', {
@@ -145,6 +153,7 @@ const UserProfilePage = () => {
             }
           })
             .then(res => {
+              console.log('🔍 Artists following response:', res.status);
               if (res.status === 401) {
                 // Token expirado o inválido
                 console.warn('Token de autenticación expirado o inválido');
@@ -154,6 +163,7 @@ const UserProfilePage = () => {
               return res.ok ? res.json() : null;
             })
             .then(data => {
+              console.log('🔍 Artists following data received:', data);
               if (data && data.artists) {
                 setFollowedArtists(data.artists);
               } else {
@@ -165,6 +175,8 @@ const UserProfilePage = () => {
               setFollowedArtists([]);
             })
         );
+      } else {
+        console.log('🔍 NOT making request for followed artists - conditions not met');
       }
 
       // Historial de escucha - disponible para todos los usuarios
