@@ -129,8 +129,8 @@ html[data-theme="light"] *,
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--background-start);
+  color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -149,6 +149,10 @@ body {
 
 .bg-theme-hover {
   background: var(--card-hover);
+}
+
+.bg-theme-background {
+  background: var(--background-start);
 }
 
 .text-theme-primary {
@@ -210,6 +214,10 @@ html[data-theme="light"] .bg-theme-card {
 
 html[data-theme="light"] .bg-theme-card-hover {
   background: rgba(249, 250, 251, 0.95) !important;
+}
+
+html[data-theme="light"] .bg-theme-background {
+  background: var(--background-start) !important;
 }
 
 html[data-theme="light"] .text-theme-primary {
@@ -329,4 +337,71 @@ html[data-theme="light"] .border-slate-900 {
 /* Asegurar que el gradiente del header del álbum funcione en modo claro */
 html[data-theme="light"] .bg-gradient-album-header {
   background: linear-gradient(to bottom, transparent 0%, var(--header-start) 50%, var(--background-start) 100%) !important;
+}
+
+/* Forzar el fondo correcto del body en modo claro */
+html[data-theme="light"] body {
+  background: var(--background-start) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Asegurar que main y otros contenedores respeten el tema */
+html[data-theme="light"] main {
+  background: transparent !important;
+}
+
+html[data-theme="light"] .min-h-screen {
+  background: var(--background-start) !important;
+}
+
+/* Reglas adicionales específicas para el modo claro - máxima prioridad */
+html[data-theme="light"] body,
+html[data-theme="light"] html,
+html[data-theme="light"] #__next,
+html[data-theme="light"] main {
+  background: #f9fafb !important; /* gray-50 - fondo claro */
+  color: #111827 !important; /* gray-900 - texto oscuro */
+}
+
+/* Forzar el fondo de contenedores principales en modo claro */
+html[data-theme="light"] .bg-theme-background,
+html[data-theme="light"] .min-h-screen.bg-theme-background {
+  background: #f9fafb !important;
+}
+
+/* Asegurar que las pestañas y contenido se vean correctamente */
+html[data-theme="light"] div[class*="max-w-7xl"] {
+  background: transparent !important;
+}
+
+/* Override para cualquier elemento que pueda tener fondo oscuro */
+html[data-theme="light"] .bg-black,
+html[data-theme="light"] .bg-gray-900,
+html[data-theme="light"] .bg-slate-900 {
+  background: #f9fafb !important;
+}
+
+/* Override más específico para debugging - modo claro */
+html[data-theme="light"] {
+  background: #f9fafb !important;
+}
+
+html[data-theme="light"] body {
+  background: #f9fafb !important;
+  color: #111827 !important;
+}
+
+html[data-theme="light"] main {
+  background: transparent !important;
+}
+
+/* Debug específico para la página de álbum */
+html[data-theme="light"] .min-h-screen.bg-theme-background {
+  background: #f9fafb !important;
+  color: #111827 !important;
+}
+
+/* Override máximo para cualquier contenedor que pueda estar heredando estilos oscuros */
+html[data-theme="light"] div:not([style*="background-image"]) {
+  background: inherit !important;
 }

@@ -3,7 +3,7 @@
  * Este script crea un hilo oficial de bienvenida a la comunidad
  */
 
-import { query, run } from './src/lib/database-adapter.js';
+import { query, run } from '../src/lib/database-adapter.js';
 
 const WELCOME_THREAD = {
   user_id: 2, // Asumiendo que el usuario con ID 1 es el admin/creador
