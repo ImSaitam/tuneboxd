@@ -751,15 +751,26 @@ const AlbumDetailPage = () => {
               <div className="space-y-4">
                 {reviews.map((review) => (
                   <div key={review.id} className="bg-theme-card rounded-2xl p-6 border border-theme">
-                    {/* Header de la reseña */}
-                    <div className="flex items-start justify-between mb-4">
+                    {/* Header de la reseña */}                    <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-theme-accent to-theme-accent/60 flex items-center justify-center">
-                          <User className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 rounded-full overflow-hidden">
+                          {review.profile_image_url ? (
+                            <Image
+                              src={review.profile_image_url}
+                              alt={review.username || 'Usuario'}
+                              width={40}
+                              height={40}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-theme-accent to-theme-accent/60 flex items-center justify-center">
+                              <User className="w-5 h-5 text-white" />
+                            </div>
+                          )}
                         </div>
                         <div>
                           <div className="font-semibold text-theme-primary">
-                            {review.user?.username || 'Usuario'}
+                            {review.username || 'Usuario'}
                           </div>
                           <div className="text-sm text-theme-secondary">
                             {formatDate(review.created_at)}
@@ -808,7 +819,7 @@ const AlbumDetailPage = () => {
                         <span className="text-sm">{review.likes || 0}</span>
                       </button>
                       <span className="text-theme-muted text-sm">
-                        ¿Te resultó útil esta reseña?
+                        ¿Te gustó esta reseña?
                       </span>
                     </div>
                   </div>
