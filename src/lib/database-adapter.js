@@ -484,8 +484,30 @@ export const reviewService = {
       ORDER BY r.created_at DESC
       LIMIT ?
     `, [limit]);
+  },
+
+  // Eliminar reseña - método requerido por la API
+  async deleteReview(reviewId, userId) {
+    // Verificar que la reseña existe y pertenece al usuario
+    const review = await get(
+      'SELECT * FROM reviews WHERE id = ? AND user_id = ?',
+      [reviewId, userId]
+    );
+
+    if (!review) {
+      throw new Error('Reseña no encontrada o no tienes permisos para eliminarla');
+    }
+
+    // Eliminar la reseña
+    const result = await run(
+      'DELETE FROM reviews WHERE id = ? AND user_id = ?',
+      [reviewId, userId]
+    );
+
+    return result.changes > 0;
   }
 };
+
 
 // Servicio de notificaciones
 export const notificationService = {
@@ -1231,12 +1253,25 @@ export const listeningHistoryService = {
       'INSERT INTO listening_history (user_id, album_id, track_id, listened_at) VALUES (?, ?, ?, NOW())',
       [user_id, album_id, track_id]
     );
-  },  // Agregar álbum al historial de escucha - FIXED: Con zona horaria correcta
+  },  // Agregar álbum al historial de escucha - FIXED: Con zona horaria correcta y sin duplicados
   async addToHistory(userId, albumId, listenedAt = null) {
+    // Verificar si el álbum ya está en el historial del usuario
+    const existingEntry = await get(
+      'SELECT id FROM listening_history WHERE user_id = ? AND album_id = ?',
+      [userId, albumId]
+    );
+    
+    // Si ya existe, no agregarlo de nuevo
+    if (existingEntry) {
+      console.log(`📚 Álbum ${albumId} ya está en el historial del usuario ${userId}`);
+      return { changes: 0, message: 'Álbum ya está en el historial' };
+    }
+    
     // Si no se proporciona fecha, usar la fecha actual del cliente (JavaScript)
     // Esto asegura que se use la zona horaria local del usuario
     const timestamp = listenedAt || new Date().toISOString();
     
+    console.log(`📚 Agregando álbum ${albumId} al historial del usuario ${userId}`);
     return await run(
       'INSERT INTO listening_history (user_id, album_id, listened_at) VALUES (?, ?, ?)',
       [userId, albumId, timestamp]
