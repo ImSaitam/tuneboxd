@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { 
   MessageCircle, Users, Star, Music, Heart, ThumbsUp,
@@ -21,10 +22,12 @@ const ThreadDetailPage = () => {
   const [userLikes, setUserLikes] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingReplies, setLoadingReplies] = useState(false);
-  
-  // Estados para nueva respuesta
+    // Estados para nueva respuesta
   const [newReply, setNewReply] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Estados para eliminar respuestas
+  const [deletingReplyId, setDeletingReplyId] = useState(null);
   
   const threadId = params.threadId;
 
@@ -193,6 +196,42 @@ const ThreadDetailPage = () => {
     } catch (err) {
       console.error('Error toggling reply like:', err);
       error('Error al procesar el like');
+    }  };
+
+  const handleDeleteReply = async (replyId) => {
+    if (!isAuthenticated) {
+      error('Debes iniciar sesión para eliminar respuestas');
+      return;
+    }
+
+    // Confirmar eliminación
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta respuesta? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    try {
+      setDeletingReplyId(replyId);
+      
+      const response = await fetch(`/api/forum/replies/${replyId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      });
+
+      if (response.ok) {
+        // Eliminar respuesta del estado local
+        setReplies(prev => prev.filter(reply => reply.id !== replyId));
+        success('Respuesta eliminada exitosamente');
+      } else {
+        const errorData = await response.json();
+        error(errorData.message || 'Error al eliminar la respuesta');
+      }
+    } catch (err) {
+      console.error('Error deleting reply:', err);
+      error('Error al eliminar la respuesta');
+    } finally {
+      setDeletingReplyId(null);
     }
   };
 
@@ -417,11 +456,22 @@ const ThreadDetailPage = () => {
               <div 
                 key={reply.id}
                 className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
-              >
-                <div className="flex items-start space-x-4">
+              >                <div className="flex items-start space-x-4">
                   <Link href={`/profile/${reply.author_username}`}>
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-600 rounded-full flex items-center justify-center hover:scale-105 transition-transform cursor-pointer">
-                      <User className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 rounded-full overflow-hidden hover:scale-105 transition-transform cursor-pointer relative">
+                      {reply.author_profile_picture ? (
+                        <Image 
+                          src={reply.author_profile_picture} 
+                          alt={`${reply.author_username}'s profile`}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-green-400 to-blue-600 flex items-center justify-center">
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                      )}
                     </div>
                   </Link>
 
@@ -454,13 +504,19 @@ const ThreadDetailPage = () => {
                       >
                         <ThumbsUp className="w-4 h-4" />
                         <span className="text-sm">{reply.likes_count}</span>
-                      </button>
-
-                      {isAuthenticated && user?.id === reply.author_id && (
+                      </button>                      {isAuthenticated && user?.id === reply.author_id && (
                         <div className="flex items-center space-x-2">
-                          <button className="flex items-center space-x-1 text-gray-400 hover:text-red-400 transition-colors text-sm">
-                            <Trash2 className="w-3 h-3" />
-                            <span>Eliminar</span>
+                          <button 
+                            onClick={() => handleDeleteReply(reply.id)}
+                            disabled={deletingReplyId === reply.id}
+                            className="flex items-center space-x-1 text-gray-400 hover:text-red-400 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {deletingReplyId === reply.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3 h-3" />
+                            )}
+                            <span>{deletingReplyId === reply.id ? 'Eliminando...' : 'Eliminar'}</span>
                           </button>
                         </div>
                       )}
