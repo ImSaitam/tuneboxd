@@ -23,12 +23,12 @@ export async function POST(request) {
         { success: false, message: 'Token inválido' },
         { status: 401 }
       );
-    }
-
-    const { album, rating, title, content } = await request.json();
+    }    const { album, albumId, rating, title, content } = await request.json();
+    console.log('📝 Datos recibidos para crear reseña:', { albumId, rating, title, content, hasAlbum: !!album });
 
     // Validar datos de entrada
-    if (!album || !rating) {
+    if ((!album && !albumId) || !rating) {
+      console.log('❌ Error de validación: Datos incompletos', { albumId, hasAlbum: !!album, rating });
       return Response.json(
         { success: false, message: 'Álbum y rating son requeridos' },
         { status: 400 }
@@ -36,39 +36,62 @@ export async function POST(request) {
     }
 
     if (rating < 1 || rating > 5) {
+      console.log('❌ Error de validación: Rating inválido', { rating });
       return Response.json(
         { success: false, message: 'El rating debe estar entre 1 y 5' },
         { status: 400 }
       );
     }
 
-    // Validar datos del álbum
-    if (!album.spotify_id || !album.name || !album.artist) {
-      return Response.json(
-        { success: false, message: 'Datos del álbum incompletos' },
-        { status: 400 }
-      );
+    let albumRecord;    // Si se envía albumId directamente (formato actual del frontend)
+    if (albumId) {
+      console.log('🔍 Buscando álbum por ID:', albumId);
+      albumRecord = await albumService.findById(albumId);
+      if (!albumRecord) {
+        console.log('❌ Álbum no encontrado:', albumId);
+        return Response.json(
+          { success: false, message: 'Álbum no encontrado' },
+          { status: 404 }
+        );
+      }
+      console.log('✅ Álbum encontrado:', albumRecord.name);
+    } else {
+      // Si se envía el objeto album completo (formato anterior)
+      // Validar datos del álbum
+      if (!album.spotify_id || !album.name || !album.artist) {
+        console.log('❌ Error de validación: Datos del álbum incompletos', album);
+        return Response.json(
+          { success: false, message: 'Datos del álbum incompletos' },
+          { status: 400 }
+        );
+      }
+
+      // Crear o encontrar el álbum
+      console.log('🔍 Creando/encontrando álbum:', album.name);
+      albumRecord = await albumService.findOrCreateAlbum({
+        spotify_id: album.spotify_id,
+        name: album.name,
+        artist: album.artist,
+        release_date: album.release_date || null,
+        image_url: album.image_url || null,
+        spotify_url: album.spotify_url || null
+      });
     }
 
-    // Crear o encontrar el álbum
-    const albumRecord = await albumService.findOrCreateAlbum({
-      spotify_id: album.spotify_id,
-      name: album.name,
-      artist: album.artist,
-      release_date: album.release_date || null,
-      image_url: album.image_url || null,
-      spotify_url: album.spotify_url || null
-    });
+    console.log('📋 Álbum procesado:', { id: albumRecord.id, name: albumRecord.name });
 
     // Verificar si el usuario ya reseñó este álbum
+    console.log('🔍 Verificando reseña existente para usuario:', decoded.userId);
     const existingReview = await reviewService.findByUserAndAlbum(decoded.userId, albumRecord.id);
     if (existingReview) {
+      console.log('❌ Usuario ya reseñó este álbum');
       return Response.json(
         { success: false, message: 'Ya has reseñado este álbum. Puedes editarla desde tu perfil.' },
         { status: 409 }
       );
     }
 
+    console.log('✅ Creando nueva reseña...');
     // Crear la reseña
     const review = await reviewService.createReview({
       user_id: decoded.userId,

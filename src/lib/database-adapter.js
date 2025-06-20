@@ -259,6 +259,14 @@ export const userService = {
 // Servicio de álbumes
 export const albumService = {
   async findById(id) {
+    // Buscar por ID interno (numérico) primero
+    const numericId = parseInt(id);
+    if (!isNaN(numericId)) {
+      const result = await get('SELECT * FROM albums WHERE id = ?', [numericId]);
+      if (result) return result;
+    }
+    
+    // Si no se encuentra, buscar por spotify_id
     return await get('SELECT * FROM albums WHERE spotify_id = ?', [id]);
   },
   
@@ -310,24 +318,56 @@ export const reviewService = {
     // Buscar directamente por spotify_album_id
     return await query('SELECT * FROM reviews WHERE spotify_album_id = ? ORDER BY created_at DESC', [spotifyAlbumId]);
   },
-  
-  async create(reviewData) {
-    const { user_id, album_id, spotify_album_id, rating, content, review_text } = reviewData;
-    
-    // Usar spotify_album_id si se proporciona, sino intentar obtenerlo del álbum
-    let finalSpotifyAlbumId = spotify_album_id;
-    if (!finalSpotifyAlbumId && album_id) {
-      const album = await get('SELECT spotify_id FROM albums WHERE id = ?', [album_id]);
-      finalSpotifyAlbumId = album?.spotify_id;
+
+  // Método requerido por la API - buscar reseña por usuario y álbum
+  async findByUserAndAlbum(userId, albumId) {
+    // Obtener el spotify_id del álbum
+    const album = await get('SELECT spotify_id FROM albums WHERE id = ?', [albumId]);
+    if (!album?.spotify_id) {
+      return null;
     }
     
-    if (!finalSpotifyAlbumId) {
-      throw new Error('No se pudo determinar el spotify_album_id');
+    return await get(
+      'SELECT * FROM reviews WHERE user_id = ? AND spotify_album_id = ?',
+      [userId, album.spotify_id]
+    );
+  },
+  // Método requerido por la API - crear reseña
+  async createReview(reviewData) {
+    const { user_id, album_id, rating, title, content } = reviewData;
+    
+    // Obtener el spotify_id del álbum
+    const album = await get('SELECT spotify_id FROM albums WHERE id = ?', [album_id]);
+    if (!album?.spotify_id) {
+      throw new Error('Álbum no encontrado');
+    }
+    
+    await run(
+      'INSERT INTO reviews (user_id, spotify_album_id, rating, title, review_text, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+      [user_id, album.spotify_id, rating, title || null, content || null]
+    );
+    
+    // Obtener la reseña recién creada
+    const newReview = await get(
+      'SELECT * FROM reviews WHERE user_id = ? AND spotify_album_id = ? ORDER BY created_at DESC LIMIT 1',
+      [user_id, album.spotify_id]
+    );
+    
+    return newReview;
+  },
+  
+  async create(reviewData) {
+    const { user_id, album_id, rating, title, content } = reviewData;
+    
+    // Obtener el spotify_id del álbum
+    const album = await get('SELECT spotify_id FROM albums WHERE id = ?', [album_id]);
+    if (!album?.spotify_id) {
+      throw new Error('Álbum no encontrado');
     }
     
     return await run(
-      'INSERT INTO reviews (user_id, spotify_album_id, rating, review_text, created_at) VALUES (?, ?, ?, ?, NOW())',
-      [user_id, finalSpotifyAlbumId, rating, content || review_text]
+      'INSERT INTO reviews (user_id, spotify_album_id, rating, title, review_text, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+      [user_id, album.spotify_id, rating, title || null, content || null]
     );
   },
 
@@ -416,7 +456,6 @@ export const reviewService = {
       LIMIT ? OFFSET ?
     `, [userId, limit, offset]);
   },
-
   // Contar total de reseñas de un usuario
   async getUserReviewsCount(userId) {
     const result = await get(
@@ -424,6 +463,27 @@ export const reviewService = {
       [userId]
     );
     return result ? parseInt(result.count) : 0;
+  },
+
+  // Obtener reseñas recientes - método requerido por la API
+  async getRecentReviews(limit = 10) {
+    return await query(`
+      SELECT 
+        r.*,
+        u.username,
+        u.profile_image as profile_image_url,
+        r.review_text as content,
+        a.name as album_name,
+        a.artist_name as artist,
+        a.image_url,
+        a.spotify_id as album_spotify_id
+      FROM reviews r
+      JOIN users u ON r.user_id = u.id
+      LEFT JOIN albums a ON r.spotify_album_id = a.spotify_id
+      WHERE r.is_private = false OR r.is_private IS NULL
+      ORDER BY r.created_at DESC
+      LIMIT ?
+    `, [limit]);
   }
 };
 
