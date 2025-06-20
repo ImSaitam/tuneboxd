@@ -144,9 +144,24 @@ const UserProfilePage = () => {
               'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
             }
           })
-            .then(res => res.ok ? res.json() : null)
-            .then(data => data && setFollowedArtists(data.artists || []))
-            .catch(() => null)
+            .then(res => {
+              console.log('🔍 Artists following response status:', res.status);
+              return res.ok ? res.json() : null;
+            })
+            .then(data => {
+              console.log('🔍 Artists following data:', data);
+              if (data && data.artists) {
+                console.log('🔍 Setting followedArtists:', data.artists);
+                setFollowedArtists(data.artists);
+              } else {
+                console.log('🔍 No artists data received');
+                setFollowedArtists([]);
+              }
+            })
+            .catch(error => {
+              console.error('🔍 Error fetching artists:', error);
+              setFollowedArtists([]);
+            })
         );
       }
 
@@ -982,6 +997,14 @@ const UserProfilePage = () => {
 
         {activeTab === 'artists' && isOwnProfile && (
           <div className="space-y-6">
+            {/* Debug info - temporal */}
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+              <p><strong>Debug Info:</strong></p>
+              <p>followedArtists.length: {followedArtists.length}</p>
+              <p>followedArtists: {JSON.stringify(followedArtists)}</p>
+              <p>isOwnProfile: {isOwnProfile.toString()}</p>
+              <p>activeTab: {activeTab}</p>
+            </div>
             {followedArtists.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {followedArtists.map((artist) => (
