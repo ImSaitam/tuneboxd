@@ -519,7 +519,6 @@ export const reviewService = {
       LIMIT ?
     `, [limit]);
   },
-
   // Eliminar reseña - método requerido por la API
   async deleteReview(reviewId, userId) {
     // Verificar que la reseña existe y pertenece al usuario
@@ -532,7 +531,7 @@ export const reviewService = {
       throw new Error('Reseña no encontrada o no tienes permisos para eliminarla');
     }
 
-    // Eliminar la reseña
+    // Eliminar la reseña (los likes se eliminan automáticamente por CASCADE)
     const result = await run(
       'DELETE FROM reviews WHERE id = ? AND user_id = ?',
       [reviewId, userId]
@@ -573,7 +572,6 @@ export const reviewService = {
       return { liked: true };
     }
   },
-
   // Obtener likes de una reseña
   async getReviewLikes(reviewId, limit = 20, offset = 0) {
     return await query(`
@@ -582,7 +580,7 @@ export const reviewService = {
         rl.created_at,
         u.id as user_id,
         u.username,
-        u.profile_image_url
+        u.profile_image as profile_image_url
       FROM review_likes rl
       JOIN users u ON rl.user_id = u.id
       WHERE rl.review_id = ?
@@ -1915,6 +1913,32 @@ export const forumService = {
     
     // Eliminar el hilo
     return await run('DELETE FROM forum_threads WHERE id = ?', [threadId]);
+  },
+
+  // Eliminar respuesta del foro
+  async deleteReply(replyId, userId) {
+    // Verificar que la respuesta existe y obtener información
+    const reply = await get(
+      'SELECT fr.*, ft.user_id as thread_owner_id FROM forum_replies fr JOIN forum_threads ft ON fr.thread_id = ft.id WHERE fr.id = ?',
+      [replyId]
+    );
+
+    if (!reply) {
+      throw new Error('Respuesta no encontrada');
+    }
+
+    // Verificar permisos: el usuario debe ser el autor de la respuesta o el dueño del hilo
+    if (reply.user_id !== userId && reply.thread_owner_id !== userId) {
+      throw new Error('No tienes permisos para eliminar esta respuesta');
+    }
+
+    // Eliminar likes de la respuesta primero
+    await run('DELETE FROM forum_reply_likes WHERE reply_id = ?', [replyId]);
+    
+    // Eliminar la respuesta
+    const result = await run('DELETE FROM forum_replies WHERE id = ?', [replyId]);
+
+    return result.changes > 0;
   }
 };
 
