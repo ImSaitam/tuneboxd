@@ -27,7 +27,7 @@ export const metadata = {
   author: "Tuneboxd",
   category: "music, social media",  other: {
     "format-detection": "telephone=no",
-    "og:image": "https://tuneboxd.xyz/images/og-image.jpg",
+    "og:image": "https://tuneboxd.xyz/og-image.jpg",
     "og:url": "https://tuneboxd.xyz",
   }
 };
