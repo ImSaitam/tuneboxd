@@ -655,7 +655,7 @@ const AlbumDetailPage = () => {
     <div className="min-h-screen bg-theme-background">
       {/* Header con imagen de fondo */}
       <div 
-        className="min-h-96 max-h-[500px] bg-gradient-to-b from-gray-900 to-theme-background relative overflow-hidden"
+        className="min-h-96 max-h-[500px] bg-gradient-album-header relative overflow-hidden"
         style={{
           backgroundImage: albumData?.images?.[0]?.url ? `url(${albumData.images[0].url})` : undefined,
           backgroundSize: 'cover',

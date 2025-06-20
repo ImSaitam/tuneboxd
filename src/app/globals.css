@@ -71,6 +71,7 @@ html, body {
   --background-start: #0f172a; /* slate-900 */
   --background-middle: #111827; /* gray-900 */
   --background-end: #000000; /* black */
+  --header-start: #111827; /* gray-900 - para gradientes de header */
   
   --accent-start: #34d399; /* emerald-400 */
   --accent-end: #22d3ee; /* cyan-400 */
@@ -95,6 +96,7 @@ html[data-theme="light"] *,
   --background-start: #f9fafb; /* gray-50 */
   --background-middle: #ffffff; /* white */
   --background-end: #f3f4f6; /* gray-100 */
+  --header-start: #e5e7eb; /* gray-200 - para gradientes de header en modo claro */
   
   --accent-start: #059669; /* emerald-600 */
   --accent-end: #0891b2; /* cyan-600 */
@@ -191,6 +193,11 @@ body {
 /* Placeholders con colores de tema */
 .placeholder-theme-muted::placeholder {
   color: var(--text-muted);
+}
+
+/* Clase específica para gradiente de header de álbum que respeta el tema */
+.bg-gradient-album-header {
+  background: linear-gradient(to bottom, var(--header-start), var(--background));
 }
 
 /* Clases específicas para modo claro con alta especificidad */
