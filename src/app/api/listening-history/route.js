@@ -31,14 +31,8 @@ export async function POST(request) {
     const decoded = await verifyAuth(request, true);
     const { album, listenedAt } = await request.json();
 
-    // DEBUG: Log de datos recibidos
-    console.log('POST /api/listening-history - Datos recibidos:');
-    console.log('album:', JSON.stringify(album, null, 2));
-    console.log('listenedAt:', listenedAt);
-
     // Validar datos del álbum
     if (!album || !album.spotify_id || !album.name || !album.artist) {
-      console.log('Validación fallida - album:', !!album, 'spotify_id:', !!album?.spotify_id, 'name:', !!album?.name, 'artist:', !!album?.artist);
       return Response.json(
         { success: false, message: 'Datos del álbum incompletos' },
         { status: 400 }
