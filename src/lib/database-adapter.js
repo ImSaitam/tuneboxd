@@ -331,8 +331,7 @@ export const reviewService = {
       'SELECT * FROM reviews WHERE user_id = ? AND spotify_album_id = ?',
       [userId, album.spotify_id]
     );
-  },
-  // Método requerido por la API - crear reseña
+  },  // Método requerido por la API - crear reseña
   async createReview(reviewData) {
     const { user_id, album_id, rating, title, content } = reviewData;
     
@@ -342,9 +341,10 @@ export const reviewService = {
       throw new Error('Álbum no encontrado');
     }
     
+    // Insertar solo con las columnas que existen: user_id, spotify_album_id, rating, review_text
     await run(
-      'INSERT INTO reviews (user_id, spotify_album_id, rating, title, review_text, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
-      [user_id, album.spotify_id, rating, title || null, content || null]
+      'INSERT INTO reviews (user_id, spotify_album_id, rating, review_text, created_at) VALUES (?, ?, ?, ?, NOW())',
+      [user_id, album.spotify_id, rating, content || null]
     );
     
     // Obtener la reseña recién creada
@@ -355,8 +355,7 @@ export const reviewService = {
     
     return newReview;
   },
-  
-  async create(reviewData) {
+    async create(reviewData) {
     const { user_id, album_id, rating, title, content } = reviewData;
     
     // Obtener el spotify_id del álbum
@@ -365,9 +364,10 @@ export const reviewService = {
       throw new Error('Álbum no encontrado');
     }
     
+    // Insertar solo con las columnas que existen: user_id, spotify_album_id, rating, review_text
     return await run(
-      'INSERT INTO reviews (user_id, spotify_album_id, rating, title, review_text, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
-      [user_id, album.spotify_id, rating, title || null, content || null]
+      'INSERT INTO reviews (user_id, spotify_album_id, rating, review_text, created_at) VALUES (?, ?, ?, ?, NOW())',
+      [user_id, album.spotify_id, rating, content || null]
     );
   },
 
