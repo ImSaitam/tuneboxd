@@ -790,12 +790,14 @@ const AlbumDetailPage = () => {
                       <h4 className="text-lg font-semibold text-theme-primary mb-3">
                         {review.title}
                       </h4>
-                    )}
-
-                    {/* Contenido de la reseña */}
-                    {review.content && (
+                    )}                    {/* Contenido de la reseña */}
+                    {review.content ? (
                       <p className="text-theme-secondary leading-relaxed mb-4">
                         {review.content}
+                      </p>
+                    ) : (
+                      <p className="text-theme-muted italic mb-4">
+                        {review.username} ha valorado este álbum sin agregar comentarios.
                       </p>
                     )}
 
