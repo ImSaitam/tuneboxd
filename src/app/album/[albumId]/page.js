@@ -295,8 +295,7 @@ const AlbumDetailPage = () => {
     }
 
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/listening-history', {
+      const token = localStorage.getItem('auth_token');      const response = await fetch('/api/listening-history', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -310,7 +309,9 @@ const AlbumDetailPage = () => {
             release_date: albumData.release_date,
             image_url: albumData.images[0]?.url,
             spotify_url: albumData.external_urls?.spotify
-          }
+          },
+          // Enviar la fecha actual del cliente (zona horaria local)
+          listenedAt: new Date().toISOString()
         })
       });
 

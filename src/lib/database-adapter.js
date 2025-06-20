@@ -1171,13 +1171,15 @@ export const listeningHistoryService = {
       'INSERT INTO listening_history (user_id, album_id, track_id, listened_at) VALUES (?, ?, ?, NOW())',
       [user_id, album_id, track_id]
     );
-  },
-
-  // Agregar álbum al historial de escucha - FIXED: Exported correctly
-  async addToHistory(userId, albumId) {
+  },  // Agregar álbum al historial de escucha - FIXED: Con zona horaria correcta
+  async addToHistory(userId, albumId, listenedAt = null) {
+    // Si no se proporciona fecha, usar la fecha actual del cliente (JavaScript)
+    // Esto asegura que se use la zona horaria local del usuario
+    const timestamp = listenedAt || new Date().toISOString();
+    
     return await run(
-      'INSERT INTO listening_history (user_id, album_id, listened_at) VALUES (?, ?, NOW())',
-      [userId, albumId]
+      'INSERT INTO listening_history (user_id, album_id, listened_at) VALUES (?, ?, ?)',
+      [userId, albumId, timestamp]
     );
   },
 

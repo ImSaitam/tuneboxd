@@ -29,7 +29,7 @@ async function verifyAuth(request, required = true) {
 export async function POST(request) {
   try {
     const decoded = await verifyAuth(request, true);
-    const { album } = await request.json();
+    const { album, listenedAt } = await request.json();
 
     // Validar datos del álbum
     if (!album || !album.spotify_id || !album.name || !album.artist) {
@@ -49,8 +49,12 @@ export async function POST(request) {
       spotify_url: album.spotify_url || null
     });
 
-    // Agregar al historial (se permite duplicados para registrar múltiples escuchas)
-    await listeningHistoryService.addToHistory(decoded.userId, albumRecord.id);
+    // Usar la fecha del cliente si se proporciona, sino usar la fecha actual del servidor
+    // La fecha del cliente ya viene en la zona horaria correcta
+    const timestamp = listenedAt || new Date().toISOString();
+
+    // Agregar al historial con la fecha correcta
+    await listeningHistoryService.addToHistory(decoded.userId, albumRecord.id, timestamp);
 
     return Response.json({
       success: true,
