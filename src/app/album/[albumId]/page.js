@@ -181,14 +181,16 @@ const AlbumDetailPage = () => {
       console.error('Error cargando álbumes del artista:', error);
     }
   };
-
   // Cargar reseñas del album
   const loadAlbumReviews = async (albumId) => {
     try {
-      const response = await fetch(`/api/reviews?albumId=${albumId}`);
+      const response = await fetch(`/api/reviews?type=album&albumId=${albumId}`);
       if (response.ok) {
         const data = await response.json();
+        console.log('📝 Reseñas cargadas:', data.reviews);
         setReviews(data.reviews || []);
+      } else {
+        console.error('Error en respuesta de reseñas:', response.status);
       }
     } catch (error) {
       console.error('Error cargando reseñas:', error);
