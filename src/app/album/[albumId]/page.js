@@ -381,28 +381,6 @@ const AlbumDetailPage = () => {
     }
   };
 
-  // Verificar si el álbum está en el historial del usuario
-  const checkListeningHistory = useCallback(async (albumId) => {
-    if (!isAuthenticated) return;
-    
-    try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/listening-history`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const isInHistory = data.listeningHistory?.some(entry => 
-          entry.albums?.some(album => album.album_id === parseInt(albumId))
-        );
-        setIsInListeningHistory(isInHistory);
-      }
-    } catch (error) {
-      console.error('Error verificando historial de escucha:', error);
-    }
-  }, [isAuthenticated]);
-
   // Eliminar álbum del historial de escucha
   const handleRemoveFromHistory = async () => {
     if (!isAuthenticated || !album?.id) return;
@@ -537,7 +515,38 @@ const AlbumDetailPage = () => {
         
         // Recargar reseñas
         if (album) {
-          await loadAlbumReviews(album.id);
+          try {
+            const response = await fetch(`/api/reviews?type=album&albumId=${album.id}`);
+            if (response.ok) {
+              const data = await response.json();
+              setReviews(data.reviews || []);
+              
+              // Si está autenticado, cargar estado de likes del usuario
+              if (isAuthenticated && data.reviews?.length > 0) {
+                const token = localStorage.getItem('auth_token');
+                const likesState = {};
+                
+                // Verificar likes del usuario para cada reseña
+                for (const review of data.reviews) {
+                  try {
+                    const likeResponse = await fetch(`/api/reviews/${review.id}/like`, {
+                      headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (likeResponse.ok) {
+                      const likeData = await likeResponse.json();
+                      likesState[review.id] = likeData.userLiked;
+                    }
+                  } catch (error) {
+                    console.error(`Error verificando like para reseña ${review.id}:`, error);
+                  }
+                }
+                
+                setReviewLikes(likesState);
+              }
+            }
+          } catch (error) {
+            console.error('Error recargando reseñas:', error);
+          }
         }
       } else {
         const errorData = await response.json();
@@ -851,10 +860,6 @@ const AlbumDetailPage = () => {
                 <div className="bg-theme-card rounded-2xl p-6 border border-theme">
                   <h3 className="text-lg font-bold text-theme-primary mb-4">Estadísticas</h3>
                   <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-theme-secondary">Popularidad</span>
-                      <span className="text-theme-primary font-medium">{albumData?.popularity || 0}/100</span>
-                    </div>
                     <div className="flex justify-between">
                       <span className="text-theme-secondary">En listas</span>
                       <span className="text-theme-primary font-medium">{albumStats.inLists || 0}</span>
