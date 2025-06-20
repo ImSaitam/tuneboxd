@@ -1,4 +1,4 @@
-import { query } from '../../../lib/database-adapter.js';
+import { query } from '../../../../lib/database-adapter.js';
 
 export async function POST(request) {
   try {
