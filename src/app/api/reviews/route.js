@@ -99,19 +99,7 @@ export async function POST(request) {
       rating: parseInt(rating),
       title: title || null,
       content: content || null
-    });    // Automáticamente marcar como escuchado cuando se reseña un álbum (si no está ya)
-    try {
-      console.log('📚 Agregando álbum al historial de escucha...');
-      const historyResult = await listeningHistoryService.addToHistory(decoded.userId, albumRecord.id);
-      if (historyResult.changes > 0) {
-        console.log('✅ Álbum agregado al historial');
-      } else {
-        console.log('ℹ️ Álbum ya estaba en el historial');
-      }
-    } catch (historyError) {
-      // No fallar si ya existe o hay algún problema menor
-      console.log('⚠️ Error al agregar al historial (continuando):', historyError.message);
-    }
+    });
 
     return Response.json({
       success: true,
