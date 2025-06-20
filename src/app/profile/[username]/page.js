@@ -145,21 +145,23 @@ const UserProfilePage = () => {
             }
           })
             .then(res => {
-              console.log('🔍 Artists following response status:', res.status);
+              if (res.status === 401) {
+                // Token expirado o inválido
+                console.warn('Token de autenticación expirado o inválido');
+                setFollowedArtists([]);
+                return null;
+              }
               return res.ok ? res.json() : null;
             })
             .then(data => {
-              console.log('🔍 Artists following data:', data);
               if (data && data.artists) {
-                console.log('🔍 Setting followedArtists:', data.artists);
                 setFollowedArtists(data.artists);
               } else {
-                console.log('🔍 No artists data received');
                 setFollowedArtists([]);
               }
             })
             .catch(error => {
-              console.error('🔍 Error fetching artists:', error);
+              console.error('Error fetching artists:', error);
               setFollowedArtists([]);
             })
         );
@@ -997,14 +999,6 @@ const UserProfilePage = () => {
 
         {activeTab === 'artists' && isOwnProfile && (
           <div className="space-y-6">
-            {/* Debug info - temporal */}
-            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
-              <p><strong>Debug Info:</strong></p>
-              <p>followedArtists.length: {followedArtists.length}</p>
-              <p>followedArtists: {JSON.stringify(followedArtists)}</p>
-              <p>isOwnProfile: {isOwnProfile.toString()}</p>
-              <p>activeTab: {activeTab}</p>
-            </div>
             {followedArtists.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {followedArtists.map((artist) => (
@@ -1056,15 +1050,23 @@ const UserProfilePage = () => {
             ) : (
               <div className="text-center py-12">
                 <Music className="w-16 h-16 text-theme-muted mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-theme-primary mb-2">No sigues a ningún artista</h3>
+                <h3 className="text-xl font-semibold text-theme-primary mb-2">
+                  {isAuthenticated 
+                    ? "No sigues a ningún artista" 
+                    : "Inicia sesión para ver tus artistas seguidos"
+                  }
+                </h3>
                 <p className="text-theme-secondary mb-6">
-                  Busca artistas en la página principal y empieza a seguir a tus favoritos
+                  {isAuthenticated 
+                    ? "Busca artistas en la página principal y empieza a seguir a tus favoritos"
+                    : "Tu sesión puede haber expirado. Vuelve a iniciar sesión para ver tu contenido personalizado."
+                  }
                 </p>
                 <Link 
-                  href="/"
+                  href={isAuthenticated ? "/" : "/login"}
                   className="bg-theme-accent hover:bg-theme-hover text-theme-button px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
                 >
-                  Explorar Artistas
+                  {isAuthenticated ? "Explorar Artistas" : "Iniciar Sesión"}
                 </Link>
               </div>
             )}
