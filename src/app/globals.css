@@ -197,7 +197,7 @@ body {
 
 /* Clase específica para gradiente de header de álbum que respeta el tema */
 .bg-gradient-album-header {
-  background: linear-gradient(to bottom, var(--header-start), var(--background));
+  background: linear-gradient(to bottom, transparent 0%, var(--header-start) 50%, var(--background-start) 100%);
 }
 
 /* Clases específicas para modo claro con alta especificidad */
@@ -324,4 +324,9 @@ html[data-theme="light"] .border-slate-900 {
     font-size: 1.125rem !important; /* text-lg */
     line-height: 1.2 !important;
   }
+}
+
+/* Asegurar que el gradiente del header del álbum funcione en modo claro */
+html[data-theme="light"] .bg-gradient-album-header {
+  background: linear-gradient(to bottom, transparent 0%, var(--header-start) 50%, var(--background-start) 100%) !important;
 }

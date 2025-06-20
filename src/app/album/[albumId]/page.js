@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useTheme } from '@/hooks/useTheme';
 // import AddToListModal from '@/components/AddToListModal';
 
 const AlbumDetailPage = () => {
@@ -34,6 +35,7 @@ const AlbumDetailPage = () => {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const { success: showSuccess, error: showError } = useNotifications();
+  const { theme } = useTheme();
 
   // Estados principales
   const [album, setAlbum] = useState(null);
@@ -654,20 +656,29 @@ const AlbumDetailPage = () => {
   return (
     <div className="min-h-screen bg-theme-background">
       {/* Header con imagen de fondo */}
-      <div 
-        className="min-h-96 max-h-[500px] bg-gradient-album-header relative overflow-hidden"
-        style={{
-          backgroundImage: albumData?.images?.[0]?.url ? `url(${albumData.images[0].url})` : undefined,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-black/60" />
+      <div className="min-h-96 max-h-[500px] relative overflow-hidden">
+        {/* Imagen de fondo */}
+        {albumData?.images?.[0]?.url && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${albumData.images[0].url})`,
+            }}
+          />
+        )}
+        {/* Gradiente de overlay */}
+        <div className="absolute inset-0 bg-gradient-album-header" />
+        {/* Overlay adicional para mejorar legibilidad */}
+        <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-black/40' : 'bg-white/40'}`} />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
           {/* Botón de retroceso */}
           <Link 
             href="/"
-            className="inline-flex items-center text-white/80 hover:text-white transition-colors mb-8"
+            className={`inline-flex items-center transition-colors mb-8 ${
+              theme === 'dark' 
+                ? 'text-white/80 hover:text-white' 
+                : 'text-black/80 hover:text-black'
+            }`}
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Volver
@@ -694,8 +705,12 @@ const AlbumDetailPage = () => {
 
             {/* Información del álbum */}
             <div className="flex-1 min-w-0 max-w-full text-container">
-              <div className="text-sm text-white/60 mb-2 uppercase tracking-wide">Álbum</div>
-              <h1 className={`font-bold text-white mb-4 leading-tight album-title overflow-hidden ${
+              <div className={`text-sm mb-2 uppercase tracking-wide ${
+                theme === 'dark' ? 'text-white/60' : 'text-black/60'
+              }`}>Álbum</div>
+              <h1 className={`font-bold mb-4 leading-tight album-title overflow-hidden ${
+                theme === 'dark' ? 'text-white' : 'text-black'
+              } ${
                 albumData?.name?.length > 50 
                   ? 'text-xl md:text-2xl' 
                   : albumData?.name?.length > 30 
@@ -705,10 +720,14 @@ const AlbumDetailPage = () => {
                 {albumData?.name}
               </h1>
               
-              <div className="flex flex-wrap items-center gap-4 text-white/80 mb-6 max-w-full">
+              <div className={`flex flex-wrap items-center gap-4 mb-6 max-w-full ${
+                theme === 'dark' ? 'text-white/80' : 'text-black/80'
+              }`}>
                 <Link 
                   href={`/artist/${albumData?.artists[0]?.id}`}
-                  className="text-xl font-semibold hover:text-white transition-colors break-words max-w-full"
+                  className={`text-xl font-semibold transition-colors break-words max-w-full ${
+                    theme === 'dark' ? 'hover:text-white' : 'hover:text-black'
+                  }`}
                 >
                   {albumData?.artists[0]?.name}
                 </Link>
@@ -727,7 +746,9 @@ const AlbumDetailPage = () => {
                   className={`p-3 rounded-full transition-colors ${
                     inListenList 
                       ? 'text-red-400 hover:text-red-300' 
-                      : 'text-white/60 hover:text-white'
+                      : theme === 'dark' 
+                        ? 'text-white/60 hover:text-white'
+                        : 'text-black/60 hover:text-black'
                   }`}
                 >
                   <Heart className={`w-6 h-6 ${inListenList ? 'fill-current' : ''}`} />
@@ -735,21 +756,33 @@ const AlbumDetailPage = () => {
 
                 <button
                   onClick={handleMarkAsListened}
-                  className="p-3 rounded-full text-white/60 hover:text-white transition-colors"
+                  className={`p-3 rounded-full transition-colors ${
+                    theme === 'dark' 
+                      ? 'text-white/60 hover:text-white'
+                      : 'text-black/60 hover:text-black'
+                  }`}
                 >
                   <Clock className="w-6 h-6" />
                 </button>
 
                 <button
                   onClick={() => setShowAddToListModal(true)}
-                  className="p-3 rounded-full text-white/60 hover:text-white transition-colors"
+                  className={`p-3 rounded-full transition-colors ${
+                    theme === 'dark' 
+                      ? 'text-white/60 hover:text-white'
+                      : 'text-black/60 hover:text-black'
+                  }`}
                 >
                   <Plus className="w-6 h-6" />
                 </button>
 
                 <button
                   onClick={handleShare}
-                  className="p-3 rounded-full text-white/60 hover:text-white transition-colors"
+                  className={`p-3 rounded-full transition-colors ${
+                    theme === 'dark' 
+                      ? 'text-white/60 hover:text-white'
+                      : 'text-black/60 hover:text-black'
+                  }`}
                 >
                   <Share2 className="w-6 h-6" />
                 </button>
@@ -759,7 +792,11 @@ const AlbumDetailPage = () => {
                     href={albumData.external_urls.spotify}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 rounded-full text-white/60 hover:text-white transition-colors"
+                    className={`p-3 rounded-full transition-colors ${
+                      theme === 'dark' 
+                        ? 'text-white/60 hover:text-white'
+                        : 'text-black/60 hover:text-black'
+                    }`}
                   >
                     <ExternalLink className="w-6 h-6" />
                   </a>
