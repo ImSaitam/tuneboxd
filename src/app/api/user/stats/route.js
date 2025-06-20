@@ -62,9 +62,7 @@ export async function GET(request) {
       getTopGenres(userId),
       getMonthlyStats(userId),
       userFollowService.getFollowStats(userId)
-    ]);
-
-    const stats = {
+    ]);    const stats = {
       totalReviews,
       averageRating: parseFloat(averageRating || 0).toFixed(1),
       recentActivity,
@@ -106,10 +104,10 @@ async function getTotalReviews(userId) {
 async function getAverageRating(userId) {
   try {
     const result = await getAsync(
-      'SELECT AVG(rating) as average FROM reviews WHERE user_id = ?',
+      'SELECT COALESCE(AVG(CAST(rating AS FLOAT)), 0) as average FROM reviews WHERE user_id = ?',
       [userId]
     );
-    return result?.average || 0;
+    return parseFloat(result?.average) || 0;
   } catch (error) {
     console.error('Error obteniendo promedio de calificaciones:', error);
     return 0;
@@ -163,7 +161,7 @@ async function getMonthlyStats(userId) {
       SELECT 
         TO_CHAR(created_at, 'YYYY-MM') as month,
         COUNT(*) as reviews,
-        AVG(rating) as avg_rating
+        COALESCE(AVG(CAST(rating AS FLOAT)), 0) as avg_rating
       FROM reviews 
       WHERE user_id = ? 
         AND created_at >= NOW() - INTERVAL '12 months'
@@ -172,7 +170,14 @@ async function getMonthlyStats(userId) {
       LIMIT 12
     `, [userId]);
     
-    return result || [];
+    // Asegurar que avg_rating sea siempre un número válido
+    const processedResult = (result || []).map(stat => ({
+      ...stat,
+      reviews: parseInt(stat.reviews) || 0,
+      avg_rating: parseFloat(stat.avg_rating) || 0
+    }));
+    
+    return processedResult;
   } catch (error) {
     console.error('Error obteniendo estadísticas mensuales:', error);
     return [];
