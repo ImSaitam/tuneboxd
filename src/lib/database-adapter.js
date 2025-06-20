@@ -273,15 +273,30 @@ export const albumService = {
   async findBySpotifyId(spotifyId) {
     return await get('SELECT * FROM albums WHERE spotify_id = ?', [spotifyId]);
   },
-  
-  async create(albumData) {
+    async create(albumData) {
     const { spotify_id, name, artist, image_url, release_date } = albumData;
+    
+    // Normalizar la fecha de lanzamiento
+    let normalizedDate = null;
+    if (release_date) {
+      if (release_date.match(/^\d{4}$/)) {
+        // Solo año (ej: "1978") -> convertir a "1978-01-01"
+        normalizedDate = `${release_date}-01-01`;
+      } else if (release_date.match(/^\d{4}-\d{2}$/)) {
+        // Año y mes (ej: "1978-03") -> convertir a "1978-03-01"
+        normalizedDate = `${release_date}-01`;
+      } else if (release_date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // Fecha completa (ej: "1978-03-25") -> usar tal como está
+        normalizedDate = release_date;
+      }
+      // Si no coincide con ningún patrón, dejar como null
+    }
+    
     return await run(
       'INSERT INTO albums (spotify_id, name, artist_id, image_url, release_date) VALUES (?, ?, ?, ?, ?)',
-      [spotify_id, name, artist, image_url, release_date]
+      [spotify_id, name, artist, image_url, normalizedDate]
     );
   },
-
   async findOrCreateAlbum(albumData) {
     const { spotify_id, name, artist, image_url, release_date, spotify_url } = albumData;
     
@@ -292,10 +307,26 @@ export const albumService = {
       return album;
     }
 
+    // Normalizar la fecha de lanzamiento
+    let normalizedDate = null;
+    if (release_date) {
+      if (release_date.match(/^\d{4}$/)) {
+        // Solo año (ej: "1978") -> convertir a "1978-01-01"
+        normalizedDate = `${release_date}-01-01`;
+      } else if (release_date.match(/^\d{4}-\d{2}$/)) {
+        // Año y mes (ej: "1978-03") -> convertir a "1978-03-01"
+        normalizedDate = `${release_date}-01`;
+      } else if (release_date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // Fecha completa (ej: "1978-03-25") -> usar tal como está
+        normalizedDate = release_date;
+      }
+      // Si no coincide con ningún patrón, dejar como null
+    }
+
     // Si no existe, crear el álbum usando RETURNING para obtener los datos
     album = await run(
       'INSERT INTO albums (spotify_id, name, artist_name, image_url, release_date, total_tracks) VALUES (?, ?, ?, ?, ?, 0) RETURNING *',
-      [spotify_id, name, artist, image_url, release_date]
+      [spotify_id, name, artist, image_url, normalizedDate]
     );
 
     return album;
