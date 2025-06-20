@@ -469,23 +469,27 @@ const AlbumDetailPage = () => {
         // Si está marcado para agregar al registro de escucha, agregarlo
         if (addToListenHistory) {
           try {
+            const payload = {
+              album: {
+                spotify_id: albumData.id,
+                name: albumData.name,
+                artist: albumData.artists[0]?.name,
+                release_date: albumData.release_date,
+                image_url: albumData.images[0]?.url,
+                spotify_url: albumData.external_urls?.spotify
+              },
+              listenedAt: new Date(listenDate + 'T12:00:00.000Z').toISOString()
+            };
+            
+            console.log('Enviando al historial:', JSON.stringify(payload, null, 2));
+            
             const historyResponse = await fetch('/api/listening-history', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
               },
-              body: JSON.stringify({
-                album: {
-                  spotify_id: albumData.id,
-                  name: albumData.name,
-                  artist: albumData.artists[0]?.name,
-                  release_date: albumData.release_date,
-                  image_url: albumData.images[0]?.url,
-                  spotify_url: albumData.external_urls?.spotify
-                },
-                listenedAt: new Date(listenDate + 'T12:00:00').toISOString()
-              })
+              body: JSON.stringify(payload)
             });
 
             if (historyResponse.ok) {
