@@ -453,9 +453,14 @@ export const reviewService = {
         u.username,
         u.profile_image as profile_image_url,
         r.review_text as content,
-        0 as likes
+        COALESCE(like_counts.like_count, 0) as likes
       FROM reviews r
       JOIN users u ON r.user_id = u.id
+      LEFT JOIN (
+        SELECT review_id, COUNT(*) as like_count
+        FROM review_likes
+        GROUP BY review_id
+      ) like_counts ON r.id = like_counts.review_id
       WHERE r.spotify_album_id = ?
       ORDER BY r.created_at DESC
       LIMIT ? OFFSET ?
