@@ -29,14 +29,6 @@ dist/
 *.sqlite
 *.sqlite3
 database.db
-users.db
-tuneboxd_dev.db
-
-# Local development database
-database/dev/tuneboxd_dev.db
-database/dev/*.db
-database/dev/*.sqlite
-database/dev/*.sqlite3
 tuneboxd.db
 users.db
 database-adapter.js
