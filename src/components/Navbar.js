@@ -72,7 +72,7 @@ const Navbar = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-            <div className="text-xl sm:text-2xl font-bold text-theme-accent">
+            <div className="text-xl sm:text-2xl font-bold">
               Tuneboxd
             </div>
           </Link>

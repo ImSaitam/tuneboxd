@@ -1,100 +1,53 @@
-// Adaptador híbrido de base de datos para PostgreSQL y SQLite
+// Adaptador universal de base de datos para PostgreSQL
 import { query as pgQuery, getPool } from './database-postgres.js';
-import * as sqliteDb from './database-sqlite.js';
-
-// Detectar tipo de base de datos basado en DATABASE_URL
-function getDatabaseType() {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    throw new Error('DATABASE_URL is required');
-  }
-  
-  if (url.startsWith('sqlite:')) {
-    return 'sqlite';
-  } else if (url.includes('postgresql') || url.includes('postgres')) {
-    return 'postgresql';
-  } else {
-    throw new Error('Unsupported database type. Use sqlite: or postgresql:// URLs');
-  }
-}
-
-// Función para adaptar SQL según el tipo de base de datos
-function adaptSQL(sql) {
-  const type = getDatabaseType();
-  
-  if (type === 'sqlite') {
-    // Convertir NOW() a datetime('now')
-    sql = sql.replace(/NOW\(\)/g, "datetime('now')");
-    // Convertir CURRENT_TIMESTAMP específicos
-    sql = sql.replace(/DEFAULT CURRENT_TIMESTAMP/g, "DEFAULT (datetime('now'))");
-    // Convertir boolean true/false a 1/0
-    sql = sql.replace(/= true/g, '= 1');
-    sql = sql.replace(/= false/g, '= 0');
-  }
-  
-  return sql;
-}
 
 // Función universal para queries
 export async function query(sql, params = []) {
-  const dbType = getDatabaseType();
-  sql = adaptSQL(sql);
-  
-  if (dbType === 'sqlite') {
-    return await sqliteDb.query(sql, params);
-  } else {
-    // PostgreSQL - convertir ? a $1, $2, etc.
-    let paramIndex = 0;
-    const pgSql = sql.replace(/\?/g, () => {
-      paramIndex++;
-      return `$${paramIndex}`;
-    });
-    
-    const result = await pgQuery(pgSql, params);
-    return result.rows;
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is required. Please configure a PostgreSQL database.');
   }
+  
+  // PostgreSQL usa $1, $2, etc. - Conversión correcta
+  let paramIndex = 0;
+  const pgSql = sql.replace(/\?/g, () => {
+    paramIndex++;
+    return `$${paramIndex}`;
+  });
+  
+  const result = await pgQuery(pgSql, params);
+  return result.rows;
 }
 
 // Función para obtener un solo registro
 export async function get(sql, params = []) {
-  const dbType = getDatabaseType();
-  sql = adaptSQL(sql);
-  
-  if (dbType === 'sqlite') {
-    return await sqliteDb.get(sql, params);
-  } else {
-    const rows = await query(sql, params);
-    return rows[0] || null;
-  }
+  const rows = await query(sql, params);
+  return rows[0] || null;
 }
 
 // Función para ejecutar sin devolver datos
 export async function run(sql, params = []) {
-  const dbType = getDatabaseType();
-  sql = adaptSQL(sql);
-  
-  if (dbType === 'sqlite') {
-    return await sqliteDb.run(sql, params);
-  } else {
-    // PostgreSQL - convertir ? a $1, $2, etc.
-    let paramIndex = 0;
-    const pgSql = sql.replace(/\?/g, () => {
-      paramIndex++;
-      return `$${paramIndex}`;
-    });
-    
-    const result = await pgQuery(pgSql, params);
-    
-    // Si la consulta tiene RETURNING, devolver los datos
-    if (sql.toUpperCase().includes('RETURNING')) {
-      return result.rows[0] || null;
-    }
-    
-    return {
-      changes: result.rowCount || 0,
-      lastID: result.insertId || null
-    };
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is required. Please configure a PostgreSQL database.');
   }
+  
+  // PostgreSQL usa $1, $2, etc. - Conversión correcta
+  let paramIndex = 0;
+  const pgSql = sql.replace(/\?/g, () => {
+    paramIndex++;
+    return `$${paramIndex}`;
+  });
+  
+  const result = await pgQuery(pgSql, params);
+  
+  // Si la consulta tiene RETURNING, devolver los datos
+  if (sql.toUpperCase().includes('RETURNING')) {
+    return result.rows[0] || null;
+  }
+  
+  return {
+    changes: result.rowCount || 0,
+    lastID: result.insertId || null
+  };
 }
 
 // Alias para compatibilidad
@@ -104,12 +57,10 @@ export const runAsync = run;
 
 // Información de la base de datos
 export function getDatabaseInfo() {
-  const dbType = getDatabaseType();
   return {
-    type: dbType,
+    type: 'postgresql',
     isProduction: process.env.NODE_ENV === 'production',
-    hasPostgresUrl: dbType === 'postgresql',
-    hasSqliteUrl: dbType === 'sqlite'
+    hasPostgresUrl: !!process.env.DATABASE_URL
   };
 }
 
