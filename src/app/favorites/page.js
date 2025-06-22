@@ -263,7 +263,7 @@ const FavoritesPage = () => {
                   <div key={track.id} className="group">
                     <div className="relative">
                       <Link href={`/track/${track.track_id}`}>
-                        <div className="aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-red-400 to-teal-400 mb-3 group-hover:scale-105 transition-transform duration-200">
+                        <div className="aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-emerald-400 to-cyan-400 mb-3 group-hover:scale-105 transition-transform duration-200">
                           {track.image_url ? (
                             <Image
                               src={track.image_url}
@@ -319,7 +319,7 @@ const FavoritesPage = () => {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-red-400 to-teal-400 flex items-center justify-center">
+                        <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-cyan-400 flex items-center justify-center">
                           <Music className="w-4 h-4 text-white" />
                         </div>
                       )}

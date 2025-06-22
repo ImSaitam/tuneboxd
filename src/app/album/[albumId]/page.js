@@ -697,7 +697,7 @@ const AlbumDetailPage = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-red-400 to-teal-400 flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-cyan-400 flex items-center justify-center">
                   <Album className="w-16 h-16 text-white" />
                 </div>
               )}
@@ -834,8 +834,8 @@ const AlbumDetailPage = () => {
                     title={hasUserReview ? "Editar tu reseña de este álbum" : "Escribir una reseña de este álbum"}
                     className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg relative overflow-hidden group ${
                       hasUserReview
-                        ? 'bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-700 hover:via-blue-600 hover:to-purple-700'
-                        : 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 hover:from-orange-600 hover:via-red-600 hover:to-pink-700'
+                        ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-cyan-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-cyan-700'
+                        : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700'
                     }`}
                   >
                     {/* Efecto de brillo animado */}
@@ -869,7 +869,7 @@ const AlbumDetailPage = () => {
                       <Link
                         href="/register"
                         title="Regístrate gratis para escribir reseñas, seguir artistas y más"
-                        className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-600 hover:from-emerald-600 hover:via-green-600 hover:to-teal-700 text-white rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg relative overflow-hidden group animate-pulse"
+                        className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700 text-white rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg relative overflow-hidden group animate-pulse"
                       >
                         {/* Efecto de brillo súper llamativo */}
                         <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-800 ease-in-out" />
@@ -1017,8 +1017,8 @@ const AlbumDetailPage = () => {
                         onClick={() => setShowReviewForm(true)}
                         className={`w-full flex items-center justify-center space-x-2 py-4 px-5 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-md relative overflow-hidden group ${
                           hasUserReview
-                            ? 'bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-700 hover:via-blue-600 hover:to-purple-700'
-                            : 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 hover:from-orange-600 hover:via-red-600 hover:to-pink-700'
+                            ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-cyan-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-cyan-700'
+                            : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700'
                         }`}
                       >
                         {/* Efecto de brillo */}
@@ -1120,8 +1120,8 @@ const AlbumDetailPage = () => {
                   onClick={() => setShowReviewForm(true)}
                   className={`flex items-center space-x-2 px-5 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-md relative overflow-hidden group ${
                     hasUserReview
-                      ? 'bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-700 hover:via-blue-600 hover:to-purple-700'
-                      : 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 hover:from-orange-600 hover:via-red-600 hover:to-pink-700'
+                      ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-cyan-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-cyan-700'
+                      : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700'
                   }`}
                 >
                   {/* Efecto de brillo */}
@@ -1144,6 +1144,9 @@ const AlbumDetailPage = () => {
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 rounded-full overflow-hidden">
                           {review.profile_image_url ? (
+                            <Link 
+                            href={`/profile/${review.username}`}
+                            >
                             <Image
                               src={review.profile_image_url}
                               alt={review.username || 'Usuario'}
@@ -1151,6 +1154,7 @@ const AlbumDetailPage = () => {
                               height={40}
                               className="w-full h-full object-cover"
                             />
+                            </Link>
                           ) : (
                             <div className="w-full h-full bg-gradient-to-br from-theme-accent to-theme-accent/60 flex items-center justify-center">
                               <User className="w-5 h-5 text-white" />
@@ -1237,7 +1241,7 @@ const AlbumDetailPage = () => {
                 {isAuthenticated && (
                   <button
                     onClick={() => setShowReviewForm(true)}
-                    className="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 hover:from-orange-600 hover:via-red-600 hover:to-pink-700 text-white rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-110 hover:shadow-2xl shadow-lg mx-auto relative overflow-hidden group"
+                    className="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700 text-white rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-110 hover:shadow-2xl shadow-lg mx-auto relative overflow-hidden group"
                   >
                     {/* Efecto de brillo animado */}
                     <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />

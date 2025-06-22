@@ -663,7 +663,7 @@ const UserProfilePage = () => {
                   )}
                 </div>
               ) : (
-                <div className="w-32 h-32 sm:w-28 sm:h-28 md:w-24 md:h-24 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center">
+                <div className="w-32 h-32 sm:w-28 sm:h-28 md:w-24 md:h-24 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-full flex items-center justify-center">
                   <User className="w-16 h-16 sm:w-14 sm:h-14 md:w-12 md:h-12 text-theme-button" />
                 </div>
               )}
@@ -1276,7 +1276,7 @@ const UserProfilePage = () => {
                           )}
                         </div>
                       ) : (
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-full flex items-center justify-center">
                           <User className="w-6 h-6 text-white" />
                         </div>
                       )}
@@ -1397,7 +1397,7 @@ const UserProfilePage = () => {
                           )}
                         </div>
                       ) : (
-                        <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-600 rounded-full flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-full flex items-center justify-center">
                           <User className="w-6 h-6 text-white" />
                         </div>
                       )}

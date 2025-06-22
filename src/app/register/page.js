@@ -158,7 +158,7 @@ const RegisterPage = () => {
               <button 
                 onClick={handleResendEmail}
                 disabled={resendLoading}
-                className="w-full bg-gradient-to-r from-red-400 to-teal-400 text-white py-3 rounded-2xl font-semibold hover:from-red-500 hover:to-teal-500 transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-70 disabled:transform-none"
+                className="w-full bg-gradient-to-r from-emerald-500 to-cyan-600 text-white py-3 rounded-2xl font-semibold hover:from-emerald-600 hover:to-cyan-700 transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-70 disabled:transform-none"
               >
                 {resendLoading ? (
                   <div className="flex items-center justify-center">
@@ -372,7 +372,7 @@ const RegisterPage = () => {
             <button
               type="submit"
               disabled={loading || !isPasswordValid || !passwordsMatch}
-              className="w-full bg-gradient-to-r from-red-400 to-teal-400 text-white py-3 rounded-2xl font-semibold hover:from-red-500 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg disabled:opacity-70 disabled:transform-none disabled:shadow-none"
+              className="w-full bg-gradient-to-r from-emerald-500 to-cyan-600 text-white py-3 rounded-2xl font-semibold hover:from-emerald-600 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg disabled:opacity-70 disabled:transform-none disabled:shadow-none"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
