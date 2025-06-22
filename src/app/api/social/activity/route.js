@@ -51,7 +51,7 @@ export async function GET(request) {
         a.spotify_id as album_spotify_id
       FROM reviews r
       JOIN users u ON r.user_id = u.id
-      JOIN albums a ON r.album_id = a.id
+      JOIN albums a ON r.spotify_album_id = a.spotify_id
       WHERE r.user_id IN (
         SELECT following_id FROM follows WHERE follower_id = ?
       )
