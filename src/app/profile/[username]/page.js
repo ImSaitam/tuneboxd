@@ -681,22 +681,28 @@ const UserProfilePage = () => {
             {/* Quick Stats and Actions */}
             <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 w-full md:w-auto">
               <div className="grid grid-cols-4 gap-3 w-full md:flex md:space-x-6 md:gap-0 md:w-auto">
-                <div className="text-center">
+                <div className="flex flex-col items-center justify-center text-center w-full">
                   <div className="text-xl sm:text-2xl font-bold text-theme-primary">{userStats?.totalReviews || 0}</div>
                   <div className="text-xs sm:text-sm text-theme-secondary">Reseñas</div>
                 </div>
-                <div className="text-center">
+                <div className="flex flex-col items-center justify-center text-center w-full">
                   <div className="text-xl sm:text-2xl font-bold text-theme-primary">{userStats?.averageRating || '0.0'}</div>
                   <div className="text-xs sm:text-sm text-theme-secondary">Promedio</div>
                 </div>
-                <div className="text-center">
+                <button 
+                  onClick={() => setActiveTab('followers')}
+                  className="hover:bg-theme-hover rounded-lg px-2 py-1 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center text-center w-full"
+                >
                   <div className="text-xl sm:text-2xl font-bold text-theme-primary">{userStats?.followers || 0}</div>
                   <div className="text-xs sm:text-sm text-theme-secondary">Seguidores</div>
-                </div>
-                <div className="text-center">
+                </button>
+                <button 
+                  onClick={() => setActiveTab('following')}
+                  className="hover:bg-theme-hover rounded-lg px-2 py-1 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center text-center w-full"
+                >
                   <div className="text-xl sm:text-2xl font-bold text-theme-primary">{userStats?.following || 0}</div>
                   <div className="text-xs sm:text-sm text-theme-secondary">Siguiendo</div>
-                </div>
+                </button>
               </div>
 
               {/* Follow Button (only if not own profile and user is authenticated) */}

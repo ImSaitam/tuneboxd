@@ -211,6 +211,7 @@ const SocialPage = () => {
             <div className="flex items-start gap-4">
               {/* Album/Artist Image */}
               <div className="flex-shrink-0">
+                <Link href={`/album/${activity.album_spotify_id}`}>
                 <Image
                   src={activity.image_url || '/placeholder-artist.jpg'}
                   alt={activity.album_name}
@@ -218,6 +219,7 @@ const SocialPage = () => {
                   height={64}
                   className="w-16 h-16 rounded-lg object-cover"
                 />
+                </Link>
               </div>
 
               <div className="flex-1">
