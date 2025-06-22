@@ -135,17 +135,14 @@ const UserProfilePage = () => {
       );
 
       // Artistas seguidos - disponible para todos los usuarios usando el endpoint público
-      console.log('🔍 Loading followed artists for user:', userData.user.id);
       requests.push(
         fetch(`/api/artists/following/${userData.user.id}`, {
           signal
         })
           .then(res => {
-            console.log('🔍 Artists following response:', res.status);
             return res.ok ? res.json() : null;
           })
           .then(data => {
-            console.log('🔍 Artists following data received:', data);
             if (data && data.artists) {
               setFollowedArtists(data.artists);
             } else {
@@ -761,10 +758,10 @@ const UserProfilePage = () => {
 
       {/* Tab Navigation */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap gap-2 mb-8 overflow-x-auto">
+        <div className="flex gap-3 mb-8 overflow-x-auto scrollbar-hide pb-2">
           <button
             onClick={() => setActiveTab('reviews')}
-            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
+            className={`px-6 py-4 sm:px-6 sm:py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
               activeTab === 'reviews'
                 ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
                 : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
@@ -776,7 +773,7 @@ const UserProfilePage = () => {
           </button>
           <button
             onClick={() => setActiveTab('registro')}
-            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
+            className={`px-6 py-4 sm:px-6 sm:py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
               activeTab === 'registro'
                 ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
                 : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
@@ -788,7 +785,7 @@ const UserProfilePage = () => {
           </button>
           <button
             onClick={() => setActiveTab('artists')}
-            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
+            className={`px-6 py-4 sm:px-6 sm:py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
               activeTab === 'artists'
                 ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
                 : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
@@ -800,7 +797,7 @@ const UserProfilePage = () => {
           </button>
           <button
             onClick={() => setActiveTab('stats')}
-            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
+            className={`px-6 py-4 sm:px-6 sm:py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
               activeTab === 'stats'
                 ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
                 : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
@@ -812,7 +809,7 @@ const UserProfilePage = () => {
           </button>
           <button
             onClick={() => setActiveTab('followers')}
-            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
+            className={`px-6 py-4 sm:px-6 sm:py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
               activeTab === 'followers'
                 ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
                 : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
@@ -824,7 +821,7 @@ const UserProfilePage = () => {
           </button>
           <button
             onClick={() => setActiveTab('following')}
-            className={`px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap ${
+            className={`px-6 py-4 sm:px-6 sm:py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
               activeTab === 'following'
                 ? 'bg-theme-card text-theme-primary shadow-lg backdrop-blur-sm border border-theme-border'
                 : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-hover'
