@@ -7,6 +7,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useNotifications } from '../../../hooks/useNotifications';
 import { useTheme } from '../../../hooks/useTheme';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function ArtistPage() {
   const params = useParams();
@@ -25,6 +26,7 @@ export default function ArtistPage() {
   const [albumTracks, setAlbumTracks] = useState([]);
   const [loadingTracks, setLoadingTracks] = useState(false);
   const [isAlbumModalAnimating, setIsAlbumModalAnimating] = useState(false);
+  const [activeTab, setActiveTab] = useState('albums');
 
   // Obtener el ID del artista de los parámetros de URL
   const artistId = params.artistId;
@@ -288,20 +290,28 @@ export default function ArtistPage() {
 
   if (loading) {
     return (
-      <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className={`h-8 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded w-1/3 mb-6`}></div>
-            <div className="grid md:grid-cols-4 gap-8">
-              <div className={`h-80 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded-lg`}></div>
-              <div className="md:col-span-3">
-                <div className={`h-10 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded w-3/4 mb-4`}></div>
-                <div className={`h-6 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded w-1/2 mb-6`}></div>
-                <div className="space-y-3">
-                  <div className={`h-4 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded`}></div>
-                  <div className={`h-4 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'} rounded w-3/4`}></div>
-                </div>
+      <div className="min-h-screen bg-theme-background">
+        <div className="animate-pulse">
+          <div className="h-96 bg-gradient-to-b from-theme-card-hover to-theme-background relative">
+            <div className="absolute inset-0 bg-black/20" />
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8 flex items-end">
+              <div className="h-64 w-64 bg-theme-card rounded-2xl mr-8" />
+              <div className="flex-1">
+                <div className="h-4 bg-theme-card rounded w-20 mb-4" />
+                <div className="h-12 bg-theme-card rounded w-80 mb-4" />
+                <div className="h-6 bg-theme-card rounded w-60" />
               </div>
+            </div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-theme-card rounded-2xl p-4 border border-theme-border">
+                  <div className="aspect-square bg-theme-card-hover rounded-xl mb-4" />
+                  <div className="h-4 bg-theme-card-hover rounded mb-2" />
+                  <div className="h-3 bg-theme-card-hover rounded w-3/4" />
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -311,15 +321,20 @@ export default function ArtistPage() {
 
   if (error || !artist) {
     return (
-      <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} flex items-center justify-center`}>
-        <div className={`text-center ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-          <h1 className="text-2xl font-bold mb-4">
+      <div className="min-h-screen bg-theme-background flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-6">
+          <User className="w-16 h-16 text-theme-muted mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-theme-primary mb-4">
             {error || 'Artista no encontrado'}
           </h1>
-          <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
+          <p className="text-theme-secondary mb-4">
             {error ? 'Hubo un error al cargar el artista.' : 'No se pudo encontrar el artista solicitado.'}
           </p>
-          <Link href="/" className="text-blue-500 hover:text-blue-600">
+          <Link 
+            href="/" 
+            className="inline-flex items-center px-6 py-3 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-xl transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
             Volver al inicio
           </Link>
         </div>
@@ -328,211 +343,389 @@ export default function ArtistPage() {
   }
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Link href="/" className={`${theme === 'dark' ? 'text-white hover:text-gray-300' : 'text-gray-900 hover:text-gray-700'} transition-colors`}>
-            <ArrowLeft size={24} />
+    <div className="min-h-screen bg-theme-background">
+      {/* Header con imagen de fondo */}
+      <div className="relative pb-8" style={{ minHeight: '400px' }}>
+        {/* Imagen de fondo */}
+        {artist?.images?.[0]?.url && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${artist.images[0].url})`,
+            }}
+          />
+        )}
+        {/* Gradiente de overlay */}
+        <div className="absolute inset-0 bg-gradient-album-header" />
+        {/* Overlay adicional para mejorar legibilidad */}
+        <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-black/40' : 'bg-white/40'}`} />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+          {/* Botón de retroceso */}
+          <Link 
+            href="/"
+            className={`inline-flex items-center transition-colors mb-8 ${
+              theme === 'dark' 
+                ? 'text-white/80 hover:text-white' 
+                : 'text-black/80 hover:text-black'
+            }`}
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Volver
           </Link>
-          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Detalles del Artista</h1>
-        </div>
 
-        {/* Artist Info */}
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
-          {/* Artist Image */}
-          <div className="flex justify-center">
-            <div className="relative group">
-              {artist.images && artist.images.length > 0 ? (
-                <img
-                  src={artist.images[0]?.url}
+          {/* Información principal del artista */}
+          <div className="flex flex-col md:flex-row items-start md:items-end space-y-6 md:space-y-0 md:space-x-8 min-w-0 w-full">
+            {/* Foto del artista */}
+            <div className="w-64 h-64 rounded-2xl overflow-hidden shadow-2xl flex-shrink-0">
+              {artist?.images?.[0]?.url ? (
+                <Image
+                  src={artist.images[0].url}
                   alt={artist.name}
-                  className="w-80 h-80 object-cover rounded-full shadow-2xl group-hover:scale-105 transition-transform duration-300"
+                  width={256}
+                  height={256}
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-80 h-80 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-2xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                  <User size={120} className="text-white/70" />
+                <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-cyan-400 flex items-center justify-center">
+                  <User className="w-16 h-16 text-white" />
                 </div>
               )}
-              <div className="absolute inset-0 bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+
+            {/* Información del artista */}
+            <div className="flex-1 min-w-0 max-w-full">
+              <div className={`text-sm mb-2 uppercase tracking-wide ${
+                theme === 'dark' ? 'text-white/60' : 'text-black/60'
+              }`}>Artista</div>
+              
+              {/* Nombre del artista */}
+              <h1 className={`font-bold mb-4 leading-tight ${
+                theme === 'dark' ? 'text-white' : 'text-black'
+              } ${
+                artist?.name?.length > 50 
+                  ? 'text-xl md:text-2xl' 
+                  : artist?.name?.length > 30 
+                    ? 'text-2xl md:text-3xl' 
+                    : 'text-3xl md:text-4xl lg:text-5xl'
+              }`} style={{ 
+                wordBreak: 'break-word', 
+                overflowWrap: 'break-word', 
+                hyphens: 'auto',
+                lineHeight: '1.1'
+              }}>
+                {artist?.name}
+              </h1>
+              
+              {/* Información adicional */}
+              <div className={`flex flex-wrap items-center gap-2 md:gap-4 mb-6 text-sm md:text-base ${
+                theme === 'dark' ? 'text-white/70' : 'text-black/70'
+              }`}>
+                <span>{appFollowersCount.toLocaleString()} seguidores en TuneBoxd</span>
+                <span>•</span>
+                <span>{albums?.length || 0} álbumes</span>
+              </div>
+
+              {/* Controles de acciones */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Botones de acciones rápidas */}
+                <div className="flex items-center space-x-3">
+                  {/* Botón de seguir/dejar de seguir */}
+                  {isAuthenticated ? (
+                    <button
+                      onClick={handleFollowToggle}
+                      disabled={followLoading}
+                      title={isFollowing ? "Dejar de seguir artista" : "Seguir artista"}
+                      className={`p-3 rounded-full transition-colors ${
+                        isFollowing 
+                          ? 'text-red-400 hover:text-red-300' 
+                          : theme === 'dark' 
+                            ? 'text-white/60 hover:text-white'
+                            : 'text-black/60 hover:text-black'
+                      }`}
+                    >
+                      {isFollowing ? (
+                        <HeartOff className={`w-6 h-6 ${isFollowing ? 'fill-current' : ''}`} />
+                      ) : (
+                        <Heart className="w-6 h-6" />
+                      )}
+                    </button>
+                  ) : null}
+
+                  {artist?.external_urls?.spotify && (
+                    <a
+                      href={artist.external_urls.spotify}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Abrir en Spotify"
+                      className={`p-3 rounded-full transition-colors ${
+                        theme === 'dark' 
+                          ? 'text-white/60 hover:text-white'
+                          : 'text-black/60 hover:text-black'
+                      }`}
+                    >
+                      <ExternalLink className="w-6 h-6" />
+                    </a>
+                  )}
+                </div>
+
+                {/* Botón de seguir prominente */}
+                {isAuthenticated && (
+                  <button
+                    onClick={handleFollowToggle}
+                    disabled={followLoading}
+                    title={isFollowing ? "Dejar de seguir este artista" : "Seguir este artista"}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg relative overflow-hidden group ${
+                      followLoading
+                        ? 'bg-gray-500 cursor-not-allowed'
+                        : isFollowing
+                          ? 'bg-gradient-to-r from-red-600 via-red-500 to-pink-600 hover:from-red-700 hover:via-red-600 hover:to-pink-700'
+                          : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700'
+                    }`}
+                  >
+                    {/* Efecto de brillo animado */}
+                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                    
+                    {followLoading ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin relative z-10" />
+                    ) : isFollowing ? (
+                      <HeartOff className="w-5 h-5 relative z-10" />
+                    ) : (
+                      <Heart className="w-5 h-5 relative z-10" />
+                    )}
+                    <span className="hidden sm:inline relative z-10 text-lg">
+                      {followLoading 
+                        ? 'Actualizando...' 
+                        : isFollowing 
+                          ? 'Dejar de seguir' 
+                          : 'Seguir artista'
+                      }
+                    </span>
+                    <span className="sm:hidden relative z-10 font-bold">
+                      {followLoading 
+                        ? 'Cargando...' 
+                        : isFollowing 
+                          ? 'Dejar de seguir' 
+                          : 'Seguir'
+                      }
+                    </span>
+                  </button>
+                )}
+
+                {/* LLAMADA A LA ACCIÓN PARA USUARIOS NO AUTENTICADOS */}
+                {!isAuthenticated && (
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    {/* Mensaje motivacional */}
+                    <div className={`text-center sm:text-left ${
+                      theme === 'dark' ? 'text-white' : 'text-black'
+                    }`}>
+                      <p className="text-lg font-semibold mb-1">¿Te gusta {artist?.name}?</p>
+                      <p className={`text-sm ${theme === 'dark' ? 'text-white/70' : 'text-black/70'}`}>
+                        ¡Crea una cuenta GRATIS para seguir al artista!
+                      </p>
+                    </div>
+
+                    {/* Botones de acción súper llamativos */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Link
+                        href="/register"
+                        title="Regístrate gratis para seguir artistas, escribir reseñas y más"
+                        className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700 text-white rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg relative overflow-hidden group animate-pulse"
+                      >
+                        {/* Efecto de brillo súper llamativo */}
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-800 ease-in-out" />
+                        
+                        <Heart className="w-6 h-6 relative z-10" />
+                        <span className="relative z-10">Crear cuenta GRATIS</span>
+                      </Link>
+
+                      <Link
+                        href="/login"
+                        title="Inicia sesión para acceder a todas las funciones"
+                        className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg border-2 ${
+                          theme === 'dark' 
+                            ? 'border-white/30 text-white hover:bg-white/10' 
+                            : 'border-black/30 text-black hover:bg-black/10'
+                        }`}
+                      >
+                        <span className="text-lg">Iniciar sesión</span>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Géneros */}
+              {artist?.genres && artist.genres.length > 0 && (
+                <div className="mt-6">
+                  <div className="flex flex-wrap gap-2">
+                    {artist.genres.slice(0, 5).map((genre, index) => (
+                      <span
+                        key={index}
+                        className={`px-3 py-1 rounded-full text-sm ${
+                          theme === 'dark' 
+                            ? 'bg-white/10 text-white/80' 
+                            : 'bg-black/10 text-black/80'
+                        }`}
+                      >
+                        {genre.charAt(0).toUpperCase() + genre.slice(1)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Artist Details */}
-          <div className="md:col-span-3">
-            <h2 className={`text-4xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{artist.name}</h2>
-            
-            <div className="flex items-center gap-6 mb-6">
-              <div className="flex items-center gap-2">
-                <User size={20} className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
-                <span className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                  {appFollowersCount.toLocaleString()} seguidores en Tuneboxd
-                </span>
-              </div>
-              <a
-                href={artist.external_urls?.spotify}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-green-500 hover:text-green-600 transition-colors"
-              >
-                <ExternalLink size={20} />
-                <span>Abrir en Spotify</span>
-              </a>
+      {/* Contenido principal */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Navegación por pestañas */}
+        <div className="flex gap-3 mb-8 overflow-x-auto scrollbar-hide pb-2 border-b border-theme">
+          {[
+            { key: 'albums', label: 'Álbumes', icon: Music },
+            { key: 'info', label: 'Información', icon: Info },
+          ].map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`flex items-center space-x-2 px-6 py-4 sm:px-6 sm:py-3 font-medium transition-colors whitespace-nowrap flex-shrink-0 rounded-xl ${
+                activeTab === key
+                  ? 'text-theme-accent bg-theme-accent/10 border-2 border-theme-accent'
+                  : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-card-hover border-2 border-transparent'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Contenido de las pestañas */}
+        {activeTab === 'albums' && (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-theme-primary">
+                Álbumes
+              </h2>
+              <span className="text-theme-muted text-sm">
+                {albums?.length || 0} álbumes
+              </span>
             </div>
 
-            {/* Follow Button */}
-            <div className="mb-6">
-              {isAuthenticated ? (
-                <button
-                  onClick={handleFollowToggle}
-                  disabled={followLoading}
-                  className={`flex items-center gap-2 py-3 px-6 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
-                    isFollowing
-                      ? 'bg-red-500 hover:bg-red-600 text-white'
-                      : 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
-                  } disabled:opacity-50 disabled:transform-none disabled:cursor-not-allowed`}
-                >
-                  {followLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : isFollowing ? (
-                    <HeartOff size={20} />
-                  ) : (
-                    <Heart size={20} />
-                  )}
-                  {followLoading 
-                    ? 'Actualizando...' 
-                    : isFollowing 
-                      ? 'Dejar de seguir' 
-                      : 'Seguir artista'
-                  }
-                </button>
-              ) : (
-                <div className={`${theme === 'dark' ? 'bg-blue-500/20 border-blue-500/30' : 'bg-blue-100 border-blue-300'} border rounded-lg p-4`}>
-                  <p className={`${theme === 'dark' ? 'text-blue-300' : 'text-blue-700'} text-center`}>
-                    <Link href="/login" className={`underline ${theme === 'dark' ? 'hover:text-blue-200' : 'hover:text-blue-600'}`}>
-                      Inicia sesión
-                    </Link> para seguir artistas
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Official Genres from Spotify */}
-            {artist.genres && artist.genres.length > 0 && (
-              <div>
-                <h4 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Géneros</h4>
-                <div className="flex flex-wrap gap-2">
-                  {artist.genres.map((genre, index) => (
-                    <span
-                      key={index}
-                      className={`px-3 py-1 ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded-full text-sm`}
+            {albums && albums.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                {albums.map((album) => (
+                  <div 
+                    key={album.id} 
+                    className="bg-theme-card backdrop-blur-sm rounded-2xl p-4 border border-theme-border hover:bg-theme-hover transition-all duration-300 group"
+                  >
+                    <Link
+                      href={`/album/${album.id}`}
+                      className="block"
                     >
-                      {genre}
-                    </span>
-                  ))}
-                </div>
+                      <div className="relative mb-4">
+                        <Image
+                          src={album.images[0]?.url || '/placeholder-album.jpg'}
+                          alt={album.name}
+                          width={200}
+                          height={200}
+                          className="w-full aspect-square object-cover rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-lg"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-xl transition-colors duration-300" />
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="text-theme-primary font-semibold text-sm line-clamp-2 group-hover:text-theme-accent transition-colors">
+                          {album.name}
+                        </h4>
+                        <p className="text-theme-secondary text-xs">
+                          {album.release_date?.split('-')[0]} • {album.total_tracks} canciones
+                        </p>
+                      </div>
+                    </Link>
+                    
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAlbumInfo(album);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 mt-3 px-3 py-2 bg-theme-accent hover:bg-theme-accent/80 text-theme-button text-xs rounded-xl transition-colors font-medium"
+                    >
+                      <Info className="w-4 h-4" />
+                      Más información
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <Music className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-theme-primary mb-2">
+                  No se encontraron álbumes
+                </h3>
+                <p className="text-theme-muted">
+                  No hay álbumes disponibles para este artista en este momento.
+                </p>
               </div>
             )}
           </div>
-        </div>
-
-        {/* Albums Section */}
-        <div className={`${theme === 'dark' ? 'bg-gray-800/50' : 'bg-white/80'} backdrop-blur-md rounded-lg p-6 mb-8 shadow-lg`}>
-          <h3 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Álbumes</h3>
-          
-          {albums && albums.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {albums.map((album) => (
-                <div key={album.id} className={`${theme === 'dark' ? 'bg-gray-700/30 hover:bg-gray-700/50' : 'bg-white/70 hover:bg-white/90'} rounded-lg p-4 transition-colors shadow-md`}>
-                  <Link
-                    href={`/album/${album.id}`}
-                    className="block group"
-                  >
-                    <img
-                      src={album.images[0]?.url || '/placeholder-album.jpg'}
-                      alt={album.name}
-                      className="w-full aspect-square object-cover rounded-lg mb-3 group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <h4 className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'} font-semibold text-sm mb-1 truncate`}>
-                      {album.name}
-                    </h4>
-                    <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} text-xs truncate mb-3`}>
-                      {album.release_date?.split('-')[0]} • {album.total_tracks} tracks
-                    </p>
-                  </Link>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAlbumInfo(album);
-                    }}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg transition-colors"
-                  >
-                    <Info size={14} />
-                    Más info
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-center py-8`}>
-              No se encontraron álbumes para este artista.
-            </p>
-          )}
-        </div>
+        )}
 
         {/* Modal para información del álbum */}
         {selectedAlbum && (
           <div 
-            className={`fixed inset-0 bg-black/50 modal-backdrop flex items-center justify-center z-50 p-4 ${
+            className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${
               isAlbumModalAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
             }`}
             onClick={closeAlbumModal}
           >
             <div 
-              className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'} shadow-2xl ${
+              className={`bg-theme-card backdrop-blur-sm rounded-2xl w-full max-w-4xl max-h-[90vh] border border-theme-border shadow-2xl flex flex-col ${
                 isAlbumModalAnimating ? 'modal-scale-enter' : 'modal-scale-exit'
               }`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header del modal */}
-              <div className={`flex items-center justify-between p-6 border-b ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}>
+              <div className="flex items-center justify-between p-6 border-b border-theme-border flex-shrink-0">
                 <div className="flex items-center gap-4">
-                  <img
+                  <Image
                     src={selectedAlbum.images[0]?.url || '/placeholder-album.jpg'}
                     alt={selectedAlbum.name}
-                    className="w-16 h-16 object-cover rounded-lg"
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 object-cover rounded-xl shadow-lg"
                   />
                   <div>
-                    <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{selectedAlbum.name}</h3>
-                    <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <h3 className="text-xl font-bold text-theme-primary">{selectedAlbum.name}</h3>
+                    <p className="text-theme-secondary">
                       {artist?.name} • {selectedAlbum.release_date?.split('-')[0]} • {selectedAlbum.total_tracks} canciones
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={closeAlbumModal}
-                  className={`${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors p-2`}
+                  className="text-theme-muted hover:text-theme-primary transition-colors p-2 rounded-lg hover:bg-theme-hover"
                 >
-                  <X size={24} />
+                  <X className="w-6 h-6" />
                 </button>
               </div>
 
               {/* Contenido del modal */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="p-6 overflow-y-auto flex-1 min-h-0">
                 {loadingTracks ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="flex flex-col items-center space-y-4">
-                      <div className={`w-8 h-8 border-2 ${theme === 'dark' ? 'border-gray-600 border-t-white' : 'border-gray-300 border-t-gray-900'} rounded-full animate-spin`}></div>
-                      <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Cargando canciones...</p>
+                      <div className="w-8 h-8 border-2 border-theme-accent border-t-transparent rounded-full animate-spin"></div>
+                      <p className="text-theme-primary">Cargando canciones...</p>
                     </div>
                   </div>
                 ) : albumTracks.length > 0 ? (
                   <div className="space-y-2">
-                    <div className={`grid grid-cols-12 gap-4 px-4 py-2 text-xs font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wider border-b ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}>
+                    <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-semibold text-theme-muted uppercase tracking-wider border-b border-theme-border">
                       <div className="col-span-1">#</div>
                       <div className="col-span-8">Título</div>
                       <div className="col-span-3 text-right">
-                        <Clock size={14} className="inline mr-1" />
+                        <Clock className="inline w-4 h-4 mr-1" />
                         Duración
                       </div>
                     </div>
@@ -540,27 +733,27 @@ export default function ArtistPage() {
                       <Link
                         key={track.id}
                         href={`/track/${track.id}`}
-                        className={`grid grid-cols-12 gap-4 px-4 py-3 ${theme === 'dark' ? 'hover:bg-gray-700/30' : 'hover:bg-gray-100'} rounded-lg transition-colors group cursor-pointer`}
+                        className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-theme-hover rounded-xl transition-colors group cursor-pointer"
                       >
                         <div className="col-span-1 flex items-center">
-                          <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} text-sm font-medium`}>
+                          <span className="text-theme-muted text-sm font-medium">
                             {index + 1}
                           </span>
                         </div>
                         <div className="col-span-8 flex items-center min-w-0">
                           <div className="min-w-0">
-                            <h4 className={`${theme === 'dark' ? 'text-white group-hover:text-blue-300' : 'text-gray-900 group-hover:text-blue-600'} font-medium truncate transition-colors`}>
+                            <h4 className="text-theme-primary group-hover:text-theme-accent font-medium truncate transition-colors">
                               {track.name}
                             </h4>
                             {track.explicit && (
-                              <span className={`inline-block ${theme === 'dark' ? 'bg-gray-600 text-gray-300' : 'bg-gray-300 text-gray-700'} text-xs px-1.5 py-0.5 rounded mt-1`}>
+                              <span className="inline-block bg-theme-muted/20 text-theme-muted text-xs px-1.5 py-0.5 rounded mt-1">
                                 Explícito
                               </span>
                             )}
                           </div>
                         </div>
                         <div className="col-span-3 flex items-center justify-end">
-                          <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                          <span className="text-theme-muted text-sm">
                             {formatDuration(track.duration_ms)}
                           </span>
                         </div>
@@ -569,11 +762,11 @@ export default function ArtistPage() {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <Music className={`w-16 h-16 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} mx-auto mb-4`} />
-                    <h3 className={`text-xl font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-2`}>
+                    <Music className="w-16 h-16 text-theme-muted mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-theme-primary mb-2">
                       No se pudieron cargar las canciones
                     </h3>
-                    <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p className="text-theme-muted">
                       No hay información disponible sobre las canciones de este álbum.
                     </p>
                   </div>
@@ -581,17 +774,17 @@ export default function ArtistPage() {
               </div>
 
               {/* Footer del modal */}
-              <div className={`flex items-center justify-between p-6 border-t ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}>
+              <div className="flex items-center justify-between p-6 border-t border-theme-border flex-shrink-0">
                 <Link
                   href={`/album/${selectedAlbum.id}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-theme-accent hover:bg-theme-accent/80 text-theme-button rounded-xl font-medium transition-colors"
                 >
-                  <ExternalLink size={16} />
+                  <ExternalLink className="w-4 h-4" />
                   Ver página del álbum
                 </Link>
                 <button
                   onClick={closeAlbumModal}
-                  className={`px-4 py-2 ${theme === 'dark' ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-300 hover:bg-gray-400'} ${theme === 'dark' ? 'text-white' : 'text-gray-900'} rounded-lg font-medium transition-colors`}
+                  className="px-6 py-3 bg-theme-card hover:bg-theme-hover text-theme-primary rounded-xl font-medium transition-colors border border-theme-border"
                 >
                   Cerrar
                 </button>

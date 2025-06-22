@@ -1247,7 +1247,7 @@ const AlbumDetailPage = () => {
                     <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
                     
                     <Star className="w-6 h-6 animate-pulse relative z-10" />
-                    <span className="relative z-10">🎵 Escribir primera reseña</span>
+                    <span className="relative z-10">Escribir primera reseña</span>
                   </button>
                 )}
               </div>
