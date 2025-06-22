@@ -513,12 +513,6 @@ const TrackDetailPage = () => {
                     </div>
                   </div>
                   <div>
-                    <div className="text-theme-muted text-sm">Popularidad</div>
-                    <div className="text-theme-primary font-medium">
-                      {track?.popularity}/100
-                    </div>
-                  </div>
-                  <div>
                     <div className="text-theme-muted text-sm">Álbum</div>
                     <Link 
                       href={`/album/${track?.album?.id}`}

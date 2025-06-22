@@ -28,7 +28,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useTheme } from '@/hooks/useTheme';
-// import AddToListModal from '@/components/AddToListModal';
+import AddToListModal from '@/components/AddToListModal';
 
 const AlbumDetailPage = () => {
   const params = useParams();
@@ -832,7 +832,7 @@ const AlbumDetailPage = () => {
                   <button
                     onClick={() => setShowReviewForm(true)}
                     title={hasUserReview ? "Editar tu reseña de este álbum" : "Escribir una reseña de este álbum"}
-                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-110 hover:shadow-2xl shadow-lg relative overflow-hidden group ${
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg relative overflow-hidden group ${
                       hasUserReview
                         ? 'bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-700 hover:via-blue-600 hover:to-purple-700'
                         : 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 hover:from-orange-600 hover:via-red-600 hover:to-pink-700'
@@ -1281,12 +1281,19 @@ const AlbumDetailPage = () => {
       </div>
 
       {/* Modal para agregar a lista */}
-      {/* {showAddToListModal && (
+      {showAddToListModal && (
         <AddToListModal
+          album={{
+            id: album?.id,
+            spotify_id: albumData?.id,
+            name: albumData?.name,
+            artist: albumData?.artists[0]?.name,
+            image_url: albumData?.images[0]?.url,
+            release_date: albumData?.release_date,
+            spotify_url: albumData?.external_urls?.spotify
+          }}
           isOpen={showAddToListModal}
           onClose={() => setShowAddToListModal(false)}
-          albumId={album?.id}
-          albumData={albumData}
         />
       )}
 
