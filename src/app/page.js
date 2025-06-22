@@ -335,17 +335,17 @@ const TuneboxdApp = () => {
               <>
                 <button
                   onClick={() => scrollToSection("#features")}
-                  className="relative bg-gradient-to-r from-red-400 to-teal-400 text-white px-8 py-4 rounded-full text-lg font-semibold hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden group"
+                  className="relative bg-theme-accent text-theme-button px-8 py-4 rounded-full text-lg font-semibold hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden group"
                 >
                   <span className="relative z-10">
                     Comenzar mi viaje musical
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:left-full transition-all duration-500"></div>
                 </button>
                 <Link
                   href="/register"
-                  className="relative bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/20 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 text-center"
+                  className="relative bg-white/10 backdrop-blur-md border border-white/20 text-theme-primary px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/20 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 text-center"
                 >
                   Crear cuenta gratis
                 </Link>
