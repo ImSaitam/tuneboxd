@@ -656,7 +656,7 @@ const AlbumDetailPage = () => {
   return (
     <div className="min-h-screen bg-theme-background">
       {/* Header con imagen de fondo */}
-      <div className="min-h-96 max-h-[500px] relative overflow-hidden">
+      <div className="relative pb-8" style={{ minHeight: '400px' }}>
         {/* Imagen de fondo */}
         {albumData?.images?.[0]?.url && (
           <div 
@@ -685,7 +685,7 @@ const AlbumDetailPage = () => {
           </Link>
 
           {/* Información principal del álbum */}
-          <div className="flex flex-col md:flex-row items-start md:items-end space-y-6 md:space-y-0 md:space-x-8 overflow-hidden min-w-0 w-full max-h-80">
+          <div className="flex flex-col md:flex-row items-start md:items-end space-y-6 md:space-y-0 md:space-x-8 min-w-0 w-full">
             {/* Portada del álbum */}
             <div className="w-64 h-64 rounded-2xl overflow-hidden shadow-2xl flex-shrink-0">
               {albumData?.images?.[0]?.url ? (
@@ -704,34 +704,51 @@ const AlbumDetailPage = () => {
             </div>
 
             {/* Información del álbum */}
-            <div className="flex-1 min-w-0 max-w-full text-container">
+            <div className="flex-1 min-w-0 max-w-full">
               <div className={`text-sm mb-2 uppercase tracking-wide ${
                 theme === 'dark' ? 'text-white/60' : 'text-black/60'
               }`}>Álbum</div>
-              <h1 className={`font-bold mb-4 leading-tight album-title overflow-hidden ${
+              
+              {/* Título del álbum - Sin restricciones de altura */}
+              <h1 className={`font-bold mb-3 leading-tight ${
                 theme === 'dark' ? 'text-white' : 'text-black'
               } ${
                 albumData?.name?.length > 50 
                   ? 'text-xl md:text-2xl' 
                   : albumData?.name?.length > 30 
                     ? 'text-2xl md:text-3xl' 
-                    : 'text-3xl md:text-5xl'
-              }`} style={{ wordBreak: 'break-word', overflowWrap: 'break-word', hyphens: 'auto' }}>
+                    : 'text-3xl md:text-4xl lg:text-5xl'
+              }`} style={{ 
+                wordBreak: 'break-word', 
+                overflowWrap: 'break-word', 
+                hyphens: 'auto',
+                lineHeight: '1.1'
+              }}>
                 {albumData?.name}
               </h1>
               
-              <div className={`flex flex-wrap items-center gap-4 mb-6 max-w-full ${
-                theme === 'dark' ? 'text-white/80' : 'text-black/80'
-              }`}>
+              {/* Nombre del artista destacado */}
+              <div className="mb-4">
                 <Link 
                   href={`/artist/${albumData?.artists[0]?.id}`}
-                  className={`text-xl font-semibold transition-colors break-words max-w-full ${
-                    theme === 'dark' ? 'hover:text-white' : 'hover:text-black'
+                  className={`text-lg md:text-xl font-semibold transition-colors block ${
+                    theme === 'dark' 
+                      ? 'text-white/90 hover:text-white' 
+                      : 'text-black/90 hover:text-black'
                   }`}
+                  style={{ 
+                    wordBreak: 'break-word', 
+                    overflowWrap: 'break-word' 
+                  }}
                 >
                   {albumData?.artists[0]?.name}
                 </Link>
-                <span>•</span>
+              </div>
+              
+              {/* Información adicional */}
+              <div className={`flex flex-wrap items-center gap-2 md:gap-4 mb-6 text-sm md:text-base ${
+                theme === 'dark' ? 'text-white/70' : 'text-black/70'
+              }`}>
                 <span>{albumData?.release_date?.substring(0, 4)}</span>
                 <span>•</span>
                 <span>{albumTracks.length} canciones</span>
@@ -740,66 +757,140 @@ const AlbumDetailPage = () => {
               </div>
 
               {/* Controles de acciones */}
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={handleLikeToggle}
-                  className={`p-3 rounded-full transition-colors ${
-                    inListenList 
-                      ? 'text-red-400 hover:text-red-300' 
-                      : theme === 'dark' 
-                        ? 'text-white/60 hover:text-white'
-                        : 'text-black/60 hover:text-black'
-                  }`}
-                >
-                  <Heart className={`w-6 h-6 ${inListenList ? 'fill-current' : ''}`} />
-                </button>
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Botones de acciones rápidas */}
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={handleLikeToggle}
+                    title={inListenList ? "Quitar de lista de escucha" : "Agregar a lista de escucha"}
+                    className={`p-3 rounded-full transition-colors ${
+                      inListenList 
+                        ? 'text-red-400 hover:text-red-300' 
+                        : theme === 'dark' 
+                          ? 'text-white/60 hover:text-white'
+                          : 'text-black/60 hover:text-black'
+                    }`}
+                  >
+                    <Heart className={`w-6 h-6 ${inListenList ? 'fill-current' : ''}`} />
+                  </button>
 
-                <button
-                  onClick={handleMarkAsListened}
-                  className={`p-3 rounded-full transition-colors ${
-                    theme === 'dark' 
-                      ? 'text-white/60 hover:text-white'
-                      : 'text-black/60 hover:text-black'
-                  }`}
-                >
-                  <Clock className="w-6 h-6" />
-                </button>
-
-                <button
-                  onClick={() => setShowAddToListModal(true)}
-                  className={`p-3 rounded-full transition-colors ${
-                    theme === 'dark' 
-                      ? 'text-white/60 hover:text-white'
-                      : 'text-black/60 hover:text-black'
-                  }`}
-                >
-                  <Plus className="w-6 h-6" />
-                </button>
-
-                <button
-                  onClick={handleShare}
-                  className={`p-3 rounded-full transition-colors ${
-                    theme === 'dark' 
-                      ? 'text-white/60 hover:text-white'
-                      : 'text-black/60 hover:text-black'
-                  }`}
-                >
-                  <Share2 className="w-6 h-6" />
-                </button>
-
-                {albumData?.external_urls?.spotify && (
-                  <a
-                    href={albumData.external_urls.spotify}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={handleMarkAsListened}
+                    title="Marcar como escuchado"
                     className={`p-3 rounded-full transition-colors ${
                       theme === 'dark' 
                         ? 'text-white/60 hover:text-white'
                         : 'text-black/60 hover:text-black'
                     }`}
                   >
-                    <ExternalLink className="w-6 h-6" />
-                  </a>
+                    <Clock className="w-6 h-6" />
+                  </button>
+
+                  <button
+                    onClick={() => setShowAddToListModal(true)}
+                    title="Agregar a lista personalizada"
+                    className={`p-3 rounded-full transition-colors ${
+                      theme === 'dark' 
+                        ? 'text-white/60 hover:text-white'
+                        : 'text-black/60 hover:text-black'
+                    }`}
+                  >
+                    <Plus className="w-6 h-6" />
+                  </button>
+
+                  <button
+                    onClick={handleShare}
+                    title="Compartir álbum"
+                    className={`p-3 rounded-full transition-colors ${
+                      theme === 'dark' 
+                        ? 'text-white/60 hover:text-white'
+                        : 'text-black/60 hover:text-black'
+                    }`}
+                  >
+                    <Share2 className="w-6 h-6" />
+                  </button>
+
+                  {albumData?.external_urls?.spotify && (
+                    <a
+                      href={albumData.external_urls.spotify}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Abrir en Spotify"
+                      className={`p-3 rounded-full transition-colors ${
+                        theme === 'dark' 
+                          ? 'text-white/60 hover:text-white'
+                          : 'text-black/60 hover:text-black'
+                      }`}
+                    >
+                      <ExternalLink className="w-6 h-6" />
+                    </a>
+                  )}
+                </div>
+
+                {/* Botón de escribir/editar reseña - SUPER PROMINENTE */}
+                {isAuthenticated && (
+                  <button
+                    onClick={() => setShowReviewForm(true)}
+                    title={hasUserReview ? "Editar tu reseña de este álbum" : "Escribir una reseña de este álbum"}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-110 hover:shadow-2xl shadow-lg relative overflow-hidden group ${
+                      hasUserReview
+                        ? 'bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-700 hover:via-blue-600 hover:to-purple-700'
+                        : 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 hover:from-orange-600 hover:via-red-600 hover:to-pink-700'
+                    }`}
+                  >
+                    {/* Efecto de brillo animado */}
+                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                    
+                    <Star className={`w-5 h-5 relative z-10 ${!hasUserReview ? 'animate-pulse' : ''}`} />
+                    <span className="hidden sm:inline relative z-10 text-lg">
+                      {hasUserReview ? 'Editar mi reseña' : 'Escribir reseña'}
+                    </span>
+                    <span className="sm:hidden relative z-10 font-bold">
+                      {hasUserReview ? 'Editar' : 'Reseñar'}
+                    </span>
+                  </button>
+                )}
+
+                {/* LLAMADA A LA ACCIÓN PARA USUARIOS NO AUTENTICADOS - MEGA PROMINENTE */}
+                {!isAuthenticated && (
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    {/* Mensaje motivacional */}
+                    <div className={`text-center sm:text-left ${
+                      theme === 'dark' ? 'text-white' : 'text-black'
+                    }`}>
+                      <p className="text-lg font-semibold mb-1">¿Qué opinas de este álbum?</p>
+                      <p className={`text-sm ${theme === 'dark' ? 'text-white/70' : 'text-black/70'}`}>
+                        ¡Crea una cuenta GRATIS para compartir tu opinión!
+                      </p>
+                    </div>
+
+                    {/* Botones de acción súper llamativos */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Link
+                        href="/register"
+                        title="Regístrate gratis para escribir reseñas, seguir artistas y más"
+                        className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-600 hover:from-emerald-600 hover:via-green-600 hover:to-teal-700 text-white rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg relative overflow-hidden group animate-pulse"
+                      >
+                        {/* Efecto de brillo súper llamativo */}
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-800 ease-in-out" />
+                        
+                        <Star className="w-6 h-6 relative z-10" />
+                        <span className="relative z-10">Crear cuenta GRATIS</span>
+                      </Link>
+
+                      <Link
+                        href="/login"
+                        title="Inicia sesión para acceder a todas las funciones"
+                        className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg border-2 ${
+                          theme === 'dark' 
+                            ? 'border-white/30 text-white hover:bg-white/10' 
+                            : 'border-black/30 text-black hover:bg-black/10'
+                        }`}
+                      >
+                        <span className="text-lg">Iniciar sesión</span>
+                      </Link>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -810,7 +901,7 @@ const AlbumDetailPage = () => {
       {/* Contenido principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Navegación por pestañas */}
-        <div className="flex space-x-8 border-b border-theme mb-8">
+        <div className="flex gap-3 mb-8 overflow-x-auto scrollbar-hide pb-2 border-b border-theme">
           {[
             { key: 'info', label: 'Información', icon: Eye },
             { key: 'tracks', label: 'Canciones', icon: Music },
@@ -820,10 +911,10 @@ const AlbumDetailPage = () => {
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`flex items-center space-x-2 px-4 py-3 font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-6 py-4 sm:px-6 sm:py-3 font-medium transition-colors whitespace-nowrap flex-shrink-0 rounded-xl ${
                 activeTab === key
-                  ? 'text-theme-accent border-b-2 border-theme-accent'
-                  : 'text-theme-secondary hover:text-theme-primary'
+                  ? 'text-theme-accent bg-theme-accent/10 border-2 border-theme-accent'
+                  : 'text-theme-secondary hover:text-theme-primary hover:bg-theme-card-hover border-2 border-transparent'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -920,30 +1011,63 @@ const AlbumDetailPage = () => {
               <div className="bg-theme-card rounded-2xl p-6 border border-theme">
                 <h3 className="text-lg font-bold text-theme-primary mb-4">Acciones</h3>
                 <div className="space-y-3">
-                  <button
-                    onClick={() => setShowReviewForm(true)}
-                    className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-theme-accent text-white rounded-lg hover:bg-theme-accent/80 transition-colors"
-                  >
-                    <Star className="w-4 h-4" />
-                    <span>{hasUserReview ? 'Editar Reseña' : 'Escribir Reseña'}</span>
-                  </button>
-                  
-                  {/* Botón para eliminar del historial de escucha */}
-                  {isAuthenticated && isInListeningHistory && (
-                    <button
-                      onClick={handleRemoveFromHistory}
-                      disabled={removingFromHistory}
-                      className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {removingFromHistory ? (
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <Clock className="w-4 h-4" />
+                  {isAuthenticated ? (
+                    <>
+                      <button
+                        onClick={() => setShowReviewForm(true)}
+                        className={`w-full flex items-center justify-center space-x-2 py-4 px-5 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-md relative overflow-hidden group ${
+                          hasUserReview
+                            ? 'bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-700 hover:via-blue-600 hover:to-purple-700'
+                            : 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 hover:from-orange-600 hover:via-red-600 hover:to-pink-700'
+                        }`}
+                      >
+                        {/* Efecto de brillo */}
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-800 ease-in-out" />
+                        
+                        <Star className={`w-5 h-5 relative z-10 ${!hasUserReview ? 'animate-pulse' : ''}`} />
+                        <span className="relative z-10 text-lg">
+                          {hasUserReview ? 'Editar Reseña' : 'Escribir Reseña'}
+                        </span>
+                      </button>
+                      
+                      {/* Botón para eliminar del historial de escucha */}
+                      {isInListeningHistory && (
+                        <button
+                          onClick={handleRemoveFromHistory}
+                          disabled={removingFromHistory}
+                          className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {removingFromHistory ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            <Clock className="w-4 h-4" />
+                          )}
+                          <span>
+                            {removingFromHistory ? 'Eliminando...' : 'Eliminar del historial'}
+                          </span>
+                        </button>
                       )}
-                      <span>
-                        {removingFromHistory ? 'Eliminando...' : 'Eliminar del historial'}
-                      </span>
-                    </button>
+                    </>
+                  ) : (
+                    /* Sección para usuarios no autenticados */
+                    <div className="text-center space-y-4">
+                      <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 rounded-xl p-4">
+                        <Star className="w-12 h-12 text-emerald-400 mx-auto mb-3 animate-pulse" />
+                        <h4 className="text-lg font-semibold text-theme-primary mb-2">
+                          🎯 ¡Desbloquea todas las funciones!
+                        </h4>
+                        <p className="text-theme-secondary text-sm mb-4">
+                          Crea tu cuenta y empieza a reseñar música como un profesional
+                        </p>
+                        <Link
+                          href="/register"
+                          className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-md"
+                        >
+                          <Star className="w-5 h-5" />
+                          <span>Registrarse GRATIS</span>
+                        </Link>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -986,17 +1110,27 @@ const AlbumDetailPage = () => {
         {activeTab === 'reviews' && (
           <div className="space-y-6">
             {/* Header de reseñas con botón para escribir */}
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <h3 className="text-2xl font-bold text-theme-primary">
                 Reseñas del álbum ({reviews.length})
               </h3>
+              
               {isAuthenticated && (
                 <button
                   onClick={() => setShowReviewForm(true)}
-                  className="flex items-center space-x-2 py-2 px-4 bg-theme-accent text-white rounded-lg hover:bg-theme-accent/80 transition-colors"
+                  className={`flex items-center space-x-2 px-5 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-md relative overflow-hidden group ${
+                    hasUserReview
+                      ? 'bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-700 hover:via-blue-600 hover:to-purple-700'
+                      : 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 hover:from-orange-600 hover:via-red-600 hover:to-pink-700'
+                  }`}
                 >
-                  <Star className="w-4 h-4" />
-                  <span>{hasUserReview ? 'Editar mi reseña' : 'Escribir reseña'}</span>
+                  {/* Efecto de brillo */}
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                  
+                  <Star className={`w-5 h-5 relative z-10 ${!hasUserReview ? 'animate-pulse' : ''}`} />
+                  <span className="relative z-10">
+                    {hasUserReview ? 'Editar mi reseña' : 'Escribir reseña'}
+                  </span>
                 </button>
               )}
             </div>
@@ -1103,10 +1237,13 @@ const AlbumDetailPage = () => {
                 {isAuthenticated && (
                   <button
                     onClick={() => setShowReviewForm(true)}
-                    className="flex items-center space-x-2 py-2 px-4 bg-theme-accent text-white rounded-lg hover:bg-theme-accent/80 transition-colors mx-auto"
+                    className="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 hover:from-orange-600 hover:via-red-600 hover:to-pink-700 text-white rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-110 hover:shadow-2xl shadow-lg mx-auto relative overflow-hidden group"
                   >
-                    <Star className="w-4 h-4" />
-                    <span>Escribir primera reseña</span>
+                    {/* Efecto de brillo animado */}
+                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                    
+                    <Star className="w-6 h-6 animate-pulse relative z-10" />
+                    <span className="relative z-10">🎵 Escribir primera reseña</span>
                   </button>
                 )}
               </div>
@@ -1151,7 +1288,7 @@ const AlbumDetailPage = () => {
           albumId={album?.id}
           albumData={albumData}
         />
-      )} */}
+      )}
 
       {/* Modal para escribir reseña */}
       {showReviewForm && (
