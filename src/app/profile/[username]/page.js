@@ -641,11 +641,11 @@ const UserProfilePage = () => {
       {/* Profile Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-theme-card rounded-3xl p-8 border border-theme-border shadow-2xl">
-          <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
+          <div className="flex flex-col md:flex-row items-center md:items-center space-y-6 md:space-y-0 md:space-x-8">
             {/* Avatar */}
             <div className="flex-shrink-0">
               {profileUser.profile_picture ? (
-                <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white/20">
+                <div className="relative w-32 h-32 sm:w-28 sm:h-28 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-white/20">
                   {isGif(profileUser.profile_picture) ? (
                     <img
                       src={profileUser.profile_picture}
@@ -658,29 +658,29 @@ const UserProfilePage = () => {
                       alt={`Foto de perfil de ${profileUser.username}`}
                       fill
                       className="object-cover"
-                      sizes="96px"
+                      sizes="(max-width: 640px) 128px, (max-width: 768px) 112px, 96px"
                     />
                   )}
                 </div>
               ) : (
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center">
-                  <User className="w-12 h-12 text-theme-button" />
+                <div className="w-32 h-32 sm:w-28 sm:h-28 md:w-24 md:h-24 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center">
+                  <User className="w-16 h-16 sm:w-14 sm:h-14 md:w-12 md:h-12 text-theme-button" />
                 </div>
               )}
             </div>
 
             {/* User Info */}
-            <div className="flex-1">
+            <div className="flex-1 text-center md:text-left">
               <h1 className="text-3xl font-bold text-theme-primary mb-2">@{profileUser.username}</h1>
-              <div className="flex items-center space-x-2 text-theme-secondary">
+              <div className="flex items-center justify-center md:justify-start space-x-2 text-theme-secondary">
                 <Calendar className="w-4 h-4" />
                 <span>Miembro desde {userStats?.memberSince ? new Date(userStats.memberSince).toLocaleDateString('es') : 'N/A'}</span>
               </div>
             </div>
 
             {/* Quick Stats and Actions */}
-            <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
-              <div className="grid grid-cols-2 sm:flex sm:space-x-6 gap-4 sm:gap-0 w-full sm:w-auto">
+            <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 w-full md:w-auto">
+              <div className="grid grid-cols-4 gap-3 w-full md:flex md:space-x-6 md:gap-0 md:w-auto">
                 <div className="text-center">
                   <div className="text-xl sm:text-2xl font-bold text-theme-primary">{userStats?.totalReviews || 0}</div>
                   <div className="text-xs sm:text-sm text-theme-secondary">Reseñas</div>
