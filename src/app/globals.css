@@ -291,6 +291,16 @@ html[data-theme="light"] nav .text-theme-accent {
   -webkit-text-fill-color: transparent !important;
 }
 
+/* Corregir específicamente el logo/nombre de la página */
+html[data-theme="light"] nav a .text-theme-accent,
+html[data-theme="light"] nav .text-theme-accent {
+  background: linear-gradient(135deg, #059669, #0891b2) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+}
+
 /* Regla final para eliminar bordes problemáticos en modo claro */
 html[data-theme="light"] nav,
 html[data-theme="light"] nav *,
@@ -399,6 +409,37 @@ html[data-theme="light"] main {
   background: transparent !important;
 }
 
+/* Regla específica para evitar texto blanco SOLO en el logo/nombre de página */
+html[data-theme="light"] nav .text-theme-accent {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  background: linear-gradient(135deg, #059669, #0891b2) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+/* Asegurar que otros textos de la navbar se vean correctamente en modo claro */
+html[data-theme="light"] nav .text-theme-primary {
+  color: #111827 !important;
+}
+
+html[data-theme="light"] nav .text-theme-secondary {
+  color: #374151 !important;
+}
+
+html[data-theme="light"] nav button,
+html[data-theme="light"] nav a:not([class*="text-theme-accent"]) {
+  color: #111827 !important;
+}
+
+/* Asegurar que el gradiente del logo siempre se aplique en modo claro */
+html[data-theme="light"] nav .text-theme-accent {
+  background: linear-gradient(135deg, #059669, #0891b2) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
 /* Debug específico para la página de álbum */
 html[data-theme="light"] .min-h-screen.bg-theme-background {
   background: #f9fafb !important;
@@ -408,4 +449,63 @@ html[data-theme="light"] .min-h-screen.bg-theme-background {
 /* Override máximo para cualquier contenedor que pueda estar heredando estilos oscuros */
 html[data-theme="light"] div:not([style*="background-image"]) {
   background: inherit !important;
+}
+
+/* Reglas específicas para botones en modo claro */
+html[data-theme="light"] .text-theme-primary {
+  color: #111827 !important;
+}
+
+/* Asegurar que el ThemeToggle se vea correctamente en modo claro */
+html[data-theme="light"] button .text-theme-accent {
+  background: linear-gradient(135deg, #059669, #0891b2) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Corrección MUY específica para el ThemeToggle en modo claro - máxima prioridad */
+html[data-theme="light"] button[title*="Cambiar a modo"],
+html[data-theme="light"] button[aria-label*="Cambiar a modo"] {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(209, 213, 219, 0.6) !important;
+  border-color: rgba(209, 213, 219, 0.6) !important;
+}
+
+html[data-theme="light"] button[title*="Cambiar a modo"]:hover,
+html[data-theme="light"] button[aria-label*="Cambiar a modo"]:hover {
+  background: rgba(249, 250, 251, 0.98) !important;
+  border-color: rgba(209, 213, 219, 0.8) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Icono del ThemeToggle - forzar color verde en modo claro */
+html[data-theme="light"] button[title*="Cambiar a modo"] svg,
+html[data-theme="light"] button[aria-label*="Cambiar a modo"] svg,
+html[data-theme="light"] button[title*="Cambiar a modo"] .text-theme-accent,
+html[data-theme="light"] button[aria-label*="Cambiar a modo"] .text-theme-accent {
+  color: #059669 !important;
+  stroke: #059669 !important;
+  fill: #059669 !important;
+}
+
+/* Override MUY específico para el componente ThemeToggle por clases */
+html[data-theme="light"] .relative.p-2.rounded-full.border.border-theme,
+html[data-theme="light"] button.relative.p-2.rounded-full {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(209, 213, 219, 0.6) !important;
+  border-color: rgba(209, 213, 219, 0.6) !important;
+}
+
+html[data-theme="light"] .relative.p-2.rounded-full.border.border-theme:hover,
+html[data-theme="light"] button.relative.p-2.rounded-full:hover {
+  background: rgba(249, 250, 251, 0.98) !important;
+  border-color: rgba(209, 213, 219, 0.8) !important;
+}
+
+html[data-theme="light"] .relative.p-2.rounded-full.border.border-theme svg,
+html[data-theme="light"] button.relative.p-2.rounded-full svg {
+  color: #059669 !important;
+  stroke: #059669 !important;
+  fill: #059669 !important;
 }
