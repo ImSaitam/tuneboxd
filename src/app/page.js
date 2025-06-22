@@ -186,7 +186,7 @@ const TuneboxdApp = () => {
       case 'album':
         return `${item.artists?.[0]?.name || 'Artista desconocido'} • ${item.release_date?.substring(0, 4) || ''}`;
       case 'artist':
-        return 'Artista';
+        return `Artista`;
       case 'track':
         return `${item.artists?.[0]?.name || 'Artista desconocido'} • ${item.album?.name || ''}`;
       default:
@@ -277,14 +277,14 @@ const TuneboxdApp = () => {
 
             {/* Search Results Dropdown */}
             {showResults && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-theme-card backdrop-blur-md border border-theme-border rounded-2xl max-h-80 overflow-y-auto z-50 shadow-2xl">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-black/90 backdrop-blur-md border border-white/20 rounded-2xl max-h-80 overflow-y-auto z-50">
                 {searchResults.map((item, index) => (
                   <div
                     key={item.id || index}
                     onClick={() => handleSearchResultClick(item)}
-                    className="flex items-center p-4 hover:bg-theme-hover cursor-pointer transition-all duration-200 border-b border-theme-border last:border-b-0"
+                    className="flex items-center p-4 hover:bg-white/10 cursor-pointer transition-all duration-200 border-b border-white/10 last:border-b-0"
                   >
-                    <div className="w-12 h-12 rounded-lg overflow-hidden mr-4 bg-gradient-to-br from-emerald-400 to-cyan-400">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden mr-4 bg-gradient-to-br from-red-400 to-teal-400">
                       {item.images?.[0]?.url ? (
                         <div
                           className="w-full h-full bg-cover bg-center"
@@ -299,10 +299,10 @@ const TuneboxdApp = () => {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-theme-primary font-medium truncate">
+                      <div className="text-white font-medium truncate">
                         {item.name}
                       </div>
-                      <div className="text-theme-secondary text-sm truncate">
+                      <div className="text-white/60 text-sm truncate">
                         {formatSearchResultSubtitle(item, searchType)}
                       </div>
                     </div>
@@ -313,7 +313,7 @@ const TuneboxdApp = () => {
 
             {/* Error Message */}
             {spotifyError && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-red-500/90 backdrop-blur-md border border-red-400/30 rounded-2xl p-4 text-white text-center shadow-2xl">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-red-500/90 backdrop-blur-md border border-red-400/20 rounded-2xl p-4 text-white text-center">
                 Error: {spotifyError}
               </div>
             )}
