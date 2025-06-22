@@ -1082,68 +1082,139 @@ const UserProfilePage = () => {
                     </div>
 
                     {/* Lista de álbumes */}
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {day.albums.map((album, albumIndex) => (
-                        <div key={albumIndex} className="flex items-center space-x-4 p-4 bg-theme-hover rounded-xl hover:bg-theme-card transition-all duration-200 group">
-                          {/* Album Cover */}
-                          <div className="flex-shrink-0">
-                            <Image
-                              src={album.image_url || '/placeholder-album.png'}
-                              alt={album.album_name}
-                              width={64}
-                              height={64}
-                              className="w-16 h-16 rounded-lg object-cover group-hover:scale-105 transition-transform duration-200 cursor-pointer"
-                              onClick={() => window.location.href = `/album/${album.spotify_id}`}
-                            />
-                          </div>
-
-                          {/* Album Info */}
-                          <div className="flex-1 min-w-0">
-                            <h4 
-                              className="text-theme-primary font-semibold text-lg cursor-pointer hover:text-theme-accent transition-colors truncate"
-                              onClick={() => window.location.href = `/album/${album.spotify_id}`}
-                            >
-                              {album.album_name}
-                            </h4>
-                            <p className="text-theme-secondary">{album.artist}</p>
-                            <div className="flex items-center space-x-1 text-theme-muted text-sm mt-1">
-                              <Clock className="w-4 h-4" />
-                              <span>
-                                {new Date(album.listened_at).toLocaleTimeString('es-ES', { 
-                                  hour: '2-digit', 
-                                  minute: '2-digit' 
-                                })}
-                              </span>
+                        <div key={albumIndex} className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 p-3 sm:p-4 bg-theme-hover rounded-xl hover:bg-theme-card transition-all duration-200 group">
+                          {/* Mobile Layout */}
+                          <div className="flex items-start space-x-3 sm:hidden">
+                            {/* Album Cover */}
+                            <div className="flex-shrink-0">
+                              <Image
+                                src={album.image_url || '/placeholder-album.png'}
+                                alt={album.album_name}
+                                width={60}
+                                height={60}
+                                className="w-15 h-15 rounded-lg object-cover group-hover:scale-105 transition-transform duration-200 cursor-pointer"
+                                onClick={() => window.location.href = `/album/${album.spotify_id}`}
+                              />
+                            </div>
+                            
+                            {/* Album Info - Mobile */}
+                            <div className="flex-1 min-w-0">
+                              <h4 
+                                className="text-theme-primary font-semibold text-base cursor-pointer hover:text-theme-accent transition-colors leading-tight mb-1 break-words"
+                                onClick={() => window.location.href = `/album/${album.spotify_id}`}
+                                style={{ wordWrap: 'break-word', overflowWrap: 'anywhere' }}
+                              >
+                                {album.album_name}
+                              </h4>
+                              <p className="text-theme-secondary text-sm mb-2 break-words" style={{ wordWrap: 'break-word', overflowWrap: 'anywhere' }}>
+                                {album.artist}
+                              </p>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-1 text-theme-muted text-xs">
+                                  <Clock className="w-3 h-3 flex-shrink-0" />
+                                  <span>
+                                    {new Date(album.listened_at).toLocaleTimeString('es-ES', { 
+                                      hour: '2-digit', 
+                                      minute: '2-digit' 
+                                    })}
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <button
+                                    onClick={() => window.location.href = `/album/${album.spotify_id}`}
+                                    className="bg-theme-accent hover:bg-theme-hover text-theme-button px-3 py-1.5 rounded-lg font-medium transition-colors text-xs"
+                                  >
+                                    Ver
+                                  </button>
+                                  {/* Botón de eliminar para móvil */}
+                                  {isOwnProfile && isAuthenticated && (
+                                    <button
+                                      onClick={() => {
+                                        handleRemoveFromHistory(album.album_id);
+                                      }}
+                                      disabled={removingFromHistory.has(`${album.album_id}`)}
+                                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                      title="Eliminar del historial"
+                                    >
+                                      {removingFromHistory.has(`${album.album_id}`) ? (
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                      ) : (
+                                        <Trash2 className="w-3 h-3" />
+                                      )}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           </div>
 
-                          {/* Action Button */}
-                          <div className="flex-shrink-0 flex space-x-2">
-                            <button
-                              onClick={() => window.location.href = `/album/${album.spotify_id}`}
-                              className="bg-theme-accent hover:bg-theme-hover text-theme-button px-4 py-2 rounded-lg font-medium transition-colors opacity-0 group-hover:opacity-100"
-                            >
-                              Ver Álbum
-                            </button>
-                            
-                            {/* Botón de eliminar solo para el propietario del perfil */}
-                            {isOwnProfile && isAuthenticated && (
-                              <button
-                                onClick={() => {
-                                  handleRemoveFromHistory(album.album_id);
-                                }}
-                                disabled={removingFromHistory.has(`${album.album_id}`)}
-                                className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
-                                title="Eliminar del historial"
+                          {/* Desktop Layout */}
+                          <div className="hidden sm:flex sm:items-center sm:space-x-4 sm:w-full">
+                            {/* Album Cover */}
+                            <div className="flex-shrink-0">
+                              <Image
+                                src={album.image_url || '/placeholder-album.png'}
+                                alt={album.album_name}
+                                width={64}
+                                height={64}
+                                className="w-16 h-16 rounded-lg object-cover group-hover:scale-105 transition-transform duration-200 cursor-pointer"
+                                onClick={() => window.location.href = `/album/${album.spotify_id}`}
+                              />
+                            </div>
+
+                            {/* Album Info - Desktop */}
+                            <div className="flex-1 min-w-0 pr-2">
+                              <h4 
+                                className="text-theme-primary font-semibold text-lg cursor-pointer hover:text-theme-accent transition-colors leading-tight mb-1 truncate"
+                                onClick={() => window.location.href = `/album/${album.spotify_id}`}
+                                title={album.album_name}
                               >
-                                {removingFromHistory.has(`${album.album_id}`) ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="w-4 h-4" />
-                                )}
-                                <span className="text-xs">Eliminar</span>
+                                {album.album_name}
+                              </h4>
+                              <p className="text-theme-secondary text-base truncate mb-1" title={album.artist}>
+                                {album.artist}
+                              </p>
+                              <div className="flex items-center space-x-1 text-theme-muted text-sm">
+                                <Clock className="w-4 h-4 flex-shrink-0" />
+                                <span>
+                                  {new Date(album.listened_at).toLocaleTimeString('es-ES', { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Action Button - Desktop */}
+                            <div className="flex-shrink-0 flex space-x-2">
+                              <button
+                                onClick={() => window.location.href = `/album/${album.spotify_id}`}
+                                className="bg-theme-accent hover:bg-theme-hover text-theme-button px-4 py-2 rounded-lg font-medium transition-colors opacity-0 group-hover:opacity-100 text-sm whitespace-nowrap"
+                              >
+                                Ver Álbum
                               </button>
-                            )}
+                              
+                              {/* Botón de eliminar solo para el propietario del perfil */}
+                              {isOwnProfile && isAuthenticated && (
+                                <button
+                                  onClick={() => {
+                                    handleRemoveFromHistory(album.album_id);
+                                  }}
+                                  disabled={removingFromHistory.has(`${album.album_id}`)}
+                                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                                  title="Eliminar del historial"
+                                >
+                                  {removingFromHistory.has(`${album.album_id}`) ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="w-4 h-4" />
+                                  )}
+                                  <span className="text-xs">Eliminar</span>
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}
