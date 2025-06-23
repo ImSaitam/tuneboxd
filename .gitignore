@@ -139,3 +139,5 @@ tests-and-scripts/
 documentation/
 backup_*/
 scripts/
+backup_files/
+final_alerts_backup/
