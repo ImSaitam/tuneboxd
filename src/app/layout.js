@@ -20,13 +20,16 @@ const nunitoSans = Nunito_Sans({
 });
 
 export const metadata = {
-  title: "Tuneboxd | Reseñas de álbumes, listas y comunidad musical",
-  description: "Explorá reseñas de álbumes, descubrí música nueva y compartí tus listas favoritas con la comunidad musical en Tuneboxd.",
-  keywords: "reseñas de música, descubrir álbumes, comunidad musical, red social de música, críticas de discos",
+  title: "Tuneboxd | Reseñas de música, álbumes y comunidad musical",
+  description: "Tuneboxd es la mejor página de reseña de música. Descubre críticas de discos, comparte tus opiniones sobre álbumes y encuentra nueva música junto a una comunidad apasionada.",
+  keywords: "reseñas de música, reseña de discos, reseña de álbumes, críticas musicales, comunidad musical, página de reseña de música, descubrir álbumes",
   robots: "index, follow",
   author: "Tuneboxd",
-  category: "music, social media",  other: {
+  category: "music, social media",
+  other: {
     "format-detection": "telephone=no",
+    "og:title": "Tuneboxd | Reseñas de música y comunidad",
+    "og:description": "Descubre y comparte reseñas de discos y álbume. Únete a la comunidad musical de Tuneboxd.",
     "og:image": "https://tuneboxd.xyz/og-image.jpg",
     "og:url": "https://tuneboxd.xyz",
   }
