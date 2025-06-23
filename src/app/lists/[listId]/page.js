@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useGlobalModal } from '../../../components/ModalContext';
 import { useParams, useRouter } from 'next/navigation';
@@ -47,6 +47,7 @@ export default function ListDetailPage() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [editingComment, setEditingComment] = useState(null);
   const [editCommentText, setEditCommentText] = useState('');
+  const commentsSectionRef = useRef(null);
   
   const { user, isAuthenticated } = useAuth();
 
@@ -169,6 +170,11 @@ export default function ListDetailPage() {
     if (comments.length === 0) {
       loadComments();
     }
+    setTimeout(() => {
+      if (commentsSectionRef.current) {
+        commentsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const handleSubmitComment = async (e) => {
@@ -336,162 +342,82 @@ export default function ListDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
+    <div className="min-h-screen bg-theme-primary overflow-x-hidden">
       <div className="container mx-auto px-4 py-8">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link href="/lists" className="text-theme-primary hover:text-theme-secondary transition-colors">
-              <ArrowLeft size={24} />
-            </Link>
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-theme-primary">{list.name}</h1>
-                {list.is_public ? (
-                  <Eye size={20} className="text-green-400" />
-                ) : (
-                  <EyeOff size={20} className="text-yellow-400" />
-                )}
-              </div>
-              {list.description && (
-                <p className="text-theme-secondary">{list.description}</p>
+        {/* Header visual destacado */}
+        <div className="relative w-full max-w-4xl mx-auto mt-8 mb-12">
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-0">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#059669] to-[#0891b2] blur-2xl opacity-40"></div>
+          </div>
+          <div className="relative z-10 flex flex-col items-center text-center">
+            <span style={{
+              display: 'inline-flex',
+              filter: 'drop-shadow(0 0 16px #059669) drop-shadow(0 0 32px #0891b2)'
+            }}>
+              {list.is_public ? (
+                <Eye className="w-14 h-14 text-theme-accent mb-2" />
+              ) : (
+                <EyeOff className="w-14 h-14 text-yellow-400 mb-2" />
               )}
-              <div className="flex items-center gap-6 mt-3 text-sm text-theme-muted">
-                <div className="flex items-center gap-2">
-                  <User size={16} />
-                  <span>Por {list.username || 'Usuario'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar size={16} />
-                  <span>Creada el {new Date(list.created_at).toLocaleDateString('es')}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Music size={16} />
-                  <span>{list.albums?.length || 0} álbumes</span>
-                </div>
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-theme-accent mb-2 tracking-tight">{list.name}</h1>
+            {list.description && (
+              <p className="text-theme-secondary max-w-xl mb-2">{list.description}</p>
+            )}
+            <div className="flex flex-wrap gap-4 justify-center mt-2 text-sm text-theme-muted">
+              <div className="flex items-center gap-2">
+                <User size={16} />
+                <span>Por {list.username || 'Usuario'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar size={16} />
+                <span>Creada el {new Date(list.created_at).toLocaleDateString('es')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Music size={16} />
+                <span>{list.albums?.length || 0} álbumes</span>
               </div>
             </div>
-          </div>
-
-          {isOwner && (
-            <div className="flex gap-2">
+            {isOwner && (
               <button
                 onClick={() => setShowEditModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg transition-colors"
+                className="flex items-center gap-2 mt-4 px-6 py-3 bg-gradient-to-r from-[#059669] to-[#0891b2] hover:from-[#0891b2] hover:to-[#059669] text-white font-semibold rounded-xl shadow-lg hover:scale-105 hover:shadow-2xl transition-all duration-300 justify-center"
               >
-                <Edit3 size={16} />
+                <Edit3 size={18} />
                 Editar
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Likes y Comentarios */}
-        <div className="bg-theme-card backdrop-blur-md rounded-lg p-6 mb-8 border border-theme">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              {/* Botón de Like */}
-              <button
-                onClick={handleLike}
-                disabled={likingInProgress}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
-                  userHasLiked 
-                    ? 'bg-red-600 hover:bg-red-700 text-white' 
-                    : 'bg-theme-card-hover hover:bg-theme-muted text-theme-primary'
-                } disabled:opacity-50`}
-              >
-                <Heart 
-                  size={20} 
-                  className={userHasLiked ? 'fill-current' : ''} 
-                />
-                <span>{likesCount} {likesCount === 1 ? 'like' : 'likes'}</span>
-              </button>
-
-              {/* Botón de Comentarios */}
-              <button
-                onClick={handleShowComments}
-                className="flex items-center gap-2 px-4 py-2 bg-theme-card-hover hover:bg-theme-muted text-theme-primary rounded-lg transition-colors"
-              >
-                <MessageCircle size={20} />
-                <span>{commentsCount} {commentsCount === 1 ? 'comentario' : 'comentarios'}</span>
-              </button>
-            </div>
+        <div className="bg-theme-card backdrop-blur-md rounded-xl p-6 mb-8 border border-theme">
+          <div className="flex items-center justify-center gap-6 flex-wrap">
+            {/* Botón de Like */}
+            <button
+              onClick={handleLike}
+              disabled={likingInProgress}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:scale-105 hover:shadow-2xl justify-center ${
+                userHasLiked 
+                  ? 'bg-red-600 hover:bg-red-700 text-white' 
+                  : 'bg-gradient-to-r from-[#059669] to-[#0891b2] hover:from-[#0891b2] hover:to-[#059669] text-white'
+              } disabled:opacity-50`}
+            >
+              <Heart 
+                size={20} 
+                className={userHasLiked ? 'fill-current' : ''} 
+              />
+              <span>{likesCount} {likesCount === 1 ? 'like' : 'likes'}</span>
+            </button>
+            {/* Botón de Comentarios */}
+            <button
+              onClick={handleShowComments}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 justify-center shadow-lg"
+            >
+              <MessageCircle size={20} />
+              <span>{commentsCount} {commentsCount === 1 ? 'comentario' : 'comentarios'}</span>
+            </button>
           </div>
-
-          {/* Sección de Comentarios */}
-          {showComments && (
-            <div className="mt-6 border-t border-theme pt-6">
-              {/* Formulario para nuevo comentario */}
-              {isAuthenticated && (
-                <form onSubmit={handleSubmitComment} className="mb-6">
-                  <div className="flex gap-3">
-                    <textarea
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Escribe un comentario..."
-                      className="flex-1 bg-theme-card border border-theme rounded-lg px-4 py-3 text-theme-primary placeholder-theme-muted resize-none focus:outline-none focus:ring-2 focus:ring-theme-accent"
-                      rows={3}
-                      maxLength={500}
-                    />
-                    <button
-                      type="submit"
-                      disabled={submittingComment || !newComment.trim()}
-                      className="px-6 py-3 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {submittingComment ? (
-                        <Loader2 size={20} className="animate-spin" />
-                      ) : (
-                        <Send size={20} />
-                      )}
-                    </button>
-                  </div>
-                  <div className="text-xs text-theme-muted mt-2">
-                    {newComment.length}/500 caracteres
-                  </div>
-                </form>
-              )}
-
-              {/* Lista de comentarios */}
-              {loadingComments ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 size={32} className="animate-spin text-theme-primary" />
-                </div>
-              ) : comments.length > 0 ? (
-                <div className="space-y-4">
-                  {comments.map((comment) => (
-                    <div key={comment.id} className="bg-theme-card-hover rounded-lg p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-semibold text-theme-primary">{comment.username}</span>
-                            <span className="text-xs text-theme-muted">
-                              {new Date(comment.created_at).toLocaleDateString('es')}
-                            </span>
-                          </div>
-                          <p className="text-theme-secondary">{comment.content}</p>
-                        </div>
-                        
-                        {(isAuthenticated && (user?.username === comment.username || isOwner)) && (
-                          <button
-                            onClick={() => handleDeleteComment(comment.id)}
-                            className="text-theme-muted hover:text-red-400 transition-colors"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-theme-muted">
-                  <MessageCircle size={48} className="mx-auto mb-4 opacity-50" />
-                  <p>No hay comentarios aún. ¡Sé el primero en comentar!</p>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Lista de Álbumes */}
@@ -589,6 +515,80 @@ export default function ListDetailPage() {
               >
                 Explorar Música
               </Link>
+            )}
+          </div>
+        )}
+
+        {/* Sección de Comentarios al final de la página */}
+        {showComments && (
+          <div ref={commentsSectionRef} className="mt-12 bg-theme-card backdrop-blur-md rounded-xl p-6 border border-theme">
+            {/* Formulario para nuevo comentario */}
+            {isAuthenticated && (
+              <form onSubmit={handleSubmitComment} className="mb-6">
+                <div className="flex gap-3">
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Escribe un comentario..."
+                    className="flex-1 bg-theme-card border border-theme rounded-lg px-4 py-3 text-theme-primary placeholder-theme-muted resize-none focus:outline-none focus:ring-2 focus:ring-theme-accent"
+                    rows={3}
+                    maxLength={500}
+                  />
+                  <button
+                    type="submit"
+                    disabled={submittingComment || !newComment.trim()}
+                    className="px-6 py-3 bg-theme-accent hover:bg-theme-hover text-theme-button rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submittingComment ? (
+                      <Loader2 size={20} className="animate-spin" />
+                    ) : (
+                      <Send size={20} />
+                    )}
+                  </button>
+                </div>
+                <div className="text-xs text-theme-muted mt-2">
+                  {newComment.length}/500 caracteres
+                </div>
+              </form>
+            )}
+
+            {/* Lista de comentarios */}
+            {loadingComments ? (
+              <div className="flex justify-center py-8">
+                <Loader2 size={32} className="animate-spin text-theme-primary" />
+              </div>
+            ) : comments.length > 0 ? (
+              <div className="space-y-4">
+                {comments.map((comment) => (
+                  <div key={comment.id} className="bg-theme-card-hover rounded-lg p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-semibold text-theme-primary">{comment.username}</span>
+                          <span className="text-xs text-theme-muted">
+                            {new Date(comment.created_at).toLocaleDateString('es')}
+                          </span>
+                        </div>
+                        <p className="text-theme-secondary">{comment.content}</p>
+                      </div>
+                      
+                      {(isAuthenticated && (user?.username === comment.username || isOwner)) && (
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="text-theme-muted hover:text-red-400 transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-theme-muted">
+                <MessageCircle size={48} className="mx-auto mb-4 opacity-50" />
+                <p>No hay comentarios aún. ¡Sé el primero en comentar!</p>
+              </div>
             )}
           </div>
         )}

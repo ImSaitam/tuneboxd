@@ -155,17 +155,32 @@ export default function PublicListsPage() {
   return (
     <div className="min-h-screen bg-theme-primary overflow-x-hidden">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <Link href="/lists" className="text-theme-primary hover:text-theme-accent transition-colors">
-              <ArrowLeft size={24} />
-            </Link>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary">Listas Públicas</h1>
-              <p className="text-theme-secondary mt-1">Descubre listas creadas por otros usuarios</p>
-            </div>
+        {/* Header visual destacado */}
+        <div className="relative w-full max-w-4xl mx-auto mt-8 mb-12">
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-0">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#059669] to-[#0891b2] blur-2xl opacity-40"></div>
           </div>
+          <div className="relative z-10 flex flex-col items-center text-center">
+            <span style={{
+              display: 'inline-flex',
+              filter: 'drop-shadow(0 0 16px #059669) drop-shadow(0 0 32px #0891b2)'
+            }}>
+              <Album className="w-14 h-14 text-theme-accent mb-2" />
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-theme-accent mb-2 tracking-tight">Explora Listas Públicas</h1>
+            <p className="text-theme-secondary max-w-xl mb-2">Descubre listas creadas por la comunidad y encuentra nueva música para tus gustos.</p>
+          </div>
+        </div>
+        {/* Botón de volver y búsqueda */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10">
+          <Link
+            href="/lists"
+            className="flex items-center gap-2 bg-gradient-to-r from-[#059669] to-[#0891b2] hover:from-[#0891b2] hover:to-[#059669] text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:scale-105 hover:shadow-2xl transition-all duration-300 justify-center"
+          >
+            <ArrowLeft size={20} />
+            Volver a Mis Listas
+          </Link>
+          {/* Aquí podrías agregar un input de búsqueda estilizado si lo deseas */}
         </div>
 
         {/* Search Bar */}
