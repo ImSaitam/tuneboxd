@@ -509,3 +509,82 @@ html[data-theme="light"] button.relative.p-2.rounded-full svg {
   stroke: #059669 !important;
   fill: #059669 !important;
 }
+
+
+/* Asegurar que los campos de input y textarea sean visibles y legibles en modo claro */
+html[data-theme="light"] input,
+html[data-theme="light"] textarea {
+  background: #fff !important;
+  color: #111827 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+html[data-theme="light"] input::placeholder,
+html[data-theme="light"] textarea::placeholder {
+  color: #6b7280 !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] input:disabled,
+html[data-theme="light"] textarea:disabled {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+}
+
+html[data-theme="light"] .bg-theme-card input,
+html[data-theme="light"] .bg-theme-card textarea {
+  background: #fff !important;
+  color: #111827 !important;
+}
+
+html[data-theme="light"] .bg-theme-card input:disabled,
+html[data-theme="light"] .bg-theme-card textarea:disabled {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+}
+
+html[data-theme="light"] label,
+html[data-theme="light"] .text-gray-400,
+html[data-theme="light"] .text-gray-300,
+html[data-theme="light"] .text-gray-200,
+html[data-theme="light"] .text-gray-100 {
+  color: #6b7280 !important;
+}
+
+html[data-theme="light"] .text-white,
+html[data-theme="light"] .text-white\/80,
+html[data-theme="light"] .text-white\/60 {
+  color: #6b7280 !important;
+}
+
+html[data-theme="light"] .opacity-50,
+html[data-theme="light"] .opacity-60,
+html[data-theme="light"] .opacity-70,
+html[data-theme="light"] .opacity-80 {
+  opacity: 1 !important;
+  color: #9ca3af !important;
+}
+
+html[data-theme="light"] .disabled\:opacity-50:disabled {
+  opacity: 1 !important;
+  color: #9ca3af !important;
+}
+
+html[data-theme="light"] .text-theme-secondary {
+  color: #374151 !important;
+}
+
+html[data-theme="light"] .text-theme-muted {
+  color: #6b7280 !important;
+}
+
+html[data-theme="light"] .text-theme-button {
+  color: #fff !important;
+}
+
+html[data-theme="light"] .text-theme-accent {
+  background: linear-gradient(135deg, #059669, #0891b2) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
