@@ -42,13 +42,15 @@ export async function PUT(request, { params }) {
     }
 
     // Actualizar la reseña
-    const changes = await reviewService.updateReview(reviewId, decoded.userId, {
+    const updatedReview = await reviewService.updateReview({
+      reviewId,
+      userId: decoded.userId,
       rating: rating || undefined,
       title: title || null,
       content: content || null
     });
 
-    if (changes === 0) {
+    if (!updatedReview) {
       return Response.json(
         { success: false, message: 'Reseña no encontrada o no tienes permisos para editarla' },
         { status: 404 }

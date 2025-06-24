@@ -605,7 +605,18 @@ export const reviewService = {
       [reviewId, userId]
     );
     return !!like;
-  }
+  },
+
+  async updateReview({ reviewId, userId, rating, title, content }) {
+    const review = await get('SELECT * FROM reviews WHERE id = ?', [reviewId]);
+    if (!review) throw new Error('Reseña no encontrada');
+    if (userId && review.user_id !== userId) throw new Error('No autorizado');
+    await run(
+      'UPDATE reviews SET rating = ?, review_text = ?, updated_at = NOW() WHERE id = ?',
+      [rating, content || null, reviewId]
+    );
+    return await get('SELECT * FROM reviews WHERE id = ?', [reviewId]);
+  },  
 };
 
 
