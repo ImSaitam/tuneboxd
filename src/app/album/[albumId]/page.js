@@ -641,6 +641,25 @@ const AlbumDetailPage = () => {
     });
   };
 
+  // Cuando el usuario hace click en 'Editar Reseña', precargar los datos
+  useEffect(() => {
+    if (showReviewForm && hasUserReview && reviews && reviews.length > 0) {
+      // Buscar la reseña del usuario
+      const userReview = reviews.find(r => r.user_id === user?.id);
+      if (userReview) {
+        setReviewRating(userReview.rating || 0);
+        setReviewTitle(userReview.title || '');
+        setReviewContent(userReview.content || '');
+      }
+    }
+    // Si es nueva reseña, limpiar
+    if (showReviewForm && !hasUserReview) {
+      setReviewRating(0);
+      setReviewTitle('');
+      setReviewContent('');
+    }
+  }, [showReviewForm, hasUserReview, reviews, user]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-theme-background">
@@ -1241,7 +1260,7 @@ const AlbumDetailPage = () => {
                             />
                             </Link>
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-theme-accent to-theme-accent/60 flex items-center justify-center">
+                            <div className="w-full h-full bg-gradient-to-br from-red-400 to-teal-400 flex items-center justify-center">
                               <User className="w-5 h-5 text-white" />
                             </div>
                           )}

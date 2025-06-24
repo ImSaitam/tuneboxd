@@ -791,7 +791,7 @@ export const customListService = {
       JOIN users u ON l.user_id = u.id
       LEFT JOIN list_albums la ON l.id = la.list_id
       WHERE l.is_private = false
-      GROUP BY l.id, l.user_id, l.name, l.description, l.is_private, l.created_at, l.updated_at, u.username
+      GROUP BY l.id, l.user_id, l.name, l.description, l.is_private, l.created_at, u.username
       ORDER BY l.created_at DESC
       LIMIT ? OFFSET ?
     `, [limit, offset]);
