@@ -39,7 +39,7 @@ export async function GET(request, { params }) {
 
     // Obtener álbumes del artista
     const albumsResponse = await fetch(
-      `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&market=US&limit=50`,
+      `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single,compilation,appears_on&market=US&limit=50`,
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,

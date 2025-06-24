@@ -27,6 +27,9 @@ export default function ArtistPage() {
   const [loadingTracks, setLoadingTracks] = useState(false);
   const [isAlbumModalAnimating, setIsAlbumModalAnimating] = useState(false);
   const [activeTab, setActiveTab] = useState('albums');
+  const [albumSearch, setAlbumSearch] = useState("");
+  const [albumSort, setAlbumSort] = useState("recent");
+  const [releaseType, setReleaseType] = useState("all");
 
   // Obtener el ID del artista de los parámetros de URL
   const artistId = params.artistId;
@@ -604,58 +607,103 @@ export default function ArtistPage() {
         {/* Contenido de las pestañas */}
         {activeTab === 'albums' && (
           <div className="space-y-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-theme-primary">
-                Álbumes
-              </h2>
-              <span className="text-theme-muted text-sm">
-                {albums?.length || 0} álbumes
-              </span>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <input
+                  type="text"
+                  value={albumSearch}
+                  onChange={e => setAlbumSearch(e.target.value)}
+                  placeholder="Buscar álbum..."
+                  className="px-4 py-2 rounded-xl border border-theme bg-theme-card text-theme-primary placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent transition-all w-56 shadow"
+                />
+                <select
+                  value={albumSort}
+                  onChange={e => setAlbumSort(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-theme bg-theme-card text-theme-primary focus:outline-none focus:ring-2 focus:ring-theme-accent transition-all shadow"
+                >
+                  <option value="recent">Más reciente</option>
+                  <option value="oldest">Más antiguo</option>
+                  <option value="az">A-Z</option>
+                  <option value="za">Z-A</option>
+                </select>
+                <select
+                  value={releaseType}
+                  onChange={e => setReleaseType(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-theme bg-theme-card text-theme-primary focus:outline-none focus:ring-2 focus:ring-theme-accent transition-all shadow"
+                >
+                  <option value="all">Todos</option>
+                  <option value="album">Álbumes</option>
+                  <option value="single">Singles</option>
+                  <option value="compilation">Compilaciones</option>
+                  <option value="appears_on">Apariciones</option>
+                </select>
+              </div>
+              <div>
+                <span className="text-theme-muted text-sm">{albums?.length || 0} álbumes</span>
+              </div>
             </div>
 
+            {/* Filtrado, tipo y ordenado de álbumes */}
             {albums && albums.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {albums.map((album) => (
-                  <div 
-                    key={album.id} 
-                    className="bg-theme-card backdrop-blur-sm rounded-2xl p-4 border border-theme-border hover:bg-theme-hover transition-all duration-300 group"
-                  >
-                    <Link
-                      href={`/album/${album.id}`}
-                      className="block"
+                {albums
+                  .filter(album =>
+                    (releaseType === "all" || album.album_group === releaseType || album.album_type === releaseType)
+                    && album.name.toLowerCase().includes(albumSearch.toLowerCase())
+                  )
+                  .sort((a, b) => {
+                    if (albumSort === "recent") {
+                      return (b.release_date || "").localeCompare(a.release_date || "");
+                    } else if (albumSort === "oldest") {
+                      return (a.release_date || "").localeCompare(b.release_date || "");
+                    } else if (albumSort === "az") {
+                      return a.name.localeCompare(b.name);
+                    } else if (albumSort === "za") {
+                      return b.name.localeCompare(a.name);
+                    }
+                    return 0;
+                  })
+                  .map((album) => (
+                    <div 
+                      key={album.id} 
+                      className="bg-theme-card backdrop-blur-sm rounded-2xl p-4 border border-theme-border hover:bg-theme-hover transition-all duration-300 group"
                     >
-                      <div className="relative mb-4">
-                        <Image
-                          src={album.images[0]?.url || '/placeholder-album.jpg'}
-                          alt={album.name}
-                          width={200}
-                          height={200}
-                          className="w-full aspect-square object-cover rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-lg"
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-xl transition-colors duration-300" />
-                      </div>
-                      <div className="space-y-2">
-                        <h4 className="text-theme-primary font-semibold text-sm line-clamp-2 group-hover:text-theme-accent transition-colors">
-                          {album.name}
-                        </h4>
-                        <p className="text-theme-secondary text-xs">
-                          {album.release_date?.split('-')[0]} • {album.total_tracks} canciones
-                        </p>
-                      </div>
-                    </Link>
-                    
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleAlbumInfo(album);
-                      }}
-                      className="w-full flex items-center justify-center gap-2 mt-3 px-3 py-2 bg-theme-accent hover:bg-theme-accent/80 text-theme-button text-xs rounded-xl transition-colors font-medium"
-                    >
-                      <Info className="w-4 h-4" />
-                      Más información
-                    </button>
-                  </div>
-                ))}
+                      <Link
+                        href={`/album/${album.id}`}
+                        className="block"
+                      >
+                        <div className="relative mb-4">
+                          <Image
+                            src={album.images[0]?.url || '/placeholder-album.jpg'}
+                            alt={album.name}
+                            width={200}
+                            height={200}
+                            className="w-full aspect-square object-cover rounded-xl group-hover:scale-105 transition-transform duration-300 shadow-lg"
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-xl transition-colors duration-300" />
+                        </div>
+                        <div className="space-y-2">
+                          <h4 className="text-theme-primary font-semibold text-sm line-clamp-2 group-hover:text-theme-accent transition-colors">
+                            {album.name}
+                          </h4>
+                          <p className="text-theme-secondary text-xs">
+                            {album.release_date?.split('-')[0]} • {album.total_tracks} canciones
+                          </p>
+                        </div>
+                      </Link>
+                      
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAlbumInfo(album);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 mt-3 px-3 py-2 bg-theme-accent hover:bg-theme-accent/80 text-theme-button text-xs rounded-xl transition-colors font-medium"
+                      >
+                        <Info className="w-4 h-4" />
+                        Más información
+                      </button>
+                    </div>
+                  ))}
               </div>
             ) : (
               <div className="text-center py-16">
