@@ -193,6 +193,19 @@ export default function ListenListPage() {
 
 // Componente para cada álbum en la lista de escucha
 function ListenListCard({ item, onAlbumClick, onRemove, isRemoving }) {
+  // Validar y formatear la fecha de añadido
+  let fechaAñadido = 'Fecha desconocida';
+  const rawDate = item.added_at || item.created_at;
+  if (rawDate) {
+    const date = new Date(rawDate);
+    if (!isNaN(date.getTime())) {
+      fechaAñadido = date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+  }
   return (
     <div className="bg-theme-card backdrop-blur-md rounded-lg p-6 border border-theme-border hover:bg-theme-hover transition-all duration-300">
       <div className="flex flex-col md:flex-row gap-6 items-start">
@@ -218,7 +231,7 @@ function ListenListCard({ item, onAlbumClick, onRemove, isRemoving }) {
         
           <div className="flex items-center gap-2 text-theme-muted text-sm">
             <Plus size={16} />
-            Añadido el {new Date(item.created_at).toLocaleDateString('es')}
+            Añadido el {fechaAñadido}
           </div>
         </div>
 
