@@ -1,4 +1,3 @@
-
 import { getSpotifyAccessToken } from '../../../../../lib/spotify';
 
 export async function GET(request, { params }) {
@@ -37,21 +36,29 @@ export async function GET(request, { params }) {
 
     const artistData = await artistResponse.json();
 
-    // Obtener álbumes del artista
-    const albumsResponse = await fetch(
-      `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single,compilation,appears_on&market=US&limit=50`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
+    // Obtener todos los álbumes del artista (paginación)
+    let allAlbums = [];
+    let limit = 50;
+    let offset = 0;
+    let total = 0;
+    do {
+      const albumsResponse = await fetch(
+        `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single,compilation&limit=${limit}&offset=${offset}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (!albumsResponse.ok) break;
+      const albumsData = await albumsResponse.json();
+      if (albumsData.items && albumsData.items.length > 0) {
+        allAlbums = allAlbums.concat(albumsData.items);
       }
-    );
-
-    let albumsData = { items: [] };
-    if (albumsResponse.ok) {
-      albumsData = await albumsResponse.json();
-    }
+      total = albumsData.total || 0;
+      offset += limit;
+    } while (offset < total);
 
     // Obtener top tracks del artista
     const topTracksResponse = await fetch(
@@ -72,7 +79,7 @@ export async function GET(request, { params }) {
     return Response.json({
       success: true,
       artist: artistData,
-      albums: albumsData.items,
+      albums: allAlbums,
       topTracks: topTracksData.tracks
     });
 

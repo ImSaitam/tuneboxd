@@ -268,7 +268,7 @@ const TuneboxdApp = () => {
                       searchType === type.key
                         ? "bg-theme-accent text-theme-button font-semibold"
                         : "bg-theme-card text-theme-secondary hover:bg-theme-card-hover"
-                    }`}
+                    } cursor-pointer`}
                   >
                   {type.label}
                 </button>
@@ -335,7 +335,7 @@ const TuneboxdApp = () => {
               <>
                 <button
                   onClick={() => scrollToSection("#features")}
-                  className="relative bg-theme-accent text-theme-button px-8 py-4 rounded-full text-lg font-semibold hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden group"
+                  className="relative bg-theme-accent text-theme-button px-8 py-4 rounded-full text-lg font-semibold hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden group cursor-pointer"
                 >
                   <span className="relative z-10">
                     Comenzar mi viaje musical

@@ -348,12 +348,12 @@ function AlbumPageContent() {
               <div className="flex items-center bg-yellow-400/20 border border-yellow-400/40 rounded-xl px-5 py-2 shadow-lg">
                 <Star className="w-7 h-7 text-yellow-400 mr-2" />
                 <span className="text-3xl font-bold text-yellow-300">
-                  {stats && stats.avg_rating > 0 ? stats.avg_rating.toFixed(2) : '--'}
+                  {stats && stats.avg_rating > 0 ? Number(stats.avg_rating).toFixed(2) : '--'}
                 </span>
                 <span className="ml-2 text-lg text-yellow-200 font-semibold">/ 5</span>
               </div>
               <span className="text-white/80 text-base">Rating promedio</span>
-              {(!stats || !stats.avg_rating || stats.avg_rating === 0) && (
+              {(!stats || !stats.avg_rating || Number(stats.avg_rating) === 0) && (
                 <span className="ml-4 flex items-center gap-2 text-yellow-200 bg-yellow-400/10 border border-yellow-400/30 rounded-lg px-3 py-1 animate-pulse">
                   <Star className="w-4 h-4 text-yellow-300" />
                   ¡Sé el primero en calificar este álbum!

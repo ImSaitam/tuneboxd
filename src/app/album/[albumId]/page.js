@@ -754,6 +754,34 @@ const AlbumDetailPage = () => {
                 <span>{albumTracks.length} canciones</span>
                 <span>•</span>
                 <span>{formatDuration(getTotalDuration())}</span>
+                {/* Rating promedio destacado al lado de los datos */}
+                <span
+                  className={
+                    theme === 'dark'
+                      ? 'flex items-center gap-2 bg-yellow-400/20 border border-yellow-400/40 rounded-xl px-3 py-1 shadow'
+                      : 'flex items-center gap-2 bg-white border border-yellow-300 rounded-xl px-3 py-1 shadow'
+                  }
+                >
+                  <Star className={theme === 'dark' ? 'w-5 h-5 text-yellow-400' : 'w-5 h-5 text-yellow-500'} />
+                  <span className={theme === 'dark' ? 'text-xl font-bold text-yellow-300' : 'text-xl font-bold text-yellow-600'}>
+                    {albumStats && Number(albumStats.avg_rating) > 0 ? Number(albumStats.avg_rating).toFixed(2) : '--'}
+                  </span>
+                  <span className={theme === 'dark' ? 'text-base text-yellow-200 font-semibold' : 'text-base text-gray-500 font-semibold'}>
+                    / 5
+                  </span>
+                  {(!albumStats || !albumStats.avg_rating || Number(albumStats.avg_rating) === 0) && (
+                    <span
+                      className={
+                        theme === 'dark'
+                          ? 'ml-2 flex items-center gap-1 text-yellow-200 bg-yellow-400/10 border border-yellow-400/30 rounded px-2 py-0.5 animate-pulse'
+                          : 'ml-2 flex items-center gap-1 text-yellow-600 bg-yellow-100 border border-yellow-300 rounded px-2 py-0.5 animate-pulse'
+                      }
+                    >
+                      <Star className={theme === 'dark' ? 'w-3 h-3 text-yellow-300' : 'w-3 h-3 text-yellow-500'} />
+                      ¡Sé el primero en calificar!
+                    </span>
+                  )}
+                </span>
               </div>
 
               {/* Controles de acciones */}
@@ -763,51 +791,67 @@ const AlbumDetailPage = () => {
                   <button
                     onClick={handleLikeToggle}
                     title={inListenList ? "Quitar de lista de escucha" : "Agregar a lista de escucha"}
-                    className={`p-3 rounded-full transition-colors ${
-                      inListenList 
-                        ? 'text-red-400 hover:text-red-300' 
-                        : theme === 'dark' 
+                    className={`p-3 rounded-full transition-colors relative overflow-hidden group ${
+                      inListenList
+                        ? 'text-red-400 hover:text-red-300'
+                        : theme === 'dark'
                           ? 'text-white/60 hover:text-white'
                           : 'text-black/60 hover:text-black'
                     }`}
                   >
-                    <Heart className={`w-6 h-6 ${inListenList ? 'fill-current' : ''}`} />
+                    {/* Efecto brillo animado */}
+                    <span className="absolute inset-0 pointer-events-none">
+                      <span className="block w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine rounded-full" />
+                    </span>
+                    <Heart className={`w-6 h-6 ${inListenList ? 'fill-current' : ''} relative z-10`} />
                   </button>
 
                   <button
                     onClick={handleMarkAsListened}
                     title="Marcar como escuchado"
-                    className={`p-3 rounded-full transition-colors ${
+                    className={`p-3 rounded-full transition-colors relative overflow-hidden group ${
                       theme === 'dark' 
                         ? 'text-white/60 hover:text-white'
                         : 'text-black/60 hover:text-black'
                     }`}
                   >
-                    <Clock className="w-6 h-6" />
+                    {/* Efecto brillo animado */}
+                    <span className="absolute inset-0 pointer-events-none">
+                      <span className="block w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine rounded-full" />
+                    </span>
+                    <Clock className="w-6 h-6 relative z-10" />
                   </button>
 
                   <button
                     onClick={() => setShowAddToListModal(true)}
                     title="Agregar a lista personalizada"
-                    className={`p-3 rounded-full transition-colors ${
+                    className={`p-3 rounded-full transition-colors relative overflow-hidden group ${
                       theme === 'dark' 
                         ? 'text-white/60 hover:text-white'
                         : 'text-black/60 hover:text-black'
                     }`}
                   >
-                    <Plus className="w-6 h-6" />
+                    {/* Efecto brillo animado */}
+                    <span className="absolute inset-0 pointer-events-none">
+                      <span className="block w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine rounded-full" />
+                    </span>
+                    <Plus className="w-6 h-6 relative z-10" />
                   </button>
 
                   <button
                     onClick={handleShare}
                     title="Compartir álbum"
-                    className={`p-3 rounded-full transition-colors ${
+                    className={`p-3 rounded-full transition-colors relative overflow-hidden group ${
                       theme === 'dark' 
                         ? 'text-white/60 hover:text-white'
                         : 'text-black/60 hover:text-black'
                     }`}
                   >
-                    <Share2 className="w-6 h-6" />
+                    {/* Efecto brillo animado */}
+                    <span className="absolute inset-0 pointer-events-none">
+                      <span className="block w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine rounded-full" />
+                    </span>
+                    <Share2 className="w-6 h-6 relative z-10" />
                   </button>
 
                   {albumData?.external_urls?.spotify && (
@@ -816,13 +860,17 @@ const AlbumDetailPage = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Abrir en Spotify"
-                      className={`p-3 rounded-full transition-colors ${
+                      className={`p-3 rounded-full transition-colors relative overflow-hidden group ${
                         theme === 'dark' 
                           ? 'text-white/60 hover:text-white'
                           : 'text-black/60 hover:text-black'
                       }`}
                     >
-                      <ExternalLink className="w-6 h-6" />
+                      {/* Efecto brillo animado */}
+                      <span className="absolute inset-0 pointer-events-none">
+                        <span className="block w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine rounded-full" />
+                      </span>
+                      <ExternalLink className="w-6 h-6 relative z-10" />
                     </a>
                   )}
                 </div>
@@ -832,21 +880,20 @@ const AlbumDetailPage = () => {
                   <button
                     onClick={() => setShowReviewForm(true)}
                     title={hasUserReview ? "Editar tu reseña de este álbum" : "Escribir una reseña de este álbum"}
-                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg relative overflow-hidden group ${
-                      hasUserReview
+                    className={`flex items-center space-x-2 px-5 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-md relative overflow-hidden group
+                      ${hasUserReview
                         ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-cyan-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-cyan-700'
-                        : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700'
-                    }`}
+                        : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700'}
+                      ${theme === 'dark' ? 'text-white' : 'text-gray-900'}
+                    `}
                   >
-                    {/* Efecto de brillo animado */}
-                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                    
-                    <Star className={`w-5 h-5 relative z-10 ${!hasUserReview ? 'animate-pulse' : ''}`} />
-                    <span className="hidden sm:inline relative z-10 text-lg">
-                      {hasUserReview ? 'Editar mi reseña' : 'Escribir reseña'}
+                    {/* Efecto brillo animado igual que el resto */}
+                    <span className="absolute inset-0 pointer-events-none">
+                      <span className="block w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine rounded-xl" />
                     </span>
-                    <span className="sm:hidden relative z-10 font-bold">
-                      {hasUserReview ? 'Editar' : 'Reseñar'}
+                    <Star className={`w-5 h-5 relative z-10 ${theme === 'dark' ? 'text-yellow-300' : 'text-yellow-500'} ${!hasUserReview ? 'animate-pulse' : ''}`} />
+                    <span className="relative z-10">
+                      {hasUserReview ? 'Editar mi reseña' : 'Escribir reseña'}
                     </span>
                   </button>
                 )}
@@ -1021,11 +1068,12 @@ const AlbumDetailPage = () => {
                             : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700'
                         }`}
                       >
-                        {/* Efecto de brillo */}
-                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-800 ease-in-out" />
-                        
-                        <Star className={`w-5 h-5 relative z-10 ${!hasUserReview ? 'animate-pulse' : ''}`} />
-                        <span className="relative z-10 text-lg">
+                        {/* Efecto de brillo animado igual que el botón principal */}
+                        <span className="absolute inset-0 pointer-events-none">
+                          <span className="block w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine rounded-xl" />
+                        </span>
+                        <Star className={`w-5 h-5 relative z-10 ${theme === 'dark' ? 'text-yellow-300' : 'text-yellow-500'} ${!hasUserReview ? 'animate-pulse' : ''}`} />
+                        <span className="relative z-10 text-lg font-semibold">
                           {hasUserReview ? 'Editar Reseña' : 'Escribir Reseña'}
                         </span>
                       </button>
@@ -1124,10 +1172,11 @@ const AlbumDetailPage = () => {
                       : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700'
                   }`}
                 >
-                  {/* Efecto de brillo */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                  
-                  <Star className={`w-5 h-5 relative z-10 ${!hasUserReview ? 'animate-pulse' : ''}`} />
+                  {/* Efecto brillo animado igual que el resto */}
+                  <span className="absolute inset-0 pointer-events-none">
+                    <span className="block w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine rounded-xl" />
+                  </span>
+                  <Star className={`w-5 h-5 relative z-10 ${theme === 'dark' ? 'text-yellow-300' : 'text-yellow-500'} ${!hasUserReview ? 'animate-pulse' : ''}`} />
                   <span className="relative z-10">
                     {hasUserReview ? 'Editar mi reseña' : 'Escribir reseña'}
                   </span>
@@ -1140,7 +1189,8 @@ const AlbumDetailPage = () => {
               <div className="space-y-4">
                 {reviews.map((review) => (
                   <div key={review.id} className="bg-theme-card rounded-2xl p-6 border border-theme">
-                    {/* Header de la reseña */}                    <div className="flex items-start justify-between mb-4">
+                    {/* Header de la reseña */}
+                    <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 rounded-full overflow-hidden">
                           {review.profile_image_url ? (
@@ -1196,7 +1246,8 @@ const AlbumDetailPage = () => {
                       <h4 className="text-lg font-semibold text-theme-primary mb-3">
                         {review.title}
                       </h4>
-                    )}                    {/* Contenido de la reseña */}
+                    )}
+                    {/* Contenido de la reseña */}
                     {review.content ? (
                       <p className="text-theme-secondary leading-relaxed mb-4">
                         {review.content}
@@ -1205,7 +1256,8 @@ const AlbumDetailPage = () => {
                       <p className="text-theme-muted italic mb-4">
                         {review.username} ha valorado este álbum sin agregar comentarios.
                       </p>
-                    )}                    {/* Acciones de la reseña */}
+                    )}
+                    {/* Acciones de la reseña */}
                     <div className="flex items-center space-x-4 pt-3 border-t border-theme">
                       <button 
                         onClick={() => handleReviewLike(review.id)}
@@ -1484,3 +1536,16 @@ const AlbumDetailPage = () => {
 };
 
 export default AlbumDetailPage;
+
+/* Tailwind animación personalizada (agregar en tailwind.config.js si no existe):
+  animation: {
+    shine: 'shine 1.1s linear forwards',
+  },
+  keyframes: {
+    shine: {
+      '0%': { transform: 'translateX(-100%)', opacity: 0 },
+      '60%': { opacity: 1 },
+      '100%': { transform: 'translateX(100%)', opacity: 0 },
+    },
+  },
+*/
