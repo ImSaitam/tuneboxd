@@ -1119,13 +1119,6 @@ const UserProfilePage = () => {
                               </p>
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-1 text-theme-muted text-xs">
-                                  <Clock className="w-3 h-3 flex-shrink-0" />
-                                  <span>
-                                    {new Date(album.listened_at).toLocaleTimeString('es-ES', { 
-                                      hour: '2-digit', 
-                                      minute: '2-digit' 
-                                    })}
-                                  </span>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   <button
@@ -1182,15 +1175,6 @@ const UserProfilePage = () => {
                               <p className="text-theme-secondary text-base truncate mb-1" title={album.artist}>
                                 {album.artist}
                               </p>
-                              <div className="flex items-center space-x-1 text-theme-muted text-sm">
-                                <Clock className="w-4 h-4 flex-shrink-0" />
-                                <span>
-                                  {new Date(album.listened_at).toLocaleTimeString('es-ES', { 
-                                    hour: '2-digit', 
-                                    minute: '2-digit' 
-                                  })}
-                                </span>
-                              </div>
                             </div>
 
                             {/* Action Button - Desktop */}

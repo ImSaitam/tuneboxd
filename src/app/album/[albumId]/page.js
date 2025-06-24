@@ -629,6 +629,18 @@ const AlbumDetailPage = () => {
     return albumTracks.reduce((total, track) => total + (track.duration_ms || 0), 0);
   };
 
+  // Función para formatear fecha de escucha en zona local
+  const formatListenDate = (dateString) => {
+    if (!dateString) return 'Fecha desconocida';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Fecha inválida';
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-theme-background">
