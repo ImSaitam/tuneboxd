@@ -261,6 +261,34 @@ function AlbumPageContent() {
     }
   };
 
+  // Función para formatear fecha de lanzamiento según precisión
+  function formatDate(dateString) {
+    if (!dateString) return 'Fecha desconocida';
+    if (/^\d{4}$/.test(dateString)) {
+      return dateString;
+    }
+    if (/^\d{4}-\d{2}$/.test(dateString)) {
+      const [year, month] = dateString.split('-');
+      const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+      const mesNombre = meses[parseInt(month, 10) - 1] || '';
+      return mesNombre ? `${mesNombre} de ${year}` : year;
+    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'Fecha inválida';
+        return date.toLocaleDateString('es-ES', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+      } catch (error) {
+        return 'Fecha inválida';
+      }
+    }
+    return dateString;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -330,7 +358,7 @@ function AlbumPageContent() {
             <div className="flex items-center gap-6 mb-6">
               <div className="flex items-center gap-2">
                 <Calendar size={20} className="text-gray-400" />
-                <span className="text-gray-300">{albumData.release_date}</span>
+                <span className="text-gray-300">{formatDate(albumData.release_date)}</span>
               </div>
               <a
                 href={albumData.external_urls?.spotify}

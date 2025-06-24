@@ -418,20 +418,34 @@ const AlbumDetailPage = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Función para formatear fecha
-  const formatDate = (dateString) => {
+  // Función para formatear fecha de lanzamiento según precisión y release_date_precision
+  const formatDate = (dateString, precision) => {
     if (!dateString) return 'Fecha desconocida';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Fecha inválida';
+    // Si la precisión es 'year'
+    if (precision === 'year') {
+      return dateString.substring(0, 4);
+    }
+    // Si la precisión es 'month'
+    if (precision === 'month') {
+      const [year, month] = dateString.split('-');
+      const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+      const mesNombre = meses[parseInt(month, 10) - 1] || '';
+      return mesNombre ? `${mesNombre} de ${year}` : year;
+    }
+    // Si la precisión es 'day' o no se especifica, mostrar la fecha exacta (sin zona horaria)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      // Evitar problemas de desfase de zona horaria:
+      const [year, month, day] = dateString.split('-');
+      const date = new Date(Date.UTC(parseInt(year), parseInt(month, 10) - 1, parseInt(day)));
       return date.toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
+        timeZone: 'UTC'
       });
-    } catch (error) {
-      return 'Fecha inválida';
     }
+    // Fallback: solo año
+    return dateString.substring(0, 4);
   };
   // Función para manejar el envío de reseñas
   const handleSubmitReview = async (e) => {
@@ -880,20 +894,23 @@ const AlbumDetailPage = () => {
                   <button
                     onClick={() => setShowReviewForm(true)}
                     title={hasUserReview ? "Editar tu reseña de este álbum" : "Escribir una reseña de este álbum"}
-                    className={`flex items-center space-x-2 px-5 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-md relative overflow-hidden group
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg relative overflow-hidden group
                       ${hasUserReview
                         ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-cyan-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-cyan-700'
-                        : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700'}
+                        : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600'}
                       ${theme === 'dark' ? 'text-white' : 'text-gray-900'}
                     `}
                   >
-                    {/* Efecto brillo animado igual que el resto */}
+                    {/* Efecto brillo animado mejorado */}
                     <span className="absolute inset-0 pointer-events-none">
                       <span className="block w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine rounded-xl" />
                     </span>
                     <Star className={`w-5 h-5 relative z-10 ${theme === 'dark' ? 'text-yellow-300' : 'text-yellow-500'} ${!hasUserReview ? 'animate-pulse' : ''}`} />
-                    <span className="relative z-10">
+                    <span className={`hidden sm:inline relative z-10 text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900 drop-shadow-sm'}`}>
                       {hasUserReview ? 'Editar mi reseña' : 'Escribir reseña'}
+                    </span>
+                    <span className={`sm:hidden relative z-10 font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900 drop-shadow-sm'}`}>
+                      {hasUserReview ? 'Editar' : 'Reseñar'}
                     </span>
                   </button>
                 )}
@@ -1001,9 +1018,17 @@ const AlbumDetailPage = () => {
                     </Link>
                   </div>
                   <div>
-                    <div className="text-theme-muted text-sm">Fecha de lanzamiento</div>
+                    <div className="text-theme-muted text-sm flex items-center gap-1">
+                      Fecha de lanzamiento
+                      <span className="relative group cursor-pointer">
+                        <Info className="w-4 h-4 text-theme-accent inline-block align-middle" />
+                        <span className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 bg-theme-card text-theme-primary text-xs rounded shadow-lg px-3 py-2 z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-normal">
+                          La fecha de lanzamiento puede ser inexacta en álbumes antiguos, ya que la API de Spotify puede contener errores en estos casos.
+                        </span>
+                      </span>
+                    </div>
                     <div className="text-theme-primary font-medium">
-                      {formatDate(albumData?.release_date)}
+                      {formatDate(albumData?.release_date, albumData?.release_date_precision)}
                     </div>
                   </div>
                 </div>
@@ -1068,12 +1093,11 @@ const AlbumDetailPage = () => {
                             : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700'
                         }`}
                       >
-                        {/* Efecto de brillo animado igual que el botón principal */}
-                        <span className="absolute inset-0 pointer-events-none">
-                          <span className="block w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine rounded-xl" />
-                        </span>
-                        <Star className={`w-5 h-5 relative z-10 ${theme === 'dark' ? 'text-yellow-300' : 'text-yellow-500'} ${!hasUserReview ? 'animate-pulse' : ''}`} />
-                        <span className="relative z-10 text-lg font-semibold">
+                        {/* Efecto de brillo */}
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-800 ease-in-out" />
+                        
+                        <Star className={`w-5 h-5 relative z-10 ${!hasUserReview ? 'animate-pulse' : ''}`} />
+                        <span className="relative z-10 text-lg">
                           {hasUserReview ? 'Editar Reseña' : 'Escribir Reseña'}
                         </span>
                       </button>
@@ -1172,11 +1196,10 @@ const AlbumDetailPage = () => {
                       : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700'
                   }`}
                 >
-                  {/* Efecto brillo animado igual que el resto */}
-                  <span className="absolute inset-0 pointer-events-none">
-                    <span className="block w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine rounded-xl" />
-                  </span>
-                  <Star className={`w-5 h-5 relative z-10 ${theme === 'dark' ? 'text-yellow-300' : 'text-yellow-500'} ${!hasUserReview ? 'animate-pulse' : ''}`} />
+                  {/* Efecto de brillo */}
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                  
+                  <Star className={`w-5 h-5 relative z-10 ${!hasUserReview ? 'animate-pulse' : ''}`} />
                   <span className="relative z-10">
                     {hasUserReview ? 'Editar mi reseña' : 'Escribir reseña'}
                   </span>

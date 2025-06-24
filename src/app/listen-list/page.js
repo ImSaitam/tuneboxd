@@ -215,14 +215,7 @@ function ListenListCard({ item, onAlbumClick, onRemove, isRemoving }) {
             {item.album_name}
           </h3>
           <p className="text-theme-secondary mb-2">{item.artist}</p>
-          
-          {item.release_date && (
-            <div className="flex items-center gap-2 text-theme-muted text-sm mb-3">
-              <Calendar size={16} />
-              {new Date(item.release_date).getFullYear()}
-            </div>
-          )}
-
+        
           <div className="flex items-center gap-2 text-theme-muted text-sm">
             <Plus size={16} />
             Añadido el {new Date(item.created_at).toLocaleDateString('es')}
@@ -263,4 +256,32 @@ function ListenListCard({ item, onAlbumClick, onRemove, isRemoving }) {
       </div>
     </div>
   );
+}
+
+// Importar la función formatDate si se mueve a un util, o definir aquí:
+function formatDate(dateString) {
+  if (!dateString) return 'Fecha desconocida';
+  if (/^\d{4}$/.test(dateString)) {
+    return dateString;
+  }
+  if (/^\d{4}-\d{2}$/.test(dateString)) {
+    const [year, month] = dateString.split('-');
+    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    const mesNombre = meses[parseInt(month, 10) - 1] || '';
+    return mesNombre ? `${mesNombre} de ${year}` : year;
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Fecha inválida';
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return 'Fecha inválida';
+    }
+  }
+  return dateString;
 }
