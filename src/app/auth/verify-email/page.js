@@ -76,7 +76,7 @@ function VerifyEmailContent() {
               </div>
               <div className="space-y-3">
                 <Link 
-                  href="/auth/login"
+                  href="/login"
                   className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
                 >
                   Iniciar Sesión
