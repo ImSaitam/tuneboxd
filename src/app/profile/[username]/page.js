@@ -1272,7 +1272,6 @@ const UserProfilePage = () => {
                       )}
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-theme-primary">@{follower.username}</h3>
-                        <p className="text-theme-secondary text-sm">{follower.email}</p>
                       </div>
                     </div>
                     
@@ -1393,7 +1392,6 @@ const UserProfilePage = () => {
                       )}
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-theme-primary">@{followedUser.username}</h3>
-                        <p className="text-theme-secondary text-sm">{followedUser.email}</p>
                       </div>
                     </div>
                     
